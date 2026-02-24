@@ -5,19 +5,14 @@ export function initFirebaseAdmin(): App | null {
     return getApps()[0] as App;
   }
 
-  const projectId = process.env.FIREBASE_PROJECT_ID;
-  const clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
-  const privateKey = process.env.FIREBASE_PRIVATE_KEY?.replace(/\r/g, "");
+  const base64 = process.env.FIREBASE_SERVICE_ACCOUNT_BASE64;
+  if (!base64) return null;
 
-  if (!projectId || !clientEmail || !privateKey) {
-    return null;
-  }
+  const json = JSON.parse(
+    Buffer.from(base64, "base64").toString("utf-8")
+  );
 
   return initializeApp({
-    credential: cert({
-      projectId,
-      clientEmail,
-      privateKey,
-    }),
+    credential: cert(json),
   });
 }
