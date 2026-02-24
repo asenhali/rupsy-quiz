@@ -6,10 +6,16 @@ export default function Home() {
   const [token, setToken] = useState<string | null>(null);
 
   useEffect(() => {
+    console.log("IFRAME SCRIPT LOADED");
+
     function handleMessage(event: MessageEvent) {
+      console.log("EVENT ORIGIN:", event.origin);
+      console.log("EVENT DATA:", event.data);
+
       if (event.origin !== "https://www.rupsy.sk") return;
 
       if (event.data?.token) {
+        console.log("TOKEN RECEIVED:", event.data.token);
         setToken(event.data.token);
       }
     }
