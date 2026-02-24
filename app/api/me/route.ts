@@ -36,7 +36,16 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const firebaseApp = initFirebaseAdmin();
+    let firebaseApp;
+    try {
+      firebaseApp = initFirebaseAdmin();
+    } catch (err) {
+      console.error("FIREBASE INIT ERROR:", err);
+      return NextResponse.json(
+        { error: "Firebase init failed", details: (err as Error).message },
+        { status: 500 }
+      );
+    }
     if (!firebaseApp) {
       return NextResponse.json(
         { error: "Firebase not initialized" },
