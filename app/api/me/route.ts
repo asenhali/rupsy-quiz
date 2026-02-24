@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import jwt from "jsonwebtoken";
+import { initFirebaseAdmin } from "@/lib/firebaseAdmin";
 
 export async function GET(request: Request) {
   try {
@@ -20,6 +21,15 @@ export async function GET(request: Request) {
     if (!decoded.wixUserId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+
+    const firebaseApp = initFirebaseAdmin();
+    if (!firebaseApp) {
+      return NextResponse.json(
+        { error: "Firebase not initialized" },
+        { status: 500 }
+      );
+    }
+    console.log("Firebase Admin initialized successfully");
 
     return NextResponse.json({
       success: true,
