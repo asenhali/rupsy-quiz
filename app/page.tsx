@@ -8,7 +8,7 @@ export default function Home() {
   useEffect(() => {
     console.log("IFRAME SCRIPT LOADED");
 
-    function handleMessage(event: MessageEvent) {
+    async function handleMessage(event: MessageEvent) {
       console.log("EVENT ORIGIN:", event.origin);
       console.log("EVENT DATA:", event.data);
 
@@ -17,6 +17,11 @@ export default function Home() {
       if (event.data?.token) {
         console.log("TOKEN RECEIVED:", event.data.token);
         setToken(event.data.token);
+        const res = await fetch("/api/me", {
+          headers: { Authorization: `Bearer ${event.data.token}` },
+        });
+        const json = await res.json();
+        console.log("API /api/me response:", json);
       }
     }
 
