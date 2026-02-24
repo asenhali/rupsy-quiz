@@ -13,6 +13,9 @@ export async function GET(request: Request) {
     }
 
     const secret = process.env.INTERNAL_WIX_SECRET;
+    console.log("SECRET LENGTH:", secret?.length);
+    console.log("SECRET VALUE START:", secret?.slice(0, 5));
+    console.log("SECRET VALUE END:", secret?.slice(-5));
     if (!secret) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
