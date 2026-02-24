@@ -16,7 +16,16 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const decoded = jwt.verify(token, secret) as { wixUserId: string };
+    let decoded: { wixUserId: string };
+    try {
+      decoded = jwt.verify(token, secret) as { wixUserId: string };
+    } catch (err) {
+      console.error("JWT VERIFY ERROR:", err);
+      return NextResponse.json(
+        { error: "Unauthorized", details: (err as Error).message },
+        { status: 401 }
+      );
+    }
 
     if (!decoded.wixUserId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
