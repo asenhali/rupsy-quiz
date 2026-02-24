@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import jwt from "jsonwebtoken";
+import { getFirestore } from "firebase-admin/firestore";
 import { initFirebaseAdmin } from "@/lib/firebaseAdmin";
 
 export async function GET(request: Request) {
@@ -54,9 +55,31 @@ export async function GET(request: Request) {
     }
     console.log("Firebase Admin initialized successfully");
 
+    const db = getFirestore(firebaseApp);
+    const userDoc = await db
+      .collection("users")
+      .doc(decoded.wixUserId)
+      .get();
+
+    if (!userDoc.exists) {
+      return NextResponse.json({
+        success: true,
+        needsOnboarding: true,
+        user: null,
+      });
+    }
+
+    const data = userDoc.data();
     return NextResponse.json({
       success: true,
-      wixUserId: decoded.wixUserId,
+      needsOnboarding: false,
+      user: {
+        wixUserId: decoded.wixUserId,
+        nickname: data?.nickname,
+        city: data?.city,
+        totalXP: data?.totalXP,
+        level: data?.level,
+      },
     });
   } catch {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
