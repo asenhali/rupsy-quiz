@@ -22,6 +22,7 @@ export async function GET(request: Request) {
 
     let decoded: { wixUserId: string };
     try {
+      console.log("NOW:", Math.floor(Date.now() / 1000));
       decoded = jwt.verify(token, secret) as { wixUserId: string };
     } catch (err) {
       console.error("JWT VERIFY ERROR:", err);
