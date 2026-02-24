@@ -7,7 +7,7 @@ export function initFirebaseAdmin(): App | null {
 
   const projectId = process.env.FIREBASE_PROJECT_ID;
   const clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
-  const privateKey = process.env.FIREBASE_PRIVATE_KEY;
+  const privateKey = process.env.FIREBASE_PRIVATE_KEY?.replace(/\r/g, "");
 
   if (!projectId || !clientEmail || !privateKey) {
     return null;
