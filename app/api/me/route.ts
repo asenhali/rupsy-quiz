@@ -81,7 +81,10 @@ export async function GET(request: Request) {
         level: data?.level,
       },
     });
-  } catch {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  } catch (err) {
+    return NextResponse.json(
+      { error: "Server error", details: (err as Error)?.message },
+      { status: 500 }
+    );
   }
 }
