@@ -56,6 +56,7 @@ export async function GET(request: Request) {
     console.log("Firebase Admin initialized successfully");
 
     const db = getFirestore(firebaseApp);
+    db.settings({ preferRest: true });
     const userDoc = await db
       .collection("users")
       .doc(decoded.wixUserId)
