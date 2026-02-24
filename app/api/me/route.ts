@@ -4,6 +4,7 @@ import { initFirebaseAdmin } from "@/lib/firebaseAdmin";
 
 export async function GET(request: Request) {
   try {
+    console.log("AUTH HEADER RAW:", request.headers.get("authorization"));
     const authHeader = request.headers.get("authorization");
     const token = authHeader?.startsWith("Bearer ") ? authHeader.slice(7) : null;
 
