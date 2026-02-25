@@ -156,7 +156,7 @@ export default function Home() {
             </button>
             <button
               type="button"
-              onClick={() => console.log("FRIENDS")}
+              onClick={() => router.push("/friends")}
               className="w-full py-2 bg-[#1b2833]/5 text-[#1b2833] rounded-xl font-medium border-0"
             >
               PRIATELIA
