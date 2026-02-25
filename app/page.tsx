@@ -91,7 +91,7 @@ export default function Home() {
       )}
 
       {!loading && needsOnboarding === false && (
-        <div className="flex-1 flex flex-col w-full max-w-[480px] mx-auto">
+        <div className="flex-1 flex flex-col w-full max-w-[480px] mx-auto pt-10">
           {/* A) Header Section */}
           <section className="flex-shrink-0 flex flex-row items-center gap-4 py-2 px-4">
             <img
