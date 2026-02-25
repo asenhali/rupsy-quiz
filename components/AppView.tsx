@@ -15,7 +15,7 @@ interface AppViewProps {
   showDots?: boolean;
 }
 
-const SWIPE_THRESHOLD = 50;
+const SWIPE_THRESHOLD = 30;
 const SPRING_CONFIG = { stiffness: 300, damping: 30, mass: 0.8 };
 
 function getViewportWidth() {
@@ -80,14 +80,15 @@ export default function AppView({ panels, showDots = false }: AppViewProps) {
       className="relative mx-auto w-full max-w-[480px] h-full overflow-hidden bg-[#f3e6c0]"
     >
       <motion.div
-        className="flex h-full will-change-transform touch-pan-y"
+        className="flex h-full will-change-transform"
         style={{
           width: `${panelCount * 100}%`,
           x: springX,
         }}
         drag="x"
-        dragConstraints={{ left: 0, right: 0 }}
-        dragElastic={0.12}
+        dragConstraints={containerRef}
+        dragElastic={0.15}
+        dragDirectionLock
         onDragEnd={handleDragEnd}
         dragMomentum={false}
       >
