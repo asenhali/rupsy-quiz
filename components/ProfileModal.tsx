@@ -1,7 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
 import { AVAILABLE_AVATARS } from "@/config/avatars";
 import { useSwipeContext } from "@/context/SwipeContext";
 
@@ -31,22 +30,12 @@ export default function ProfileModal({
   onAvatarChange,
 }: ProfileModalProps) {
   const [showAvatarPicker, setShowAvatarPicker] = useState(false);
-  const pathname = usePathname();
   const { setSwipeDisabled } = useSwipeContext();
-  const isFirstPathname = useRef(true);
 
   useEffect(() => {
     setSwipeDisabled(isOpen);
     return () => setSwipeDisabled(false);
   }, [isOpen, setSwipeDisabled]);
-
-  useEffect(() => {
-    if (isFirstPathname.current) {
-      isFirstPathname.current = false;
-      return;
-    }
-    onClose();
-  }, [pathname, onClose]);
 
   if (!isOpen) return null;
 
@@ -54,7 +43,7 @@ export default function ProfileModal({
   const avatarSrc = `/avatars/${avatarId}.png`;
 
   return (
-    <div className="fixed inset-0 z-[60] bg-[#f3e6c0] flex justify-center touch-none">
+    <div className="fixed inset-0 z-[60] bg-[#f3e6c0] flex justify-center touch-none pointer-events-auto">
       <div className="w-full max-w-[480px] h-full overflow-y-auto overflow-x-hidden px-4 pt-10 pb-20">
       <div className="flex items-center gap-3 mb-2">
         <button
