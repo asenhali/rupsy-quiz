@@ -45,9 +45,26 @@ export default function Home() {
 
         {token && !loading && needsOnboarding === true && (
           <form
-            onSubmit={(e) => {
+            onSubmit={async (e) => {
               e.preventDefault();
-              console.log({ nickname, city });
+              const res = await fetch("/api/onboarding", {
+                method: "POST",
+                headers: {
+                  Authorization: `Bearer ${token}`,
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ nickname, city }),
+              });
+              const response = await res.json();
+              if (response.success) {
+                const meRes = await fetch("/api/me", {
+                  headers: { Authorization: `Bearer ${token}` },
+                });
+                const meJson = await meRes.json();
+                setNeedsOnboarding(meJson.needsOnboarding ?? false);
+              } else {
+                console.error(response);
+              }
             }}
           >
             <input
