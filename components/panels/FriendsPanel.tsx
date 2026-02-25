@@ -114,7 +114,7 @@ export default function FriendsPanel() {
             <button
               type="button"
               onClick={() => setShowRequests(false)}
-              className="p-2 -ml-2 rounded-xl bg-[#1b2833]/5 text-[#1b2833] border-0"
+              className="p-2 -ml-2 bg-transparent text-sm font-medium opacity-50 text-[#1b2833] border-0"
             >
               ← Späť
             </button>
@@ -122,29 +122,29 @@ export default function FriendsPanel() {
           </div>
 
           <section className="mb-8">
-            <h2 className="text-sm font-semibold opacity-90 mb-3">Prichádzajúce</h2>
+            <h2 className="text-xs font-semibold uppercase tracking-widest opacity-40 mb-3">Prichádzajúce</h2>
             {incoming.length === 0 ? (
-              <p className="text-sm opacity-60">Žiadne prichádzajúce žiadosti</p>
+              <p className="text-sm opacity-50">Žiadne prichádzajúce žiadosti</p>
             ) : (
               <ul className="space-y-3">
                 {incoming.map((r) => (
                   <li
                     key={r.requestId}
-                    className="flex items-center gap-3 p-3 rounded-xl bg-white/50 border border-[#1b2833]/10"
+                    className="flex items-center gap-3 p-4 rounded-2xl bg-white/40 border border-[#1b2833]/[0.06]"
                   >
                     <div className="w-10 h-10 rounded-full bg-[#1b2833]/15 shrink-0" />
                     <div className="flex-1 min-w-0">
                       <p className="font-medium truncate">
                         {r.user?.nickname ?? r.user?.rupsyId ?? "—"}
                       </p>
-                      <p className="text-sm opacity-60">{r.user?.rupsyId ?? ""}</p>
+                      <p className="text-sm opacity-50">{r.user?.rupsyId ?? ""}</p>
                     </div>
                     <div className="flex gap-2 shrink-0">
                       <button
                         type="button"
                         disabled={actingId === r.requestId}
                         onClick={() => handleRespond(r.requestId, "accept")}
-                        className="px-3 py-1.5 rounded-lg bg-green-600/90 text-white text-sm font-medium border-0 disabled:opacity-50"
+                        className="px-3 py-3 rounded-xl bg-green-600/90 text-white text-sm font-medium border-0 disabled:opacity-50"
                       >
                         Prijať
                       </button>
@@ -152,7 +152,7 @@ export default function FriendsPanel() {
                         type="button"
                         disabled={actingId === r.requestId}
                         onClick={() => handleRespond(r.requestId, "reject")}
-                        className="px-3 py-1.5 rounded-lg bg-[#1b2833]/15 text-[#1b2833] text-sm font-medium border-0 disabled:opacity-50"
+                        className="px-3 py-3 rounded-2xl bg-[#1b2833]/15 text-[#1b2833] text-sm font-medium border-0 disabled:opacity-50"
                       >
                         Zamietnuť
                       </button>
@@ -164,23 +164,23 @@ export default function FriendsPanel() {
           </section>
 
           <section>
-            <h2 className="text-sm font-semibold opacity-90 mb-3">Odoslané</h2>
+            <h2 className="text-xs font-semibold uppercase tracking-widest opacity-40 mb-3">Odoslané</h2>
             {outgoing.length === 0 ? (
-              <p className="text-sm opacity-60">Žiadne odoslané žiadosti</p>
+              <p className="text-sm opacity-50">Žiadne odoslané žiadosti</p>
             ) : (
               <ul className="space-y-3">
                 {outgoing.map((r) => (
                   <li
                     key={r.requestId}
-                    className="flex items-center gap-3 p-3 rounded-xl bg-white/50 border border-[#1b2833]/10"
+                    className="flex items-center gap-3 p-4 rounded-2xl bg-white/40 border border-[#1b2833]/[0.06]"
                   >
                     <div className="w-10 h-10 rounded-full bg-[#1b2833]/15 shrink-0" />
                     <div className="flex-1 min-w-0">
                       <p className="font-medium truncate">
                         {r.user?.nickname ?? r.user?.rupsyId ?? "—"}
                       </p>
-                      <p className="text-sm opacity-60">{r.user?.rupsyId ?? ""}</p>
-                      <p className="text-sm opacity-60">Čaká na schválenie</p>
+                      <p className="text-sm opacity-50">{r.user?.rupsyId ?? ""}</p>
+                      <p className="text-sm opacity-50">Čaká na schválenie</p>
                     </div>
                   </li>
                 ))}
@@ -197,14 +197,14 @@ export default function FriendsPanel() {
     <div className="h-full overflow-hidden flex flex-col bg-[#f3e6c0] text-[#1b2833]">
       <div className="flex-1 flex flex-col w-full max-w-[480px] mx-auto pt-10 px-4">
         <div className="mb-4">
-          <p className="text-sm opacity-90 mb-2">Tvoje RUPSY ID</p>
+          <p className="text-xs font-medium uppercase tracking-widest opacity-40 mb-2">Tvoje RUPSY ID</p>
           <div className="flex items-center gap-2">
-            <p className="font-bold text-lg">{rupsyId}</p>
+            <p className="text-2xl font-bold tracking-tight">{rupsyId}</p>
             {rupsyId && (
               <button
                 type="button"
                 onClick={() => navigator.clipboard.writeText(rupsyId)}
-                className="p-1.5 rounded-lg bg-[#1b2833]/10 text-[#1b2833] text-xs border-0"
+                className="text-xs font-medium opacity-40 uppercase tracking-wider bg-transparent underline text-[#1b2833] border-0"
               >
                 Kopírovať
               </button>
@@ -213,7 +213,7 @@ export default function FriendsPanel() {
         </div>
 
         <div className="mb-4">
-          <p className="text-sm opacity-90 mb-2">Pridať priateľa</p>
+          <p className="text-xs font-medium uppercase tracking-widest opacity-40 mb-2">Pridať priateľa</p>
           <form
             onSubmit={async (e) => {
               e.preventDefault();
@@ -247,7 +247,7 @@ export default function FriendsPanel() {
             className="flex flex-col gap-2"
           >
             <div className="flex items-center gap-2">
-              <span className="p-2 text-[#1b2833] font-medium">RUPSY-</span>
+              <span className="p-3 text-[#1b2833] font-semibold opacity-40">RUPSY-</span>
               <input
                 type="text"
                 value={addFriendInput}
@@ -265,12 +265,12 @@ export default function FriendsPanel() {
                 }}
                 maxLength={5}
                 placeholder="XXXXX"
-                className="flex-1 p-2 border border-[#1b2833]/20 rounded-xl bg-white/50"
+                className="flex-1 p-3 border border-[#1b2833]/10 rounded-xl bg-white/40"
               />
             </div>
             <button
               type="submit"
-              className="w-full py-2 bg-[#1b2833]/5 text-[#1b2833] rounded-xl font-medium border-0"
+              className="w-full py-3 bg-[#1b2833]/5 text-[#1b2833] rounded-2xl font-medium border-0"
             >
               Pridať
             </button>
@@ -291,11 +291,11 @@ export default function FriendsPanel() {
         <button
           type="button"
           onClick={handleOpenRequests}
-          className="relative w-full py-2 bg-[#1b2833]/5 text-[#1b2833] rounded-xl font-medium border-0 text-center"
+          className="relative w-full py-3 bg-[#1b2833]/5 text-[#1b2833] rounded-2xl font-medium border-0 text-center"
         >
           Žiadosti
           {pendingCount > 0 && (
-            <span className="absolute top-2 right-4 min-w-[20px] h-5 px-1.5 rounded-full bg-red-500 text-white text-xs font-semibold flex items-center justify-center shadow-[0_1px_3px_rgba(0,0,0,0.15)]">
+            <span className="absolute top-2 right-4 min-w-[20px] h-5 px-1.5 rounded-full bg-red-500 text-white text-xs font-semibold flex items-center justify-center">
               {pendingCount > 99 ? "99+" : pendingCount}
             </span>
           )}

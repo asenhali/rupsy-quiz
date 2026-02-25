@@ -15,8 +15,8 @@ export default function BottomNav() {
   const pathname = usePathname();
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white/95 shadow-[0_-1px_8px_rgba(0,0,0,0.06)] safe-area-pb">
-      <div className="flex items-center justify-around h-14 max-w-[480px] mx-auto px-2">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-xl border-t border-[#1b2833]/[0.06] pb-[env(safe-area-inset-bottom)]">
+      <div className="flex items-center justify-around h-16 max-w-[480px] mx-auto px-2">
         {ITEMS.map(({ href, icon, isCenter }) => {
           const active =
             href === "/"
@@ -29,7 +29,7 @@ export default function BottomNav() {
               href={href}
               prefetch
               className={`flex items-center justify-center w-12 h-12 rounded-xl border-0 ${
-                active ? "opacity-100" : "opacity-50"
+                active ? "opacity-100" : "opacity-30"
               } ${isCenter ? "w-14 h-14" : ""}`}
               aria-label={href}
             >

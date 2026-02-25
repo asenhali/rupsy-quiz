@@ -21,6 +21,7 @@ body {
 body {
   background: var(--background);
   color: var(--foreground);
+  font-family: "Montserrat", sans-serif;
 }
 
 /* Hide scrollbar in AppView panels while keeping scroll functional */
