@@ -65,6 +65,10 @@ export async function GET(request: Request) {
         city: data?.city,
         totalXP: data?.totalXP,
         level: data?.level,
+        avatarId: data?.avatarId ?? "default",
+        totalPoints: data?.totalPoints ?? 0,
+        totalGames: data?.totalGames ?? 0,
+        totalCorrect: data?.totalCorrect ?? 0,
       },
     });
   } catch (err) {
