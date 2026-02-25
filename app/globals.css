@@ -22,3 +22,12 @@ body {
   background: var(--background);
   color: var(--foreground);
 }
+
+/* Hide scrollbar in AppView panels while keeping scroll functional */
+.app-shell section::-webkit-scrollbar {
+  display: none;
+}
+.app-shell section {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
