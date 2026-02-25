@@ -10,6 +10,7 @@ export default function Home() {
   const [user, setUser] = useState<{
     nickname?: string;
     avatarId?: string;
+    city?: string;
     level?: number;
     totalXP?: number;
   } | null>(null);
@@ -111,31 +112,33 @@ export default function Home() {
           </section>
 
           {/* B) Last Week Rank Section */}
-          <section className="flex-shrink-0 flex flex-col py-3 px-4">
+          <section className="flex-shrink-0 flex flex-col py-3 px-4 pb-8">
             <p className="text-sm mb-3">Minulý týždeň si sa umiestnil:</p>
-            <div className="flex flex-row gap-2 w-full">
-              <div className="flex-1 flex flex-col items-center border border-[#1b2833] rounded-full py-3 px-2">
-                <p className="text-xs opacity-80 mb-1">MYJAVA</p>
-                <p className="font-bold text-lg">#8</p>
+            <div className="flex flex-row items-end gap-2 w-full">
+              <div className="flex-1 flex flex-col items-center border border-[#1b2833] rounded-full py-2 px-2 mt-4">
+                <p className="text-xs opacity-80 mb-1">
+                  {(user?.city ?? "Tvoje mesto").toUpperCase()}
+                </p>
+                <p className="font-bold text-base">#8</p>
               </div>
-              <div className="flex-1 flex flex-col items-center border border-[#1b2833] rounded-full py-3 px-2">
+              <div className="flex-[1.2] flex flex-col items-center border border-[#1b2833] rounded-full py-4 px-3">
                 <p className="text-xs opacity-80 mb-1">SLOVENSKO</p>
-                <p className="font-bold text-lg">#8</p>
+                <p className="font-bold text-xl">#8</p>
               </div>
-              <div className="flex-1 flex flex-col items-center border border-[#1b2833] rounded-full py-3 px-2">
+              <div className="flex-1 flex flex-col items-center border border-[#1b2833] rounded-full py-2 px-2 mt-4">
                 <p className="text-xs opacity-80 mb-1">TVOJE MESTO</p>
-                <p className="font-bold text-lg">#8</p>
+                <p className="font-bold text-base">#8</p>
               </div>
             </div>
           </section>
 
           {/* C) Countdown Section */}
-          <section className="flex-shrink-0 py-2 px-4 text-center">
+          <section className="flex-shrink-0 py-6 px-4 text-center">
             <p className="text-sm">Placeholder countdown</p>
           </section>
 
           {/* D) Action Section */}
-          <section className="flex-shrink-0 flex flex-col gap-2 p-4">
+          <section className="flex-shrink-0 flex flex-col gap-2 pt-4 pb-6 px-4">
             <button
               type="button"
               onClick={() => console.log("PLAY")}
