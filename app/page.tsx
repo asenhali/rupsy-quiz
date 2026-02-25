@@ -6,7 +6,11 @@ export default function Home() {
   const [token, setToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [needsOnboarding, setNeedsOnboarding] = useState<boolean | null>(null);
-  const [user, setUser] = useState<{ nickname?: string } | null>(null);
+  const [user, setUser] = useState<{ nickname?: string; avatarId?: string } | null>(null);
+
+  const avatarMap: Record<string, string> = {
+    default: "/avatars/default.png",
+  };
   const [nickname, setNickname] = useState("");
   const [city, setCity] = useState("");
 
@@ -86,7 +90,11 @@ export default function Home() {
 
         {token && !loading && needsOnboarding === false && (
           <div className="flex flex-col items-center gap-6">
-            <div className="w-16 h-16 rounded-full bg-[#1b2833]" />
+            <img
+              src={avatarMap[user?.avatarId ?? ""] || avatarMap.default}
+              alt="avatar"
+              className="w-[120px] h-[120px] rounded-full object-cover"
+            />
             <p>{user?.nickname ?? ""}</p>
             <button type="button" onClick={() => console.log("PLAY")}>
               HRÁŤ
