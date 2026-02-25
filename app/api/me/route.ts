@@ -60,6 +60,7 @@ export async function GET(request: Request) {
       needsOnboarding: false,
       user: {
         wixUserId: decoded.wixUserId,
+        rupsyId: data?.rupsyId,
         nickname: data?.nickname,
         city: data?.city,
         totalXP: data?.totalXP,
