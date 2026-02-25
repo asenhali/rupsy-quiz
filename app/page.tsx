@@ -6,7 +6,12 @@ export default function Home() {
   const [token, setToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [needsOnboarding, setNeedsOnboarding] = useState<boolean | null>(null);
-  const [user, setUser] = useState<{ nickname?: string; avatarId?: string } | null>(null);
+  const [user, setUser] = useState<{
+    nickname?: string;
+    avatarId?: string;
+    level?: number;
+    totalXP?: number;
+  } | null>(null);
 
   const avatarMap: Record<string, string> = {
     default: "/avatars/default.png",
@@ -39,15 +44,21 @@ export default function Home() {
   }, []);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#f3e6c0]">
-      <div className="bg-white p-8 rounded-xl shadow-xl w-[400px] text-center text-[#1b2833]">
-        {!token && (
+    <div className="h-screen overflow-hidden flex flex-col bg-[#f3e6c0] text-[#1b2833]">
+      {!token && (
+        <div className="flex-1 flex items-center justify-center p-6">
           <p>Waiting for secure token from Wix...</p>
-        )}
+        </div>
+      )}
 
-        {token && loading && <p>Loading...</p>}
+      {token && loading && (
+        <div className="flex-1 flex items-center justify-center p-6">
+          <p>Loading...</p>
+        </div>
+      )}
 
-        {token && !loading && needsOnboarding === true && (
+      {token && !loading && needsOnboarding === true && (
+        <div className="flex-1 flex flex-col items-center justify-center p-6">
           <form
             onSubmit={async (e) => {
               e.preventDefault();
@@ -71,43 +82,89 @@ export default function Home() {
                 console.error(response);
               }
             }}
+            className="flex flex-col gap-4 w-full max-w-[320px]"
           >
             <input
               type="text"
               value={nickname}
               onChange={(e) => setNickname(e.target.value)}
               placeholder="nickname"
+              className="p-2 border rounded"
             />
             <input
               type="text"
               value={city}
               onChange={(e) => setCity(e.target.value)}
               placeholder="city"
+              className="p-2 border rounded"
             />
-            <button type="submit">Začať hrať</button>
+            <button type="submit" className="p-2 bg-[#1b2833] text-[#f3e6c0] rounded">
+              Začať hrať
+            </button>
           </form>
-        )}
+        </div>
+      )}
 
-        {token && !loading && needsOnboarding === false && (
-          <div className="flex flex-col items-center gap-6">
+      {token && !loading && needsOnboarding === false && (
+        <>
+          {/* A) Profile Section */}
+          <section className="flex-shrink-0 flex flex-col items-center py-4 px-4">
             <img
               src={avatarMap[user?.avatarId ?? ""] || avatarMap.default}
               alt="avatar"
-              className="w-[120px] h-[120px] rounded-full object-cover"
+              className="w-[80px] h-[80px] rounded-full object-cover"
             />
-            <p>{user?.nickname ?? ""}</p>
-            <button type="button" onClick={() => console.log("PLAY")}>
-              HRÁŤ
+            <p className="mt-2 font-semibold">{user?.nickname ?? ""}</p>
+            <p className="text-sm opacity-80">Level {user?.level ?? 1}</p>
+            <div className="w-full max-w-[200px] h-2 bg-[#1b2833]/20 rounded-full mt-2 overflow-hidden">
+              <div
+                className="h-full bg-[#1b2833] rounded-full"
+                style={{ width: `${(user?.totalXP ?? 0) % 100}%` }}
+              />
+            </div>
+          </section>
+
+          {/* B) Ranking Section */}
+          <section className="flex-1 min-h-0 flex flex-col py-2 px-4">
+            <p className="text-sm mb-2">Minulý týždeň si sa umiestnil</p>
+            <div className="flex flex-col gap-2 flex-1 min-h-0">
+              <div className="flex-1 min-h-[40px] bg-[#1b2833]/10 rounded" />
+              <div className="flex-1 min-h-[40px] bg-[#1b2833]/10 rounded" />
+              <div className="flex-1 min-h-[40px] bg-[#1b2833]/10 rounded" />
+            </div>
+          </section>
+
+          {/* C) Countdown Section */}
+          <section className="flex-shrink-0 py-2 px-4 text-center">
+            <p className="text-sm">Placeholder countdown</p>
+          </section>
+
+          {/* D) Action Section */}
+          <section className="flex-shrink-0 flex flex-col gap-2 p-4">
+            <button
+              type="button"
+              onClick={() => console.log("PLAY")}
+              className="w-full py-4 bg-[#1b2833] text-[#f3e6c0] rounded font-semibold"
+            >
+              HRÁŤ KVÍZ
             </button>
-            <button type="button" onClick={() => console.log("LEADERBOARD")}>
+            <button
+              type="button"
+              onClick={() => console.log("LEADERBOARD")}
+              className="w-full py-2 border border-[#1b2833] rounded"
+            >
               LEADERBOARD
             </button>
-            <button type="button" onClick={() => console.log("SETTINGS")}>
-              SETTINGS
+            <button
+              type="button"
+              onClick={() => console.log("SETTINGS")}
+              className="w-full py-2 border border-[#1b2833] rounded"
+            >
+              NASTAVENIA
             </button>
-          </div>
-        )}
-      </div>
+          </section>
+        </>
+      )}
     </div>
   );
 }
