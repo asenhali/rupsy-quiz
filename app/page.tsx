@@ -90,31 +90,42 @@ export default function Home() {
       )}
 
       {!loading && needsOnboarding === false && (
-        <>
-          {/* A) Profile Section */}
-          <section className="flex-shrink-0 flex flex-col items-center py-4 px-4">
+        <div className="flex-1 flex flex-col w-full max-w-[480px] mx-auto">
+          {/* A) Header Section */}
+          <section className="flex-shrink-0 flex flex-row items-center gap-4 py-2 px-4">
             <img
               src={avatarMap[user?.avatarId ?? ""] || avatarMap.default}
               alt="avatar"
-              className="w-[80px] h-[80px] rounded-full object-cover"
+              className="w-[90px] h-[90px] rounded-full object-cover flex-shrink-0"
             />
-            <p className="mt-2 font-semibold">{user?.nickname ?? ""}</p>
-            <p className="text-sm opacity-80">Level {user?.level ?? 1}</p>
-            <div className="w-full max-w-[200px] h-2 bg-[#1b2833]/20 rounded-full mt-2 overflow-hidden">
-              <div
-                className="h-full bg-[#1b2833] rounded-full"
-                style={{ width: `${(user?.totalXP ?? 0) % 100}%` }}
-              />
+            <div className="flex-1 flex flex-col justify-center min-w-0">
+              <p className="font-bold text-lg">{user?.nickname ?? ""}</p>
+              <p className="text-sm opacity-80">Level {user?.level ?? 1}</p>
+              <div className="w-full h-2 bg-[#1b2833]/20 rounded-full mt-1 overflow-hidden">
+                <div
+                  className="h-full bg-[#1b2833] rounded-full"
+                  style={{ width: `${(user?.totalXP ?? 0) % 100}%` }}
+                />
+              </div>
             </div>
           </section>
 
-          {/* B) Ranking Section */}
-          <section className="flex-1 min-h-0 flex flex-col py-2 px-4">
-            <p className="text-sm mb-2">Minulý týždeň si sa umiestnil</p>
-            <div className="flex flex-col gap-2 flex-1 min-h-0">
-              <div className="flex-1 min-h-[40px] bg-[#1b2833]/10 rounded" />
-              <div className="flex-1 min-h-[40px] bg-[#1b2833]/10 rounded" />
-              <div className="flex-1 min-h-[40px] bg-[#1b2833]/10 rounded" />
+          {/* B) Last Week Rank Section */}
+          <section className="flex-shrink-0 flex flex-col py-3 px-4">
+            <p className="text-sm mb-3">Minulý týždeň si sa umiestnil:</p>
+            <div className="flex flex-row gap-2 w-full">
+              <div className="flex-1 flex flex-col items-center border border-[#1b2833] rounded-full py-3 px-2">
+                <p className="text-xs opacity-80 mb-1">MYJAVA</p>
+                <p className="font-bold text-lg">#8</p>
+              </div>
+              <div className="flex-1 flex flex-col items-center border border-[#1b2833] rounded-full py-3 px-2">
+                <p className="text-xs opacity-80 mb-1">SLOVENSKO</p>
+                <p className="font-bold text-lg">#8</p>
+              </div>
+              <div className="flex-1 flex flex-col items-center border border-[#1b2833] rounded-full py-3 px-2">
+                <p className="text-xs opacity-80 mb-1">TVOJE MESTO</p>
+                <p className="font-bold text-lg">#8</p>
+              </div>
             </div>
           </section>
 
@@ -147,7 +158,7 @@ export default function Home() {
               NASTAVENIA
             </button>
           </section>
-        </>
+        </div>
       )}
     </div>
   );
