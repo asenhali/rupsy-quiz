@@ -8,6 +8,13 @@ export default function FriendsPage() {
   const [loading, setLoading] = useState(true);
   const [pendingCount, setPendingCount] = useState(0);
   const [user, setUser] = useState<{ rupsyId?: string } | null>(null);
+  const [addFriendInput, setAddFriendInput] = useState("");
+  const [addFriendMessage, setAddFriendMessage] = useState<{
+    type: "success" | "error";
+    text: string;
+  } | null>(null);
+
+  const RUPSY_ID_REGEX = /^RUPSY-[ABCDEFGHJKLMNPQRTUVWXYZ2346789]{5}$/;
 
   useEffect(() => {
     async function load() {
@@ -68,6 +75,68 @@ export default function FriendsPage() {
               </button>
             )}
           </div>
+        </div>
+
+        <div className="mb-4">
+          <p className="text-sm opacity-90 mb-2">Pridať priateľa</p>
+          <form
+            onSubmit={async (e) => {
+              e.preventDefault();
+              setAddFriendMessage(null);
+              const value = addFriendInput.trim();
+              if (!RUPSY_ID_REGEX.test(value)) {
+                setAddFriendMessage({
+                  type: "error",
+                  text: "Neplatný formát RUPSY ID",
+                });
+                return;
+              }
+              const res = await fetch("/api/friends/request", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                credentials: "include",
+                body: JSON.stringify({ rupsyId: value }),
+              });
+              const json = await res.json();
+              if (json.success) {
+                setAddFriendMessage({ type: "success", text: "Žiadosť odoslaná" });
+                setAddFriendInput("");
+              } else if (res.status === 400 || res.status === 404) {
+                setAddFriendMessage({
+                  type: "error",
+                  text: json.message ?? "Chyba",
+                });
+              }
+            }}
+            className="flex flex-col gap-2"
+          >
+            <input
+              type="text"
+              value={addFriendInput}
+              onChange={(e) =>
+                setAddFriendInput(e.target.value.toUpperCase())
+              }
+              placeholder="Zadaj RUPSY ID"
+              className="p-2 border border-[#1b2833]/20 rounded-xl bg-white/50"
+            />
+            <button
+              type="submit"
+              className="w-full py-2 bg-[#1b2833]/5 text-[#1b2833] rounded-xl font-medium border-0"
+            >
+              Pridať
+            </button>
+          </form>
+          {addFriendMessage && (
+            <p
+              className={
+                addFriendMessage.type === "success"
+                  ? "text-sm text-green-700 mt-2"
+                  : "text-sm text-red-600 mt-2"
+              }
+            >
+              {addFriendMessage.text}
+            </p>
+          )}
         </div>
 
         <button
