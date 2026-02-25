@@ -74,16 +74,16 @@ export default function Home() {
               value={nickname}
               onChange={(e) => setNickname(e.target.value)}
               placeholder="nickname"
-              className="p-2 border rounded"
+              className="p-2 border border-[#1b2833]/20 rounded-xl bg-white/50"
             />
             <input
               type="text"
               value={city}
               onChange={(e) => setCity(e.target.value)}
               placeholder="city"
-              className="p-2 border rounded"
+              className="p-2 border border-[#1b2833]/20 rounded-xl bg-white/50"
             />
-            <button type="submit" className="p-2 bg-[#1b2833] text-[#f3e6c0] rounded">
+            <button type="submit" className="p-2 bg-[#1b2833] text-[#f3e6c0] rounded-2xl font-semibold shadow-[0_2px_8px_rgba(27,40,51,0.15)]">
               Začať hrať
             </button>
           </form>
@@ -97,12 +97,12 @@ export default function Home() {
             <img
               src={avatarMap[user?.avatarId ?? ""] || avatarMap.default}
               alt="avatar"
-              className="w-[90px] h-[90px] rounded-full object-cover flex-shrink-0"
+              className="w-[90px] h-[90px] rounded-full object-cover flex-shrink-0 shadow-[0_2px_8px_rgba(27,40,51,0.1)]"
             />
             <div className="flex-1 flex flex-col justify-center min-w-0">
-              <p className="font-bold text-lg">{user?.nickname ?? ""}</p>
-              <p className="text-sm opacity-80">Level {user?.level ?? 1}</p>
-              <div className="w-full h-2 bg-[#1b2833]/20 rounded-full mt-1 overflow-hidden">
+              <p className="font-bold text-lg tracking-tight">{user?.nickname ?? ""}</p>
+              <p className="text-xs font-normal opacity-60">Level {user?.level ?? 1}</p>
+              <div className="w-full h-2 bg-[#1b2833]/15 rounded-full mt-1 overflow-hidden">
                 <div
                   className="h-full bg-[#1b2833] rounded-full"
                   style={{ width: `${(user?.totalXP ?? 0) % 100}%` }}
@@ -113,28 +113,28 @@ export default function Home() {
 
           {/* B) Last Week Rank Section */}
           <section className="flex-shrink-0 flex flex-col py-3 px-4 pb-8">
-            <p className="text-sm mb-3">Minulý týždeň si sa umiestnil:</p>
+            <p className="text-sm mb-3 tracking-wide opacity-90">Minulý týždeň si sa umiestnil:</p>
             <div className="flex flex-row items-end gap-2 w-full">
-              <div className="flex-1 flex flex-col items-center border border-[#1b2833] rounded-full py-2 px-2 mt-4">
-                <p className="text-xs opacity-80 mb-1">
+              <div className="flex-1 flex flex-col items-center bg-[#1b2833]/5 rounded-3xl py-2 px-2 mt-4 shadow-[0_1px_3px_rgba(27,40,51,0.06)]">
+                <p className="text-xs opacity-70 mb-1">
                   {(user?.city ?? "Tvoje mesto").toUpperCase()}
                 </p>
-                <p className="font-bold text-base">#8</p>
+                <p className="font-extrabold text-lg">#8</p>
               </div>
-              <div className="flex-[1.2] flex flex-col items-center border border-[#1b2833] rounded-full py-4 px-3">
-                <p className="text-xs opacity-80 mb-1">SLOVENSKO</p>
-                <p className="font-bold text-xl">#8</p>
+              <div className="flex-[1.2] flex flex-col items-center bg-[#1b2833]/8 rounded-3xl py-4 px-3 shadow-[0_2px_8px_rgba(27,40,51,0.1)]">
+                <p className="text-xs opacity-70 mb-1">SLOVENSKO</p>
+                <p className="font-extrabold text-2xl">#8</p>
               </div>
-              <div className="flex-1 flex flex-col items-center border border-[#1b2833] rounded-full py-2 px-2 mt-4">
-                <p className="text-xs opacity-80 mb-1">TVOJE MESTO</p>
-                <p className="font-bold text-base">#8</p>
+              <div className="flex-1 flex flex-col items-center bg-[#1b2833]/5 rounded-3xl py-2 px-2 mt-4 shadow-[0_1px_3px_rgba(27,40,51,0.06)]">
+                <p className="text-xs opacity-70 mb-1">TVOJE MESTO</p>
+                <p className="font-extrabold text-lg">#8</p>
               </div>
             </div>
           </section>
 
           {/* C) Countdown Section */}
           <section className="flex-shrink-0 py-6 px-4 text-center">
-            <p className="text-sm">Placeholder countdown</p>
+            <p className="text-sm opacity-80">Placeholder countdown</p>
           </section>
 
           {/* D) Action Section */}
@@ -142,21 +142,21 @@ export default function Home() {
             <button
               type="button"
               onClick={() => console.log("PLAY")}
-              className="w-full py-4 bg-[#1b2833] text-[#f3e6c0] rounded font-semibold"
+              className="w-full py-4 bg-[#1b2833] text-[#f3e6c0] rounded-2xl font-semibold shadow-[0_2px_12px_rgba(27,40,51,0.2)]"
             >
               HRÁŤ KVÍZ
             </button>
             <button
               type="button"
               onClick={() => console.log("LEADERBOARD")}
-              className="w-full py-2 border border-[#1b2833] rounded"
+              className="w-full py-2 bg-[#1b2833]/5 text-[#1b2833] rounded-xl font-medium border-0"
             >
               LEADERBOARD
             </button>
             <button
               type="button"
               onClick={() => console.log("SETTINGS")}
-              className="w-full py-2 border border-[#1b2833] rounded"
+              className="w-full py-2 bg-[#1b2833]/5 text-[#1b2833] rounded-xl font-medium border-0"
             >
               NASTAVENIA
             </button>
