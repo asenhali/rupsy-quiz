@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { cookies } from "next/headers";
 import jwt from "jsonwebtoken";
 import { FieldValue } from "firebase-admin/firestore";
 import { db } from "@/lib/firebaseAdmin";
@@ -6,7 +7,13 @@ import { db } from "@/lib/firebaseAdmin";
 export async function POST(request: Request) {
   try {
     const authHeader = request.headers.get("authorization");
-    const token = authHeader?.startsWith("Bearer ") ? authHeader.slice(7) : null;
+    let token =
+      authHeader?.startsWith("Bearer ") ? authHeader.slice(7) : null;
+
+    if (!token) {
+      const cookieStore = await cookies();
+      token = cookieStore.get("rupsy_token")?.value ?? null;
+    }
 
     if (!token) {
       return NextResponse.json(
