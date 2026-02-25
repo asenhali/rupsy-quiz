@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import jwt from "jsonwebtoken";
-import { getFirestore } from "firebase-admin/firestore";
-import { initFirebaseAdmin } from "@/lib/firebaseAdmin";
+import { db } from "@/lib/firebaseAdmin";
 
 export async function GET(request: Request) {
   try {
@@ -32,25 +31,6 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    let firebaseApp;
-    try {
-      firebaseApp = initFirebaseAdmin();
-    } catch (err) {
-      console.error("FIREBASE INIT ERROR:", err);
-      return NextResponse.json(
-        { error: "Firebase init failed", details: (err as Error).message },
-        { status: 500 }
-      );
-    }
-    if (!firebaseApp) {
-      return NextResponse.json(
-        { error: "Firebase not initialized" },
-        { status: 500 }
-      );
-    }
-
-    const db = getFirestore(firebaseApp);
-    db.settings({ preferRest: true });
     const userDoc = await db
       .collection("users")
       .doc(decoded.wixUserId)

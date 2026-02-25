@@ -1,18 +1,15 @@
-import { initializeApp, getApps, cert, type App } from "firebase-admin/app";
+import admin from "firebase-admin";
 
-export function initFirebaseAdmin(): App | null {
-  if (getApps().length > 0) {
-    return getApps()[0] as App;
-  }
-
+if (!admin.apps.length) {
   const base64 = process.env.FIREBASE_SERVICE_ACCOUNT_BASE64;
-  if (!base64) return null;
-
-  const json = JSON.parse(
-    Buffer.from(base64, "base64").toString("utf-8")
-  );
-
-  return initializeApp({
-    credential: cert(json),
-  });
+  if (base64) {
+    const parsedServiceAccount = JSON.parse(
+      Buffer.from(base64, "base64").toString("utf-8")
+    );
+    admin.initializeApp({
+      credential: admin.credential.cert(parsedServiceAccount),
+    });
+  }
 }
+
+export const db = admin.firestore();

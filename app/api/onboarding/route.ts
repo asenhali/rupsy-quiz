@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import jwt from "jsonwebtoken";
-import { getFirestore, FieldValue } from "firebase-admin/firestore";
-import { initFirebaseAdmin } from "@/lib/firebaseAdmin";
+import { FieldValue } from "firebase-admin/firestore";
+import { db } from "@/lib/firebaseAdmin";
 
 export async function POST(request: Request) {
   try {
@@ -75,25 +75,6 @@ export async function POST(request: Request) {
 
     const wixUserId = decoded.wixUserId;
 
-    let firebaseApp;
-    try {
-      firebaseApp = initFirebaseAdmin();
-    } catch (err) {
-      console.error("FIREBASE INIT ERROR:", err);
-      return NextResponse.json(
-        { success: false, message: "Firebase init failed" },
-        { status: 500 }
-      );
-    }
-    if (!firebaseApp) {
-      return NextResponse.json(
-        { success: false, message: "Firebase not initialized" },
-        { status: 500 }
-      );
-    }
-
-    const db = getFirestore(firebaseApp);
-    db.settings({ preferRest: true });
     await db.collection("users").doc(wixUserId).set({
       wixUserId,
       nickname,
