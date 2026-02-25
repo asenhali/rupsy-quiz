@@ -62,20 +62,26 @@ export async function POST(request: Request) {
       );
     }
 
-    const toUserId = rupsyId;
+    const snapshot = await db
+      .collection("users")
+      .where("rupsyId", "==", rupsyId)
+      .limit(1)
+      .get();
+
+    if (snapshot.empty) {
+      return NextResponse.json(
+        { success: false, message: "User not found" },
+        { status: 404 }
+      );
+    }
+
+    const targetDoc = snapshot.docs[0];
+    const toUserId = targetDoc.id;
 
     if (fromUserId === toUserId) {
       return NextResponse.json(
         { success: false, message: "Cannot send request to yourself" },
         { status: 400 }
-      );
-    }
-
-    const targetDoc = await db.collection("users").doc(toUserId).get();
-    if (!targetDoc.exists) {
-      return NextResponse.json(
-        { success: false, message: "User not found" },
-        { status: 404 }
       );
     }
 
