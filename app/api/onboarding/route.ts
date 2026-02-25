@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 import jwt from "jsonwebtoken";
+import { getFirestore, FieldValue } from "firebase-admin/firestore";
+import { initFirebaseAdmin } from "@/lib/firebaseAdmin";
 
 export async function POST(request: Request) {
   try {
@@ -71,11 +73,43 @@ export async function POST(request: Request) {
       );
     }
 
-    return NextResponse.json({
-      success: true,
-      message: "Input valid",
+    const wixUserId = decoded.wixUserId;
+
+    let firebaseApp;
+    try {
+      firebaseApp = initFirebaseAdmin();
+    } catch (err) {
+      console.error("FIREBASE INIT ERROR:", err);
+      return NextResponse.json(
+        { success: false, message: "Firebase init failed" },
+        { status: 500 }
+      );
+    }
+    if (!firebaseApp) {
+      return NextResponse.json(
+        { success: false, message: "Firebase not initialized" },
+        { status: 500 }
+      );
+    }
+
+    const db = getFirestore(firebaseApp);
+    db.settings({ preferRest: true });
+    await db.collection("users").doc(wixUserId).set({
+      wixUserId,
       nickname,
       city,
+      avatarId: "default",
+      totalXP: 0,
+      totalPoints: 0,
+      level: 1,
+      totalGames: 0,
+      totalCorrect: 0,
+      createdAt: FieldValue.serverTimestamp(),
+    });
+
+    return NextResponse.json({
+      success: true,
+      message: "User onboarded",
     });
   } catch (err) {
     return NextResponse.json(
