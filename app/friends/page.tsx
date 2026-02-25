@@ -7,7 +7,7 @@ export default function FriendsPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [pendingCount, setPendingCount] = useState(0);
-  const [user, setUser] = useState<{ rupsyId?: string; wixUserId?: string } | null>(null);
+  const [user, setUser] = useState<{ rupsyId?: string } | null>(null);
 
   useEffect(() => {
     async function load() {
@@ -31,7 +31,7 @@ export default function FriendsPage() {
     load();
   }, [router]);
 
-  const rupsyId = user?.rupsyId ?? user?.wixUserId ?? "—";
+  const rupsyId = user?.rupsyId ?? "";
 
   if (loading) {
     return (
@@ -58,13 +58,15 @@ export default function FriendsPage() {
           <p className="text-sm opacity-90 mb-2">Tvoje RUPSY ID</p>
           <div className="flex items-center gap-2">
             <p className="font-bold text-lg">{rupsyId}</p>
-            <button
-              type="button"
-              onClick={() => navigator.clipboard.writeText(rupsyId)}
-              className="p-1.5 rounded-lg bg-[#1b2833]/10 text-[#1b2833] text-xs"
-            >
-              Kopírovať
-            </button>
+            {rupsyId && (
+              <button
+                type="button"
+                onClick={() => navigator.clipboard.writeText(rupsyId)}
+                className="p-1.5 rounded-lg bg-[#1b2833]/10 text-[#1b2833] text-xs"
+              >
+                Kopírovať
+              </button>
+            )}
           </div>
         </div>
 
