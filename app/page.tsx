@@ -4,11 +4,8 @@ import { useEffect, useState } from "react";
 
 export default function Home() {
   const [token, setToken] = useState<string | null>(null);
-  const [meData, setMeData] = useState<{
-    success?: boolean;
-    needsOnboarding?: boolean;
-    user?: unknown;
-  } | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [needsOnboarding, setNeedsOnboarding] = useState<boolean | null>(null);
 
   useEffect(() => {
     async function handleMessage(event: MessageEvent) {
@@ -16,11 +13,13 @@ export default function Home() {
 
       if (event.data?.token) {
         setToken(event.data.token);
+        setLoading(true);
         const res = await fetch("/api/me", {
           headers: { Authorization: `Bearer ${event.data.token}` },
         });
         const json = await res.json();
-        setMeData(json);
+        setNeedsOnboarding(json.needsOnboarding ?? null);
+        setLoading(false);
       }
     }
 
@@ -40,13 +39,14 @@ export default function Home() {
           </p>
         )}
 
-        {token && (
-          <div>
-            <h1 className="text-2xl font-bold mb-4">RUPSY KVÍZ</h1>
-            <p className="text-green-600 font-semibold">
-              Identity connected ✅
-            </p>
-          </div>
+        {token && loading && <p>Loading...</p>}
+
+        {token && !loading && needsOnboarding === true && (
+          <div>ONBOARDING REQUIRED</div>
+        )}
+
+        {token && !loading && needsOnboarding === false && (
+          <div>MAIN MENU</div>
         )}
       </div>
     </div>
