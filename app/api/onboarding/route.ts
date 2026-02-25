@@ -4,6 +4,16 @@ import jwt from "jsonwebtoken";
 import { FieldValue } from "firebase-admin/firestore";
 import { db } from "@/lib/firebaseAdmin";
 
+const RUPSY_CHARS = "ABCDEFGHJKLMNPQRTUVWXYZ2346789";
+
+function generateRupsyId(): string {
+  let code = "";
+  for (let i = 0; i < 5; i++) {
+    code += RUPSY_CHARS[Math.floor(Math.random() * RUPSY_CHARS.length)];
+  }
+  return `RUPSY-${code}`;
+}
+
 export async function POST(request: Request) {
   try {
     const authHeader = request.headers.get("authorization");
@@ -82,8 +92,21 @@ export async function POST(request: Request) {
 
     const wixUserId = decoded.wixUserId;
 
+    let rupsyId: string;
+    let exists = true;
+    while (exists) {
+      rupsyId = generateRupsyId();
+      const existing = await db
+        .collection("users")
+        .where("rupsyId", "==", rupsyId)
+        .limit(1)
+        .get();
+      exists = !existing.empty;
+    }
+
     await db.collection("users").doc(wixUserId).set({
       wixUserId,
+      rupsyId,
       nickname,
       city,
       avatarId: "default",
