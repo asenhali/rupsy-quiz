@@ -39,8 +39,9 @@ export default function Home() {
   return (
     <div className="h-screen overflow-hidden flex flex-col bg-[#f3e6c0] text-[#1b2833]">
       {loading && (
-        <div className="flex-1 flex items-center justify-center p-6">
-          <p>Loading...</p>
+        <div className="flex-1 flex flex-col items-center justify-center p-6">
+          <div className="w-[90px] h-[90px] rounded-full bg-[#1b2833]/10 shrink-0" />
+          <p className="text-sm opacity-60 mt-4">Načítavanie...</p>
         </div>
       )}
 
