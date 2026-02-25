@@ -14,7 +14,7 @@ export default function FriendsPage() {
     text: string;
   } | null>(null);
 
-  const RUPSY_ID_REGEX = /^RUPSY-[ABCDEFGHJKLMNPQRTUVWXYZ2346789]{5}$/;
+  const CODE_REGEX = /^[ABCDEFGHJKLMNPQRTUVWXYZ2346789]{5}$/;
 
   useEffect(() => {
     async function load() {
@@ -83,19 +83,20 @@ export default function FriendsPage() {
             onSubmit={async (e) => {
               e.preventDefault();
               setAddFriendMessage(null);
-              const value = addFriendInput.trim();
-              if (!RUPSY_ID_REGEX.test(value)) {
+              const code = addFriendInput.trim().toUpperCase();
+              if (!CODE_REGEX.test(code)) {
                 setAddFriendMessage({
                   type: "error",
-                  text: "Neplatný formát RUPSY ID",
+                  text: "Zadaj 5 platných znakov",
                 });
                 return;
               }
+              const fullId = "RUPSY-" + code;
               const res = await fetch("/api/friends/request", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 credentials: "include",
-                body: JSON.stringify({ rupsyId: value }),
+                body: JSON.stringify({ rupsyId: fullId }),
               });
               const json = await res.json();
               if (json.success) {
@@ -110,15 +111,23 @@ export default function FriendsPage() {
             }}
             className="flex flex-col gap-2"
           >
-            <input
-              type="text"
-              value={addFriendInput}
-              onChange={(e) =>
-                setAddFriendInput(e.target.value.toUpperCase())
-              }
-              placeholder="Zadaj RUPSY ID"
-              className="p-2 border border-[#1b2833]/20 rounded-xl bg-white/50"
-            />
+            <div className="flex items-center gap-2">
+              <span className="p-2 text-[#1b2833] font-medium">RUPSY-</span>
+              <input
+                type="text"
+                value={addFriendInput}
+                onChange={(e) => {
+                  const filtered = e.target.value
+                    .toUpperCase()
+                    .replace(/[^ABCDEFGHJKLMNPQRTUVWXYZ2346789]/g, "")
+                    .slice(0, 5);
+                  setAddFriendInput(filtered);
+                }}
+                maxLength={5}
+                placeholder="XXXXX"
+                className="flex-1 p-2 border border-[#1b2833]/20 rounded-xl bg-white/50"
+              />
+            </div>
             <button
               type="submit"
               className="w-full py-2 bg-[#1b2833]/5 text-[#1b2833] rounded-xl font-medium border-0"
