@@ -4,24 +4,23 @@ import { useEffect, useState } from "react";
 
 export default function Home() {
   const [token, setToken] = useState<string | null>(null);
+  const [meData, setMeData] = useState<{
+    success?: boolean;
+    needsOnboarding?: boolean;
+    user?: unknown;
+  } | null>(null);
 
   useEffect(() => {
-    console.log("IFRAME SCRIPT LOADED");
-
     async function handleMessage(event: MessageEvent) {
-      console.log("EVENT ORIGIN:", event.origin);
-      console.log("EVENT DATA:", event.data);
-
       if (event.origin !== "https://www.rupsy.sk") return;
 
       if (event.data?.token) {
-        console.log("TOKEN RECEIVED:", event.data.token);
         setToken(event.data.token);
         const res = await fetch("/api/me", {
           headers: { Authorization: `Bearer ${event.data.token}` },
         });
         const json = await res.json();
-        console.log("API /api/me response:", json);
+        setMeData(json);
       }
     }
 
@@ -46,9 +45,6 @@ export default function Home() {
             <h1 className="text-2xl font-bold mb-4">RUPSY KVÍZ</h1>
             <p className="text-green-600 font-semibold">
               Identity connected ✅
-            </p>
-            <p className="text-xs mt-2 break-all text-gray-500">
-              {token}
             </p>
           </div>
         )}

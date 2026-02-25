@@ -5,7 +5,6 @@ import { initFirebaseAdmin } from "@/lib/firebaseAdmin";
 
 export async function GET(request: Request) {
   try {
-    console.log("AUTH HEADER RAW:", request.headers.get("authorization"));
     const authHeader = request.headers.get("authorization");
     const token = authHeader?.startsWith("Bearer ") ? authHeader.slice(7) : null;
 
@@ -14,16 +13,12 @@ export async function GET(request: Request) {
     }
 
     const secret = process.env.INTERNAL_WIX_SECRET;
-    console.log("SECRET LENGTH:", secret?.length);
-    console.log("SECRET VALUE START:", secret?.slice(0, 5));
-    console.log("SECRET VALUE END:", secret?.slice(-5));
     if (!secret) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     let decoded: { wixUserId: string };
     try {
-      console.log("NOW:", Math.floor(Date.now() / 1000));
       decoded = jwt.verify(token, secret) as { wixUserId: string };
     } catch (err) {
       console.error("JWT VERIFY ERROR:", err);
@@ -53,7 +48,6 @@ export async function GET(request: Request) {
         { status: 500 }
       );
     }
-    console.log("Firebase Admin initialized successfully");
 
     const db = getFirestore(firebaseApp);
     db.settings({ preferRest: true });
