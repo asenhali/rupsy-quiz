@@ -165,6 +165,7 @@ export default function FriendsPage() {
 
         <button
           type="button"
+          onClick={() => router.push("/friends/requests")}
           className="relative w-full py-2 bg-[#1b2833]/5 text-[#1b2833] rounded-xl font-medium border-0"
         >
           Žiadosti
