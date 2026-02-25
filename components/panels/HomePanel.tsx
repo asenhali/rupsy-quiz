@@ -2,16 +2,21 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import ProfileModal from "@/components/ProfileModal";
 
 export default function HomePanel() {
   const router = useRouter();
   const [needsOnboarding, setNeedsOnboarding] = useState<boolean | null>(null);
+  const [showProfile, setShowProfile] = useState(false);
   const [user, setUser] = useState<{
     nickname?: string;
     avatarId?: string;
     city?: string;
     level?: number;
     totalXP?: number;
+    totalPoints?: number;
+    totalGames?: number;
+    totalCorrect?: number;
   } | null>(null);
 
   const avatarMap: Record<string, string> = {
@@ -19,6 +24,19 @@ export default function HomePanel() {
   };
   const [nickname, setNickname] = useState("");
   const [city, setCity] = useState("");
+
+  async function handleAvatarChange(newAvatarId: string) {
+    const res = await fetch("/api/profile/update", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ avatarId: newAvatarId }),
+    });
+    const json = await res.json();
+    if (json.success) {
+      setUser((prev) => (prev ? { ...prev, avatarId: newAvatarId } : null));
+    }
+  }
 
   useEffect(() => {
     async function initAuth() {
@@ -85,11 +103,17 @@ export default function HomePanel() {
       {needsOnboarding !== true && (
         <div className="flex-1 flex flex-col w-full max-w-[480px] mx-auto pt-10">
           <section className="flex-shrink-0 flex flex-row items-center gap-4 py-2 px-4">
-            <img
-              src={avatarMap[user?.avatarId ?? ""] || avatarMap.default}
-              alt="avatar"
-              className="w-[72px] h-[72px] rounded-full object-cover flex-shrink-0 border-2 border-[#1b2833]/10"
-            />
+            <button
+              type="button"
+              onClick={() => setShowProfile(true)}
+              className="border-0 bg-transparent p-0 cursor-pointer flex-shrink-0"
+            >
+              <img
+                src={avatarMap[user?.avatarId ?? ""] || avatarMap.default}
+                alt="avatar"
+                className="w-[72px] h-[72px] rounded-full object-cover border-2 border-[#1b2833]/10"
+              />
+            </button>
             <div className="flex-1 flex flex-col justify-center min-w-0">
               <p className="text-xl font-semibold tracking-tight">{user?.nickname ?? ""}</p>
               <p className="text-xs font-medium uppercase tracking-widest opacity-40">Level {user?.level ?? 1}</p>
@@ -144,6 +168,13 @@ export default function HomePanel() {
           </section>
         </div>
       )}
+
+      <ProfileModal
+        isOpen={showProfile}
+        onClose={() => setShowProfile(false)}
+        user={user}
+        onAvatarChange={handleAvatarChange}
+      />
     </div>
   );
 }
