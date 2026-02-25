@@ -3,6 +3,7 @@
 import { usePathname, useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef } from "react";
 import { motion, useMotionValue, useSpring, PanInfo } from "framer-motion";
+import { SwipeProvider, useSwipeContext } from "@/context/SwipeContext";
 
 export interface PanelDef {
   route: string;
@@ -23,8 +24,9 @@ function getViewportWidth() {
   return Math.min(window.innerWidth, 480);
 }
 
-export default function AppView({ panels, showDots = false }: AppViewProps) {
+function AppViewInner({ panels, showDots = false }: AppViewProps) {
   const pathname = usePathname();
+  const { swipeDisabled } = useSwipeContext();
   const router = useRouter();
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -85,7 +87,7 @@ export default function AppView({ panels, showDots = false }: AppViewProps) {
           width: `${panelCount * 100}%`,
           x: springX,
         }}
-        drag="x"
+        drag={swipeDisabled ? false : "x"}
         dragConstraints={containerRef}
         dragElastic={0.15}
         dragDirectionLock
@@ -103,5 +105,13 @@ export default function AppView({ panels, showDots = false }: AppViewProps) {
         ))}
       </motion.div>
     </div>
+  );
+}
+
+export default function AppView(props: AppViewProps) {
+  return (
+    <SwipeProvider>
+      <AppViewInner {...props} />
+    </SwipeProvider>
   );
 }

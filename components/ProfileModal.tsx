@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { AVAILABLE_AVATARS } from "@/config/avatars";
+import { useSwipeContext } from "@/context/SwipeContext";
 
 type ProfileUser = {
   nickname?: string;
@@ -29,6 +30,12 @@ export default function ProfileModal({
   onAvatarChange,
 }: ProfileModalProps) {
   const [showAvatarPicker, setShowAvatarPicker] = useState(false);
+  const { setSwipeDisabled } = useSwipeContext();
+
+  useEffect(() => {
+    setSwipeDisabled(isOpen);
+    return () => setSwipeDisabled(false);
+  }, [isOpen, setSwipeDisabled]);
 
   if (!isOpen) return null;
 
@@ -36,7 +43,7 @@ export default function ProfileModal({
   const avatarSrc = `/avatars/${avatarId}.png`;
 
   return (
-    <div className="fixed inset-0 z-[60] bg-[#f3e6c0] flex justify-center">
+    <div className="fixed inset-0 z-[60] bg-[#f3e6c0] flex justify-center touch-none">
       <div className="w-full max-w-[480px] h-full flex flex-col overflow-y-auto">
       <div className="flex-shrink-0 pt-10 px-4 flex items-center gap-3 mb-2">
         <button
@@ -103,15 +110,26 @@ export default function ProfileModal({
       </div>
 
       <div className="flex-shrink-0 px-4 py-6">
-        <p className="text-xs font-semibold uppercase tracking-widest opacity-40 mb-4">ŠTATISTIKY</p>
+        <p className="text-xs font-semibold uppercase tracking-widest opacity-40 mb-4">UMIESTNENIA</p>
+        <div className="grid grid-cols-3 gap-2">
+          <div className="rounded-2xl bg-white/40 border border-[#1b2833]/[0.06] p-3 flex flex-col items-center">
+            <span className="text-[9px] uppercase tracking-widest opacity-40 font-medium mb-1 text-center leading-tight">SLOVENSKO</span>
+            <span className="text-xl font-bold">—</span>
+          </div>
+          <div className="rounded-2xl bg-white/40 border border-[#1b2833]/[0.06] p-3 flex flex-col items-center">
+            <span className="text-[9px] uppercase tracking-widest opacity-40 font-medium mb-1 text-center leading-tight">{(user?.city ?? "").toUpperCase() || "MESTO"}</span>
+            <span className="text-xl font-bold">—</span>
+          </div>
+          <div className="rounded-2xl bg-white/40 border border-[#1b2833]/[0.06] p-3 flex flex-col items-center">
+            <span className="text-[9px] uppercase tracking-widest opacity-40 font-medium mb-1 text-center leading-tight">MESTÁ</span>
+            <span className="text-xl font-bold">—</span>
+          </div>
+        </div>
+        <p className="text-xs font-semibold uppercase tracking-widest opacity-40 mb-4 mt-6">ŠTATISTIKY</p>
         <div className="grid grid-cols-2 gap-3">
           <div className="rounded-2xl bg-white/40 border border-[#1b2833]/[0.06] p-4 flex flex-col items-center">
             <span className="text-[10px] uppercase tracking-widest opacity-40 font-medium mb-1">LEVEL</span>
             <span className="text-2xl font-bold">{user?.level ?? 1}</span>
-          </div>
-          <div className="rounded-2xl bg-white/40 border border-[#1b2833]/[0.06] p-4 flex flex-col items-center">
-            <span className="text-[10px] uppercase tracking-widest opacity-40 font-medium mb-1">CELKOVÉ XP</span>
-            <span className="text-2xl font-bold">{user?.totalXP ?? 0}</span>
           </div>
           <div className="rounded-2xl bg-white/40 border border-[#1b2833]/[0.06] p-4 flex flex-col items-center">
             <span className="text-[10px] uppercase tracking-widest opacity-40 font-medium mb-1">ODOHRANÝCH HIER</span>
@@ -120,6 +138,10 @@ export default function ProfileModal({
           <div className="rounded-2xl bg-white/40 border border-[#1b2833]/[0.06] p-4 flex flex-col items-center">
             <span className="text-[10px] uppercase tracking-widest opacity-40 font-medium mb-1">SPRÁVNYCH ODPOVEDÍ</span>
             <span className="text-2xl font-bold">{user?.totalCorrect ?? 0}</span>
+          </div>
+          <div className="rounded-2xl bg-white/40 border border-[#1b2833]/[0.06] p-4 flex flex-col items-center">
+            <span className="text-[10px] uppercase tracking-widest opacity-40 font-medium mb-1">CELKOVÉ XP</span>
+            <span className="text-2xl font-bold">{user?.totalXP ?? 0}</span>
           </div>
         </div>
       </div>
