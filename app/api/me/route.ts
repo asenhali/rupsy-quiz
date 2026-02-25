@@ -1,14 +1,24 @@
 import { NextResponse } from "next/server";
+import { cookies } from "next/headers";
 import jwt from "jsonwebtoken";
 import { db } from "@/lib/firebaseAdmin";
 
 export async function GET(request: Request) {
   try {
     const authHeader = request.headers.get("authorization");
-    const token = authHeader?.startsWith("Bearer ") ? authHeader.slice(7) : null;
+    let token =
+      authHeader?.startsWith("Bearer ") ? authHeader.slice(7) : null;
 
     if (!token) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      const cookieStore = await cookies();
+      token = cookieStore.get("rupsy_token")?.value ?? null;
+    }
+
+    if (!token) {
+      return NextResponse.json(
+        { success: false, message: "Unauthorized" },
+        { status: 401 }
+      );
     }
 
     const secret = process.env.INTERNAL_WIX_SECRET;
