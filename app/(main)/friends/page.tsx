@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 
 export default function FriendsPage() {
   const router = useRouter();
-  const [loading, setLoading] = useState(true);
   const [pendingCount, setPendingCount] = useState(0);
   const [user, setUser] = useState<{ rupsyId?: string } | null>(null);
   const [addFriendInput, setAddFriendInput] = useState("");
@@ -43,22 +42,11 @@ export default function FriendsPage() {
       if (countJson.success) {
         setPendingCount(countJson.pendingCount ?? 0);
       }
-      setLoading(false);
     }
     load();
   }, [router]);
 
   const rupsyId = user?.rupsyId ?? "";
-
-  if (loading) {
-    return (
-      <div className="h-screen overflow-hidden flex flex-col bg-[#f3e6c0] text-[#1b2833]">
-        <div className="flex-1 flex items-center justify-center p-6">
-          <p>Loading...</p>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="h-screen overflow-hidden flex flex-col bg-[#f3e6c0] text-[#1b2833]">
