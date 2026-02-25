@@ -92,9 +92,9 @@ export async function POST(request: Request) {
 
     const wixUserId = decoded.wixUserId;
 
-    let rupsyId: string;
-    let exists = true;
-    while (exists) {
+    let rupsyId = "";
+    let exists: boolean;
+    do {
       rupsyId = generateRupsyId();
       const existing = await db
         .collection("users")
@@ -102,7 +102,7 @@ export async function POST(request: Request) {
         .limit(1)
         .get();
       exists = !existing.empty;
-    }
+    } while (exists);
 
     await db.collection("users").doc(wixUserId).set({
       wixUserId,
