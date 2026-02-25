@@ -56,25 +56,56 @@ export async function GET() {
         .get(),
     ]);
 
-    const incoming = incomingSnapshot.docs.map((doc) => {
+    const incomingRequests = incomingSnapshot.docs.map((doc) => {
       const data = doc.data();
-      return {
-        requestId: doc.id,
-        fromUserId: data.fromUserId,
-        toUserId: data.toUserId,
-        createdAt: data.createdAt,
-      };
+      return { requestId: doc.id, fromUserId: data.fromUserId as string };
     });
 
-    const outgoing = outgoingSnapshot.docs.map((doc) => {
+    const outgoingRequests = outgoingSnapshot.docs.map((doc) => {
       const data = doc.data();
-      return {
-        requestId: doc.id,
-        fromUserId: data.fromUserId,
-        toUserId: data.toUserId,
-        createdAt: data.createdAt,
-      };
+      return { requestId: doc.id, toUserId: data.toUserId as string };
     });
+
+    const userIdsToFetch = [
+      ...new Set([
+        ...incomingRequests.map((r) => r.fromUserId),
+        ...outgoingRequests.map((r) => r.toUserId),
+      ]),
+    ];
+
+    const userDocs =
+      userIdsToFetch.length > 0
+        ? await Promise.all(
+            userIdsToFetch.map((id) =>
+              db.collection("users").doc(id).get()
+            )
+          )
+        : [];
+
+    const userMap = new Map<
+      string,
+      { rupsyId?: string; nickname?: string; city?: string; level?: number }
+    >();
+    userIdsToFetch.forEach((id, i) => {
+      const doc = userDocs[i];
+      const data = doc?.data();
+      userMap.set(id, {
+        rupsyId: data?.rupsyId,
+        nickname: data?.nickname,
+        city: data?.city,
+        level: data?.level,
+      });
+    });
+
+    const incoming = incomingRequests.map((r) => ({
+      requestId: r.requestId,
+      user: userMap.get(r.fromUserId) ?? {},
+    }));
+
+    const outgoing = outgoingRequests.map((r) => ({
+      requestId: r.requestId,
+      user: userMap.get(r.toUserId) ?? {},
+    }));
 
     return NextResponse.json({
       success: true,
