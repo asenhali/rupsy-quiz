@@ -3,11 +3,16 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
+type RequestUser = {
+  rupsyId?: string;
+  nickname?: string;
+  city?: string;
+  level?: number;
+};
+
 type RequestItem = {
   requestId: string;
-  fromUserId: string;
-  toUserId: string;
-  createdAt?: unknown;
+  user: RequestUser;
 };
 
 export default function FriendsRequestsPage() {
@@ -88,9 +93,14 @@ export default function FriendsRequestsPage() {
                   className="flex items-center gap-3 p-3 rounded-xl bg-white/50 border border-[#1b2833]/10"
                 >
                   <div className="w-10 h-10 rounded-full bg-[#1b2833]/15 shrink-0" />
-                  <span className="flex-1 font-medium truncate">
-                    {r.fromUserId}
-                  </span>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium truncate">
+                      {r.user?.nickname ?? r.user?.rupsyId ?? "—"}
+                    </p>
+                    <p className="text-sm opacity-60">
+                      {r.user?.rupsyId ?? ""}
+                    </p>
+                  </div>
                   <div className="flex gap-2 shrink-0">
                     <button
                       type="button"
@@ -128,7 +138,12 @@ export default function FriendsRequestsPage() {
                 >
                   <div className="w-10 h-10 rounded-full bg-[#1b2833]/15 shrink-0" />
                   <div className="flex-1 min-w-0">
-                    <p className="font-medium truncate">{r.toUserId}</p>
+                    <p className="font-medium truncate">
+                      {r.user?.nickname ?? r.user?.rupsyId ?? "—"}
+                    </p>
+                    <p className="text-sm opacity-60">
+                      {r.user?.rupsyId ?? ""}
+                    </p>
                     <p className="text-sm opacity-60">Čaká na schválenie</p>
                   </div>
                 </li>
