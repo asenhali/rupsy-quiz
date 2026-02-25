@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 
 export default function Home() {
   const [token, setToken] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [needsOnboarding, setNeedsOnboarding] = useState<boolean | null>(null);
   const [user, setUser] = useState<{
     nickname?: string;
@@ -18,6 +18,21 @@ export default function Home() {
   };
   const [nickname, setNickname] = useState("");
   const [city, setCity] = useState("");
+
+  useEffect(() => {
+    async function tryCookieAuth() {
+      setLoading(true);
+      const res = await fetch("/api/me", { credentials: "include" });
+      const json = await res.json();
+      if (res.ok && json.success) {
+        setToken("cookie");
+        setNeedsOnboarding(json.needsOnboarding ?? null);
+        setUser(json.user ?? null);
+      }
+      setLoading(false);
+    }
+    tryCookieAuth();
+  }, []);
 
   useEffect(() => {
     async function handleMessage(event: MessageEvent) {
@@ -62,18 +77,25 @@ export default function Home() {
           <form
             onSubmit={async (e) => {
               e.preventDefault();
+              const headers: Record<string, string> = {
+                "Content-Type": "application/json",
+              };
+              if (token && token !== "cookie") {
+                headers.Authorization = `Bearer ${token}`;
+              }
               const res = await fetch("/api/onboarding", {
                 method: "POST",
-                headers: {
-                  Authorization: `Bearer ${token}`,
-                  "Content-Type": "application/json",
-                },
+                headers,
+                credentials: "include",
                 body: JSON.stringify({ nickname, city }),
               });
               const response = await res.json();
               if (response.success) {
                 const meRes = await fetch("/api/me", {
-                  headers: { Authorization: `Bearer ${token}` },
+                  credentials: "include",
+                  ...(token && token !== "cookie"
+                    ? { headers: { Authorization: `Bearer ${token}` } }
+                    : {}),
                 });
                 const meJson = await meRes.json();
                 setNeedsOnboarding(meJson.needsOnboarding ?? false);
