@@ -17,12 +17,12 @@ export default function MainLayout({
         <AnimatePresence mode="wait">
           <motion.div
             key={pathname}
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -8 }}
+            initial={{ x: 40, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            exit={{ x: -40, opacity: 0 }}
             transition={{
-              duration: 0.2,
-              ease: "easeInOut",
+              duration: 0.22,
+              ease: [0.4, 0.0, 0.2, 1],
             }}
           >
             {children}
