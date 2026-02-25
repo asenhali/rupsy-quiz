@@ -142,7 +142,6 @@ export default function FriendsPanel() {
           </div>
 
           <div className="mb-4">
-            <p className="text-xs font-medium uppercase tracking-widest opacity-40 mb-2">Pridať priateľa</p>
             <form
               onSubmit={async (e) => {
                 e.preventDefault();
@@ -369,7 +368,7 @@ export default function FriendsPanel() {
           <button
             type="button"
             onClick={() => setView("addFriend")}
-            className="w-full py-3 bg-[#1b2833]/5 text-[#1b2833] rounded-2xl font-medium border-0 text-center"
+            className="w-full py-3 bg-[#1b2833] text-[#f3e6c0] rounded-2xl font-medium border-0 text-center"
           >
             Pridať priateľa
           </button>
