@@ -39,9 +39,43 @@ export async function POST(request: Request) {
       );
     }
 
+    let body: { nickname?: unknown; city?: unknown };
+    try {
+      body = await request.json();
+    } catch {
+      return NextResponse.json(
+        { success: false, message: "Invalid input" },
+        { status: 400 }
+      );
+    }
+
+    const { nickname: rawNickname, city: rawCity } = body;
+
+    if (
+      typeof rawNickname !== "string" ||
+      typeof rawCity !== "string"
+    ) {
+      return NextResponse.json(
+        { success: false, message: "Invalid input" },
+        { status: 400 }
+      );
+    }
+
+    const nickname = rawNickname.trim();
+    const city = rawCity.trim();
+
+    if (nickname.length < 2 || nickname.length > 20) {
+      return NextResponse.json(
+        { success: false, message: "Invalid nickname length" },
+        { status: 400 }
+      );
+    }
+
     return NextResponse.json({
       success: true,
-      message: "Token valid",
+      message: "Input valid",
+      nickname,
+      city,
     });
   } catch (err) {
     return NextResponse.json(
