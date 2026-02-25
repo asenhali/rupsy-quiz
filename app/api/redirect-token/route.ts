@@ -16,8 +16,8 @@ export async function GET(request: Request) {
 
   response.cookies.set("rupsy_token", token, {
     httpOnly: true,
-    sameSite: "lax",
-    secure: process.env.NODE_ENV === "production",
+    secure: true,
+    sameSite: "none",
     path: "/",
     maxAge: 60 * 60 * 2, // 2 hours
   });
