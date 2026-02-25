@@ -6,6 +6,8 @@ export default function Home() {
   const [token, setToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [needsOnboarding, setNeedsOnboarding] = useState<boolean | null>(null);
+  const [nickname, setNickname] = useState("");
+  const [city, setCity] = useState("");
 
   useEffect(() => {
     async function handleMessage(event: MessageEvent) {
@@ -42,7 +44,26 @@ export default function Home() {
         {token && loading && <p>Loading...</p>}
 
         {token && !loading && needsOnboarding === true && (
-          <div>ONBOARDING REQUIRED</div>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              console.log({ nickname, city });
+            }}
+          >
+            <input
+              type="text"
+              value={nickname}
+              onChange={(e) => setNickname(e.target.value)}
+              placeholder="nickname"
+            />
+            <input
+              type="text"
+              value={city}
+              onChange={(e) => setCity(e.target.value)}
+              placeholder="city"
+            />
+            <button type="submit">Začať hrať</button>
+          </form>
         )}
 
         {token && !loading && needsOnboarding === false && (
