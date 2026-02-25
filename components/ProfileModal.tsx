@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { usePathname } from "next/navigation";
 import { AVAILABLE_AVATARS } from "@/config/avatars";
 import { useSwipeContext } from "@/context/SwipeContext";
 
@@ -30,12 +31,22 @@ export default function ProfileModal({
   onAvatarChange,
 }: ProfileModalProps) {
   const [showAvatarPicker, setShowAvatarPicker] = useState(false);
+  const pathname = usePathname();
   const { setSwipeDisabled } = useSwipeContext();
+  const isFirstPathname = useRef(true);
 
   useEffect(() => {
     setSwipeDisabled(isOpen);
     return () => setSwipeDisabled(false);
   }, [isOpen, setSwipeDisabled]);
+
+  useEffect(() => {
+    if (isFirstPathname.current) {
+      isFirstPathname.current = false;
+      return;
+    }
+    onClose();
+  }, [pathname, onClose]);
 
   if (!isOpen) return null;
 
@@ -44,8 +55,8 @@ export default function ProfileModal({
 
   return (
     <div className="fixed inset-0 z-[60] bg-[#f3e6c0] flex justify-center touch-none">
-      <div className="w-full max-w-[480px] h-full flex flex-col overflow-y-auto">
-      <div className="flex-shrink-0 pt-10 px-4 flex items-center gap-3 mb-2">
+      <div className="w-full max-w-[480px] h-full overflow-y-auto overflow-x-hidden px-4 pt-10 pb-20">
+      <div className="flex items-center gap-3 mb-2">
         <button
           type="button"
           onClick={onClose}
@@ -56,7 +67,7 @@ export default function ProfileModal({
         <h1 className="text-xl font-bold">Profil</h1>
       </div>
 
-      <div className="flex-shrink-0 py-6 flex flex-col items-center">
+      <div className="py-6 flex flex-col items-center">
         <img
           src={avatarSrc}
           alt=""
@@ -75,7 +86,7 @@ export default function ProfileModal({
       </div>
 
       {showAvatarPicker && (
-        <div className="grid grid-cols-4 gap-3 px-4 py-4">
+        <div className="grid grid-cols-4 gap-3 py-4">
           {AVAILABLE_AVATARS.map(({ id }) => (
             <button
               key={id}
@@ -103,13 +114,13 @@ export default function ProfileModal({
         </div>
       )}
 
-      <div className="flex-shrink-0 px-4 py-4 flex flex-col items-center text-center">
+      <div className="py-4 flex flex-col items-center text-center">
         <p className="text-2xl font-bold tracking-tight">{user?.nickname ?? ""}</p>
         <p className="text-sm opacity-40 font-medium mt-1">{user?.rupsyId ?? ""}</p>
         <p className="text-sm opacity-40 mt-0.5">{user?.city ?? ""}</p>
       </div>
 
-      <div className="flex-shrink-0 px-4 py-6">
+      <div className="py-6">
         <p className="text-xs font-semibold uppercase tracking-widest opacity-40 mb-4">UMIESTNENIA</p>
         <div className="grid grid-cols-3 gap-2">
           <div className="rounded-2xl bg-white/40 border border-[#1b2833]/[0.06] p-3 flex flex-col items-center">
@@ -146,12 +157,11 @@ export default function ProfileModal({
         </div>
       </div>
 
-      <div className="flex-shrink-0 px-4 py-6">
+      <div className="py-6">
         <p className="text-xs font-semibold uppercase tracking-widest opacity-40 mb-4">ODZNAKY</p>
         <p className="text-sm opacity-30">Už čoskoro</p>
       </div>
 
-      <div className="flex-shrink-0 pb-20" />
       </div>
     </div>
   );
