@@ -16,6 +16,16 @@ export default function FriendsPage() {
 
   const CODE_REGEX = /^[ABCDEFGHJKLMNPQRTUVWXYZ2346789]{5}$/;
 
+  function processPastedCode(pasted: string): string {
+    let s = pasted.trim().toUpperCase();
+    if (s.startsWith("RUPSY-")) {
+      s = s.slice(6);
+    }
+    return s
+      .replace(/[^ABCDEFGHJKLMNPQRTUVWXYZ2346789]/g, "")
+      .slice(-5);
+  }
+
   useEffect(() => {
     async function load() {
       const res = await fetch("/api/me", { credentials: "include" });
@@ -116,6 +126,11 @@ export default function FriendsPage() {
               <input
                 type="text"
                 value={addFriendInput}
+                onPaste={(e) => {
+                  e.preventDefault();
+                  const pasted = e.clipboardData.getData("text");
+                  setAddFriendInput(processPastedCode(pasted));
+                }}
                 onChange={(e) => {
                   const filtered = e.target.value
                     .toUpperCase()
