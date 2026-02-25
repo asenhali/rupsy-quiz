@@ -138,7 +138,7 @@ export default function Home() {
           </section>
 
           {/* D) Action Section */}
-          <section className="flex-shrink-0 flex flex-col gap-2 pt-4 pb-6 px-4">
+          <section className="flex-shrink-0 flex flex-col gap-2 mt-24 pt-4 pb-6 px-4">
             <button
               type="button"
               onClick={() => console.log("PLAY")}
