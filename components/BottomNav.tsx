@@ -1,6 +1,7 @@
 "use client";
 
-import { usePathname, useRouter } from "next/navigation";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 const ITEMS = [
   { href: "/settings", icon: "/icons/nav-settings.svg", isCenter: false },
@@ -12,7 +13,6 @@ const ITEMS = [
 
 export default function BottomNav() {
   const pathname = usePathname();
-  const router = useRouter();
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white/95 shadow-[0_-1px_8px_rgba(0,0,0,0.06)] safe-area-pb">
@@ -24,10 +24,10 @@ export default function BottomNav() {
               : pathname === href || pathname.startsWith(href + "/");
 
           return (
-            <button
+            <Link
               key={href}
-              type="button"
-              onClick={() => router.push(href)}
+              href={href}
+              prefetch
               className={`flex items-center justify-center w-12 h-12 rounded-xl border-0 ${
                 active ? "opacity-100" : "opacity-50"
               } ${isCenter ? "w-14 h-14" : ""}`}
@@ -40,7 +40,7 @@ export default function BottomNav() {
                 width={isCenter ? 28 : 24}
                 height={isCenter ? 28 : 24}
               />
-            </button>
+            </Link>
           );
         })}
       </div>
