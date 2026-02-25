@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 
 export default function Home() {
   const router = useRouter();
-  const [loading, setLoading] = useState(true);
   const [needsOnboarding, setNeedsOnboarding] = useState<boolean | null>(null);
   const [user, setUser] = useState<{
     nickname?: string;
@@ -31,21 +30,13 @@ export default function Home() {
       }
       setNeedsOnboarding(json.needsOnboarding ?? null);
       setUser(json.user ?? null);
-      setLoading(false);
     }
     initAuth();
   }, [router]);
 
   return (
     <div className="h-screen overflow-hidden flex flex-col bg-[#f3e6c0] text-[#1b2833]">
-      {loading && (
-        <div className="flex-1 flex flex-col items-center justify-center p-6">
-          <div className="w-[90px] h-[90px] rounded-full bg-[#1b2833]/10 shrink-0" />
-          <p className="text-sm opacity-60 mt-4">Načítavanie...</p>
-        </div>
-      )}
-
-      {!loading && needsOnboarding === true && (
+      {needsOnboarding === true && (
         <div className="flex-1 flex flex-col items-center justify-center p-6">
           <form
             onSubmit={async (e) => {
@@ -91,7 +82,7 @@ export default function Home() {
         </div>
       )}
 
-      {!loading && needsOnboarding === false && (
+      {needsOnboarding !== true && (
         <>
         <div className="flex-1 flex flex-col w-full max-w-[480px] mx-auto pt-10">
           {/* A) Header Section */}
