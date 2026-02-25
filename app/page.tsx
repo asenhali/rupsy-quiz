@@ -1,9 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 
 export default function Home() {
-  const [token, setToken] = useState<string | null>(null);
+  const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [needsOnboarding, setNeedsOnboarding] = useState<boolean | null>(null);
   const [user, setUser] = useState<{
@@ -20,72 +21,36 @@ export default function Home() {
   const [city, setCity] = useState("");
 
   useEffect(() => {
-    async function tryCookieAuth() {
-      setLoading(true);
+    async function initAuth() {
       const res = await fetch("/api/me", { credentials: "include" });
       const json = await res.json();
-      if (res.ok && json.success) {
-        setToken("cookie");
-        setNeedsOnboarding(json.needsOnboarding ?? null);
-        setUser(json.user ?? null);
+      if (!res.ok || !json.success) {
+        router.replace("/");
+        return;
       }
+      setNeedsOnboarding(json.needsOnboarding ?? null);
+      setUser(json.user ?? null);
       setLoading(false);
     }
-    tryCookieAuth();
-  }, []);
-
-  useEffect(() => {
-    async function handleMessage(event: MessageEvent) {
-      if (event.origin !== "https://www.rupsy.sk") return;
-
-      if (event.data?.token) {
-        setToken(event.data.token);
-        setLoading(true);
-        const res = await fetch("/api/me", {
-          headers: { Authorization: `Bearer ${event.data.token}` },
-        });
-        const json = await res.json();
-        setNeedsOnboarding(json.needsOnboarding ?? null);
-        setUser(json.user ?? null);
-        setLoading(false);
-      }
-    }
-
-    window.addEventListener("message", handleMessage);
-
-    return () => {
-      window.removeEventListener("message", handleMessage);
-    };
-  }, []);
+    initAuth();
+  }, [router]);
 
   return (
     <div className="h-screen overflow-hidden flex flex-col bg-[#f3e6c0] text-[#1b2833]">
-      {!token && (
-        <div className="flex-1 flex items-center justify-center p-6">
-          <p>Waiting for secure token from Wix...</p>
-        </div>
-      )}
-
-      {token && loading && (
+      {loading && (
         <div className="flex-1 flex items-center justify-center p-6">
           <p>Loading...</p>
         </div>
       )}
 
-      {token && !loading && needsOnboarding === true && (
+      {!loading && needsOnboarding === true && (
         <div className="flex-1 flex flex-col items-center justify-center p-6">
           <form
             onSubmit={async (e) => {
               e.preventDefault();
-              const headers: Record<string, string> = {
-                "Content-Type": "application/json",
-              };
-              if (token && token !== "cookie") {
-                headers.Authorization = `Bearer ${token}`;
-              }
               const res = await fetch("/api/onboarding", {
                 method: "POST",
-                headers,
+                headers: { "Content-Type": "application/json" },
                 credentials: "include",
                 body: JSON.stringify({ nickname, city }),
               });
@@ -93,9 +58,6 @@ export default function Home() {
               if (response.success) {
                 const meRes = await fetch("/api/me", {
                   credentials: "include",
-                  ...(token && token !== "cookie"
-                    ? { headers: { Authorization: `Bearer ${token}` } }
-                    : {}),
                 });
                 const meJson = await meRes.json();
                 setNeedsOnboarding(meJson.needsOnboarding ?? false);
@@ -127,7 +89,7 @@ export default function Home() {
         </div>
       )}
 
-      {token && !loading && needsOnboarding === false && (
+      {!loading && needsOnboarding === false && (
         <>
           {/* A) Profile Section */}
           <section className="flex-shrink-0 flex flex-col items-center py-4 px-4">
