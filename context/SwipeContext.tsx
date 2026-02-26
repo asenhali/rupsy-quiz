@@ -12,7 +12,12 @@ type SwipeContextValue = {
   setSwipeDisabled: (v: boolean) => void;
 };
 
-const SwipeContext = createContext<SwipeContextValue | null>(null);
+const defaultValue: SwipeContextValue = {
+  swipeDisabled: false,
+  setSwipeDisabled: () => {},
+};
+
+const SwipeContext = createContext<SwipeContextValue>(defaultValue);
 
 export function SwipeProvider({ children }: { children: ReactNode }) {
   const [swipeDisabled, setSwipeDisabled] = useState(false);
@@ -25,8 +30,5 @@ export function SwipeProvider({ children }: { children: ReactNode }) {
 
 export function useSwipeContext() {
   const ctx = useContext(SwipeContext);
-  if (!ctx) {
-    throw new Error("useSwipeContext must be used within SwipeProvider");
-  }
-  return ctx;
+  return ctx ?? defaultValue;
 }
