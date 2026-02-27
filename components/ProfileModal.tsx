@@ -133,10 +133,7 @@ export default function ProfileModal() {
               <span className="text-2xl font-bold">{user?.totalXP ?? 0}</span>
             </div>
           </div>
-        </div>
-
-        <div className="py-6">
-          <p className="text-xs font-semibold uppercase tracking-widest opacity-40 mb-4">ODZNAKY</p>
+          <p className="text-xs font-semibold uppercase tracking-widest opacity-40 mb-4 mt-6">ODZNAKY</p>
           <p className="text-sm opacity-30">Už čoskoro</p>
         </div>
       </div>
