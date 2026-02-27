@@ -78,8 +78,8 @@ export default function HomePanel() {
       )}
 
       {needsOnboarding !== true && (
-        <div className="flex-1 flex flex-col w-full max-w-[480px] mx-auto pt-10">
-          <section className="flex-shrink-0 flex flex-row items-center gap-4 py-2 px-4">
+        <div className="flex-1 flex flex-col w-full max-w-[480px] mx-auto pb-24 overflow-y-auto">
+          <section className="flex items-center gap-3 px-5 pt-8 pb-4">
             <button
               type="button"
               onClick={openProfile}
@@ -88,61 +88,56 @@ export default function HomePanel() {
               <img
                 src={avatarMap[user?.avatarId ?? ""] || avatarMap.default}
                 alt="avatar"
-                className="w-[72px] h-[72px] rounded-full object-cover border-2 border-[#1b2833]/10"
+                className="w-12 h-12 rounded-full object-cover border-2 border-[#1b2833]/10"
               />
             </button>
-            <div className="flex-1 flex flex-col justify-center min-w-0">
-              <p className="text-xl font-semibold tracking-tight">{user?.nickname ?? ""}</p>
-              <p className="text-xs font-medium uppercase tracking-widest opacity-40">Level {user?.level ?? 1}</p>
-              <div className="w-full h-1.5 bg-[#1b2833]/15 rounded-full mt-1 overflow-hidden">
-                <div
-                  className="h-full bg-[#1b2833] rounded-full"
-                  style={{ width: `${(user?.totalXP ?? 0) % 100}%` }}
-                />
-              </div>
+            <div className="flex-1 min-w-0 flex flex-col justify-center">
+              <p className="text-base font-semibold tracking-tight truncate">{user?.nickname ?? ""}</p>
+              <p className="text-[10px] font-medium uppercase tracking-widest opacity-35">Level {user?.level ?? 1}</p>
+            </div>
+            <div className="flex items-center gap-1.5 bg-[#1b2833]/[0.06] rounded-full px-3 py-1">
+              <span className="text-[10px] font-semibold uppercase tracking-wider opacity-50">{user?.totalXP ?? 0} XP</span>
             </div>
           </section>
 
-          <section className="flex-shrink-0 flex flex-col py-3 px-4 pb-8">
-            <p className="text-xs font-medium uppercase tracking-widest opacity-40 mb-4">Minulý týždeň si sa umiestnil:</p>
-            <div className="flex flex-row items-end gap-2 w-full">
-              <div className="flex-1 flex flex-col items-center bg-white/40 border border-[#1b2833]/[0.06] rounded-2xl py-2 px-2 mt-4">
-                <p className="text-[10px] font-semibold uppercase tracking-widest opacity-40 mb-1">
-                  {(user?.city ?? "Tvoje mesto").toUpperCase()}
-                </p>
-                <p className="font-extrabold text-xl">#8</p>
-              </div>
-              <div className="flex-[1.2] flex flex-col items-center bg-white/60 border border-[#1b2833]/[0.08] rounded-2xl py-4 px-3">
-                <p className="text-[10px] font-semibold uppercase tracking-widest opacity-40 mb-1">SLOVENSKO</p>
-                <p className="font-extrabold text-3xl">#8</p>
-              </div>
-              <div className="flex-1 flex flex-col items-center bg-white/40 border border-[#1b2833]/[0.06] rounded-2xl py-2 px-2 mt-4">
-                <p className="text-[10px] font-semibold uppercase tracking-widest opacity-40 mb-1">TVOJE MESTO</p>
-                <p className="font-extrabold text-xl">#8</p>
-              </div>
-            </div>
-          </section>
-
-          <section className="flex-shrink-0 py-6 px-4 text-center">
-            <p className="text-xs font-medium uppercase tracking-widest opacity-30">Placeholder countdown</p>
-          </section>
-
-          <section className="flex-shrink-0 flex flex-col gap-2 mt-auto pt-4 pb-6 px-4">
+          <section className="mx-5 mt-2 rounded-3xl bg-[#1b2833] p-6 flex flex-col items-center text-[#f3e6c0]">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] opacity-50 mb-3">TÝŽDENNÝ KVÍZ</p>
+            <p className="text-sm font-medium opacity-60 mb-6">Štartuje čoskoro</p>
             <button
               type="button"
               onClick={() => console.log("PLAY")}
-              className="w-full py-4 bg-[#1b2833] text-[#f3e6c0] rounded-2xl font-semibold text-base tracking-wide"
+              className="w-full py-4 rounded-2xl bg-[#f3e6c0] text-[#1b2833] font-bold text-base tracking-wide text-center"
             >
               HRÁŤ KVÍZ
             </button>
-            <button
-              type="button"
-              onClick={() => console.log("LEADERBOARD")}
-              className="w-full py-3 bg-[#1b2833]/5 text-[#1b2833] rounded-2xl font-medium text-sm tracking-wide border-0"
-            >
-              LEADERBOARD
-            </button>
+            <p className="text-[10px] font-medium uppercase tracking-widest opacity-30 mt-3">SEZÓNA 1</p>
           </section>
+
+          <section className="mx-5 mt-4 rounded-2xl bg-white/40 border border-[#1b2833]/[0.06] p-4">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] opacity-35 mb-3">POSLEDNÝ TÝŽDEŇ</p>
+            <div className="flex justify-between">
+              <div className="flex flex-col items-center flex-1">
+                <span className="text-[9px] font-medium uppercase tracking-widest opacity-35 mb-1">{(user?.city ?? "MESTO").toUpperCase()}</span>
+                <span className="text-lg font-bold">#—</span>
+              </div>
+              <div className="flex flex-col items-center flex-1 border-l border-[#1b2833]/[0.06] pl-2">
+                <span className="text-[9px] font-medium uppercase tracking-widest opacity-35 mb-1">SLOVENSKO</span>
+                <span className="text-xl font-bold">#—</span>
+              </div>
+              <div className="flex flex-col items-center flex-1 border-l border-[#1b2833]/[0.06] pl-2">
+                <span className="text-[9px] font-medium uppercase tracking-widest opacity-35 mb-1">MESTÁ</span>
+                <span className="text-lg font-bold">#—</span>
+              </div>
+            </div>
+          </section>
+
+          <button
+            type="button"
+            onClick={() => console.log("LEADERBOARD")}
+            className="mx-5 mt-3 py-3 rounded-2xl bg-transparent text-center text-xs font-medium uppercase tracking-widest opacity-30"
+          >
+            REBRÍČEK
+          </button>
         </div>
       )}
     </div>
