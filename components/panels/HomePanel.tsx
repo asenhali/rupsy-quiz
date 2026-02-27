@@ -79,7 +79,7 @@ export default function HomePanel() {
 
       {needsOnboarding !== true && (
         <div className="flex-1 flex flex-col w-full max-w-[480px] mx-auto overflow-y-auto">
-          <section className="flex items-center gap-3 px-5 pt-12 pb-6">
+          <section className="flex items-center gap-3 px-5 pt-12 pb-8">
             <button
               type="button"
               onClick={openProfile}
@@ -104,11 +104,9 @@ export default function HomePanel() {
             </div>
           </section>
 
-          <div className="flex-1 max-h-[60px]" />
-
-          <section className="mx-5 mt-2 rounded-3xl bg-[#1b2833] p-6 flex flex-col items-center text-[#f3e6c0]">
+          <section className="mx-5 mt-2 rounded-3xl bg-[#1b2833] py-8 px-6 flex flex-col items-center text-[#f3e6c0] shadow-[0_8px_30px_rgba(27,40,51,0.15)]">
             <p className="text-[10px] font-semibold uppercase tracking-[0.2em] opacity-50 mb-3">TÝŽDENNÝ KVÍZ</p>
-            <p className="text-sm font-medium opacity-60 mb-6">Štartuje čoskoro</p>
+            <p className="text-base font-medium opacity-70 mb-8">Štartuje čoskoro</p>
             <button
               type="button"
               onClick={() => console.log("PLAY")}
@@ -119,9 +117,9 @@ export default function HomePanel() {
             <p className="text-[10px] font-medium uppercase tracking-widest opacity-30 mt-3">SEZÓNA 1</p>
           </section>
 
-          <div className="flex-1 min-h-[20px]" />
+          <div className="flex-1 min-h-[16px]" />
 
-          <section className="mx-5 mb-3 rounded-2xl bg-white/40 border border-[#1b2833]/[0.06] p-4">
+          <section className="mx-5 mb-2 rounded-2xl bg-white/40 border border-[#1b2833]/[0.06] p-4 shadow-[0_2px_12px_rgba(27,40,51,0.04)]">
             <p className="text-[10px] font-semibold uppercase tracking-[0.2em] opacity-35 mb-3">POSLEDNÝ TÝŽDEŇ</p>
             <div className="flex justify-between">
               <div className="flex flex-col items-center flex-1">
@@ -139,7 +137,7 @@ export default function HomePanel() {
             </div>
           </section>
 
-          <div className="mx-5 mb-6">
+          <div className="mx-5 mb-4">
             <button
               type="button"
               onClick={() => console.log("LEADERBOARD")}
