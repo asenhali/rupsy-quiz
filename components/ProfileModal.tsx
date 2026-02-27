@@ -35,7 +35,7 @@ export default function ProfileModal() {
   const avatarSrc = `/avatars/${avatarId}.png`;
 
   return (
-    <div className="fixed top-0 left-0 w-screen h-screen z-[100] bg-[#f3e6c0] overflow-y-auto touch-none">
+    <div className="fixed top-0 left-0 w-screen h-screen z-[100] bg-[#f3e6c0] overflow-y-auto touch-auto">
       <div className="w-full max-w-[480px] mx-auto px-4 pt-10 pb-20">
         <div className="flex items-center gap-3 mb-2">
           <button
