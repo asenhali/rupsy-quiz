@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useState, type ReactNode } from "react";
+import { createContext, useCallback, useContext, useRef, useState, type ReactNode } from "react";
 
 export type ProfileUser = {
   nickname?: string;
@@ -23,6 +23,7 @@ type ProfileModalContextValue = {
   setUser: (u: ProfileUser | null | ((prev: ProfileUser | null) => ProfileUser | null)) => void;
   showQuiz: boolean;
   setShowQuiz: (v: boolean) => void;
+  closeQuiz: () => void;
 };
 
 const defaultValue: ProfileModalContextValue = {
@@ -33,6 +34,7 @@ const defaultValue: ProfileModalContextValue = {
   setUser: () => {},
   showQuiz: false,
   setShowQuiz: () => {},
+  closeQuiz: () => {},
 };
 
 const ProfileModalContext = createContext<ProfileModalContextValue>(defaultValue);
@@ -40,7 +42,24 @@ const ProfileModalContext = createContext<ProfileModalContextValue>(defaultValue
 export function ProfileModalProvider({ children }: { children: ReactNode }) {
   const [isOpen, setIsOpen] = useState(false);
   const [user, setUser] = useState<ProfileUser | null>(null);
-  const [showQuiz, setShowQuiz] = useState(false);
+  const [showQuiz, setShowQuizState] = useState(false);
+  const quizLockRef = useRef(false);
+
+  const safeSetShowQuiz = useCallback((val: boolean) => {
+    if (val === false && quizLockRef.current) {
+      console.log("BLOCKED: something tried to close quiz while locked");
+      return;
+    }
+    if (val === true) {
+      quizLockRef.current = true;
+    }
+    setShowQuizState(val);
+  }, []);
+
+  const closeQuiz = useCallback(() => {
+    quizLockRef.current = false;
+    setShowQuizState(false);
+  }, []);
 
   const value: ProfileModalContextValue = {
     isOpen,
@@ -49,7 +68,8 @@ export function ProfileModalProvider({ children }: { children: ReactNode }) {
     user,
     setUser,
     showQuiz,
-    setShowQuiz,
+    setShowQuiz: safeSetShowQuiz,
+    closeQuiz,
   };
 
   return (

@@ -10,14 +10,14 @@ import { ProfileModalProvider, useProfileModal } from "@/context/ProfileModalCon
 import { PANELS } from "@/config/panels";
 
 function Modals() {
-  const { showQuiz, setShowQuiz } = useProfileModal();
+  const { showQuiz, closeQuiz } = useProfileModal();
   useEffect(() => {
     console.log("showQuiz changed to:", showQuiz);
   }, [showQuiz]);
   return (
     <>
       <ProfileModal />
-      <QuizPlayer isOpen={showQuiz} onClose={() => { console.log("QuizPlayer onClose called"); setShowQuiz(false); }} />
+      <QuizPlayer isOpen={showQuiz} onClose={() => { console.log("QuizPlayer onClose called"); closeQuiz(); }} />
     </>
   );
 }
