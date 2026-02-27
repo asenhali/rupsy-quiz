@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { useSwipeContext } from "@/context/SwipeContext";
 
 type Phase = "loading" | "countdown" | "category-reveal" | "question" | "answer-feedback" | "summary";
@@ -34,7 +35,9 @@ export default function QuizPlayer({ isOpen, onClose }: Props) {
   const [currentCategory, setCurrentCategory] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [ranking, setRanking] = useState<string | null>(null);
+  const [totalPlayers, setTotalPlayers] = useState<number | null>(null);
   const [countdownNum, setCountdownNum] = useState(3);
+  const [displayedScore, setDisplayedScore] = useState(0);
 
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const countdownRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -83,6 +86,8 @@ export default function QuizPlayer({ isOpen, onClose }: Props) {
     setLastPointsEarned(0);
     setCurrentCategory("");
     setRanking(null);
+    setTotalPlayers(null);
+    setDisplayedScore(0);
 
     (async () => {
       try {
@@ -198,6 +203,9 @@ export default function QuizPlayer({ isOpen, onClose }: Props) {
               if (completeJson.success && completeJson.rank != null) {
                 setRanking(`#${completeJson.rank} v Slovensku`);
               }
+              if (completeJson.success && completeJson.totalPlayers != null) {
+                setTotalPlayers(completeJson.totalPlayers);
+              }
             } catch {
               // ignore
             }
@@ -213,7 +221,7 @@ export default function QuizPlayer({ isOpen, onClose }: Props) {
           setSelectedAnswer(null);
           setPhase("question");
         }
-      }, 1500);
+      }, 1200);
     } catch {
       setError("Chyba pri odoslaní");
       setPhase("answer-feedback");
@@ -228,28 +236,70 @@ export default function QuizPlayer({ isOpen, onClose }: Props) {
     submitAnswer(index, elapsedSec * 1000);
   }
 
+  useEffect(() => {
+    if (phase !== "summary") return;
+    setDisplayedScore(0);
+    const duration = 2000;
+    const step = 50;
+    const increment = Math.max(1, Math.ceil(totalScore / (duration / step)));
+    let current = 0;
+    const iv = setInterval(() => {
+      current += increment;
+      if (current >= totalScore) {
+        setDisplayedScore(totalScore);
+        clearInterval(iv);
+        return;
+      }
+      setDisplayedScore(current);
+    }, step);
+    return () => clearInterval(iv);
+  }, [phase, totalScore]);
+
   if (!isOpen) return null;
 
   const containerClass =
-    "fixed top-0 left-0 w-screen h-screen z-[100] bg-[#1b2833] text-[#f3e6c0] flex flex-col items-center justify-center touch-none";
+    "fixed top-0 left-0 w-screen h-screen z-[100] bg-[#1b2833] text-[#f3e6c0] flex flex-col items-center justify-center touch-none font-['Montserrat']";
+
+  const contentClass = "w-full max-w-[480px] mx-auto px-6 flex flex-col items-center";
 
   if (phase === "loading") {
     return (
       <div className={containerClass}>
-        <p className="text-3xl font-extrabold">RUPSY KVÍZ</p>
-        {!error && <p className="text-sm opacity-50 animate-pulse mt-4">Načítavam...</p>}
-        {error && (
-          <div className="mt-8 flex flex-col items-center gap-4">
-            <p className="text-base text-red-300">{error}</p>
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-6 py-3 rounded-2xl bg-[#f3e6c0] text-[#1b2833] font-semibold"
+        <div className={contentClass}>
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="flex flex-col items-center"
+          >
+            <p className="text-5xl font-extrabold tracking-tight">RUPSY</p>
+            <p className="text-5xl font-extrabold tracking-tight opacity-40">KVÍZ</p>
+            {!error && (
+              <motion.p
+                animate={{ opacity: [0.3, 0.7, 0.3] }}
+                transition={{ duration: 1.5, repeat: Infinity }}
+                className="text-sm mt-6"
+              >
+                Načítavam...
+              </motion.p>
+            )}
+          </motion.div>
+          {error && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="mt-8 flex flex-col items-center gap-4"
             >
-              Späť
-            </button>
-          </div>
-        )}
+              <p className="text-base text-red-300">{error}</p>
+              <button
+                type="button"
+                onClick={onClose}
+                className="px-6 py-3 rounded-2xl bg-[#f3e6c0] text-[#1b2833] font-semibold"
+              >
+                Späť
+              </button>
+            </motion.div>
+          )}
+        </div>
       </div>
     );
   }
@@ -257,7 +307,23 @@ export default function QuizPlayer({ isOpen, onClose }: Props) {
   if (phase === "countdown") {
     return (
       <div className={containerClass}>
-        <span className="text-8xl font-extrabold tabular-nums">{countdownNum}</span>
+        <div className={`${contentClass} justify-center`}>
+          <AnimatePresence mode="wait">
+            {countdownNum > 0 && (
+              <motion.div
+                key={countdownNum}
+                initial={{ scale: 0.5, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 1.5, opacity: 0 }}
+                transition={{ duration: 0.4 }}
+                className="flex flex-col items-center"
+              >
+                <span className="text-8xl font-extrabold tabular-nums">{countdownNum}</span>
+                <p className="text-sm uppercase tracking-widest opacity-30 mt-4">Priprav sa</p>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
       </div>
     );
   }
@@ -266,51 +332,91 @@ export default function QuizPlayer({ isOpen, onClose }: Props) {
     const questionNum = currentQuestionIndex + 1;
     return (
       <div className={containerClass}>
-        <p className="text-2xl font-bold uppercase tracking-widest text-center">
-          {currentCategory}
-        </p>
-        <p className="text-sm opacity-60 mt-2">
-          Otázka {questionNum} z {totalQuestions}
-        </p>
+        <div className={`${contentClass} justify-center`}>
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            className="flex flex-col items-center text-center"
+          >
+            <p className="text-3xl font-extrabold uppercase tracking-widest">{currentCategory}</p>
+            <p className="text-sm opacity-40 mt-2">Otázka {questionNum} z {totalQuestions}</p>
+            <div className="w-12 h-0.5 bg-[#f3e6c0]/20 mx-auto mt-6" />
+          </motion.div>
+        </div>
       </div>
     );
   }
 
   if (phase === "question" && currentQuestion) {
+    const progressPct = totalQuestions > 0 ? (currentQuestionIndex / totalQuestions) * 100 : 0;
+    const isUrgent = timeRemaining <= 3;
+
     return (
       <div className={containerClass}>
-        <div className="w-full max-w-[480px] flex flex-col flex-1 px-4 pt-4 pb-8">
-          <div className="w-full h-1 bg-[#f3e6c0]/20 rounded-full overflow-hidden mb-4">
-            <div
-              className="h-full bg-[#f3e6c0] rounded-full transition-all"
-              style={{ width: `${((currentQuestionIndex + 1) / totalQuestions) * 100}%` }}
-            />
+        <div className={`${contentClass} flex-1 justify-start pt-6 pb-8`}>
+          <div className="w-full">
+            <div className="w-full h-1 bg-[#f3e6c0]/10 rounded-full overflow-hidden">
+              <motion.div
+                className="h-full bg-[#f3e6c0] rounded-full"
+                animate={{ width: `${progressPct}%` }}
+                transition={{ type: "spring", stiffness: 300, damping: 30 }}
+              />
+            </div>
+            <p className="text-[10px] uppercase tracking-widest opacity-30 text-right mt-2">
+              {currentQuestionIndex + 1} / {totalQuestions}
+            </p>
           </div>
-          <p className="text-xs uppercase tracking-widest opacity-50 mb-2">{currentCategory}</p>
-          <p className="text-xl font-bold text-center px-6 mb-4">{currentQuestion.text}</p>
+
+          <p className="text-[10px] uppercase tracking-widest opacity-40 text-center mt-4">{currentCategory}</p>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="w-full"
+          >
+            <p className="text-xl font-bold text-center px-6 mt-3 leading-relaxed">{currentQuestion.text}</p>
+          </motion.div>
+
           {currentQuestion.type === "image" && currentQuestion.imageUrl && (
             <img
               src={currentQuestion.imageUrl}
               alt=""
-              className="max-w-[300px] rounded-2xl mx-auto mb-6 object-contain"
+              className="mx-auto mt-4 max-w-[260px] w-full rounded-2xl overflow-hidden object-contain"
             />
           )}
-          <p className="text-lg font-semibold mb-4 tabular-nums">{timeRemaining}s</p>
-          <div className="flex flex-col space-y-3 w-full max-w-[480px] mx-auto flex-1">
+
+          <motion.div
+            key={timeRemaining}
+            initial={{ scale: 1.3, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            className={`w-16 h-16 rounded-full border-2 flex items-center justify-center mx-auto mt-6 mb-6 ${
+              isUrgent ? "border-red-400/40 text-red-400" : "border-[#f3e6c0]/20"
+            }`}
+          >
+            <span className="text-2xl font-bold tabular-nums">{timeRemaining}</span>
+          </motion.div>
+
+          <div className="flex flex-col space-y-3 w-full">
             {currentQuestion.answers?.map((a, i) => (
-              <button
+              <motion.button
                 key={i}
                 type="button"
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: i * 0.1 }}
                 onClick={() => handleAnswerClick(i)}
                 disabled={selectedAnswer !== null}
-                className={`w-full py-4 rounded-2xl text-base font-semibold text-center border ${
+                className={`w-full py-4 rounded-2xl text-base font-semibold text-center border transition-colors ${
+                  selectedAnswer !== null ? "pointer-events-none" : ""
+                } ${
                   selectedAnswer === i
-                    ? "bg-[#f3e6c0]/30 border-[#f3e6c0]/40"
-                    : "bg-[#f3e6c0]/10 border-[#f3e6c0]/20"
+                    ? "bg-[#f3e6c0]/20 border-[#f3e6c0]/30"
+                    : "bg-[#f3e6c0]/[0.07] border-[#f3e6c0]/[0.12] active:bg-[#f3e6c0]/20"
                 }`}
               >
                 {a}
-              </button>
+              </motion.button>
             ))}
           </div>
         </div>
@@ -322,30 +428,45 @@ export default function QuizPlayer({ isOpen, onClose }: Props) {
     if (error) {
       return (
         <div className={containerClass}>
-          <p className="text-base text-red-300 mb-6">{error}</p>
-          <button
-            type="button"
-            onClick={onClose}
-            className="px-6 py-3 rounded-2xl bg-[#f3e6c0] text-[#1b2833] font-semibold"
-          >
-            Späť
-          </button>
+          <div className={contentClass}>
+            <p className="text-base text-red-300 mb-6">{error}</p>
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-6 py-3 rounded-2xl bg-[#f3e6c0] text-[#1b2833] font-semibold"
+            >
+              Späť
+            </button>
+          </div>
         </div>
       );
     }
-    const selectedText = currentQuestion && selectedAnswer != null
-      ? currentQuestion.answers?.[selectedAnswer]
-      : null;
+
     return (
       <div className={containerClass}>
-        {selectedText && (
-          <p className="px-6 py-4 rounded-2xl bg-[#f3e6c0]/30 border border-[#f3e6c0]/40 text-base font-semibold mb-6 max-w-[480px] text-center">
-            {selectedText}
-          </p>
-        )}
-        <p className="text-2xl font-bold text-[#f3e6c0] animate-pulse">
-          +{lastPointsEarned} bodov
-        </p>
+        <div className={`${contentClass} justify-center relative`}>
+          <div className="w-full max-w-[480px] space-y-3">
+            {currentQuestion?.answers?.map((a, i) => (
+              <div
+                key={i}
+                className={`w-full py-4 rounded-2xl text-base font-semibold text-center border ${
+                  selectedAnswer === i
+                    ? "bg-[#f3e6c0]/20 border-[#f3e6c0]/30"
+                    : "opacity-20 bg-[#f3e6c0]/[0.07] border-[#f3e6c0]/[0.12]"
+                }`}
+              >
+                {a}
+              </div>
+            ))}
+          </div>
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="fixed inset-0 flex items-center justify-center pointer-events-none z-[101]"
+          >
+            <p className="text-sm uppercase tracking-widest opacity-50">Odpoveď zaznamenaná</p>
+          </motion.div>
+        </div>
       </div>
     );
   }
@@ -353,17 +474,37 @@ export default function QuizPlayer({ isOpen, onClose }: Props) {
   if (phase === "summary") {
     return (
       <div className={containerClass}>
-        <p className="text-4xl font-extrabold mb-4">KONIEC!</p>
-        <p className="text-4xl font-extrabold mb-2">{totalScore}</p>
-        <p className="text-sm opacity-60 mb-8">celkový počet bodov</p>
-        {ranking && <p className="text-lg font-semibold mb-8">{ranking}</p>}
-        <button
-          type="button"
-          onClick={onClose}
-          className="px-8 py-4 rounded-2xl bg-[#f3e6c0] text-[#1b2833] font-bold"
-        >
-          Späť
-        </button>
+        <div className={`${contentClass} justify-center text-center`}>
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.8 }}
+          >
+            <p className="text-4xl font-extrabold tracking-tight">KONIEC</p>
+            <span className="block text-6xl font-extrabold mt-4 tabular-nums">
+              {displayedScore}
+            </span>
+            <p className="text-sm opacity-40 mt-1">celkový počet bodov</p>
+
+            {ranking && (
+              <div className="mt-8">
+                <p className="text-2xl font-bold">{ranking}</p>
+                {totalPlayers != null && (
+                  <p className="text-sm opacity-40 mt-1">z {totalPlayers} hráčov</p>
+                )}
+              </div>
+            )}
+
+            <button
+              type="button"
+              onClick={onClose}
+              className="mt-10 px-8 py-4 rounded-2xl bg-[#f3e6c0] text-[#1b2833] font-bold text-base"
+            >
+              Späť na hlavnú
+            </button>
+            <p className="text-[10px] opacity-20 uppercase tracking-widest mt-6">Správne odpovede zverejníme na Instagrame</p>
+          </motion.div>
+        </div>
       </div>
     );
   }
