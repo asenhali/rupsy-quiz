@@ -65,6 +65,7 @@ export default function QuizPlayer({ isOpen, onClose }: Props) {
   }, [isOpen, setSwipeDisabled]);
 
   useEffect(() => {
+    console.log("QuizPlayer isOpen changed:", isOpen);
     if (!isOpen) {
       clearTimer();
       if (feedbackTimeoutRef.current) {
@@ -283,6 +284,7 @@ export default function QuizPlayer({ isOpen, onClose }: Props) {
       const isNewCategory = nextCat && nextCat !== currentCategory;
       feedbackTimeoutRef.current = setTimeout(() => {
         if (json.completed) {
+          console.log("Setting phase to summary, completed:", json.completed);
           setPhase("summary");
         } else if (isNewCategory && nextQ) {
           setCurrentCategory(nextCat);

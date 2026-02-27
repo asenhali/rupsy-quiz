@@ -8,7 +8,7 @@ import { useProfileModal } from "@/context/ProfileModalContext";
 
 export default function HomePanel() {
   const router = useRouter();
-  const { openProfile, user, setUser, setShowQuiz } = useProfileModal();
+  const { openProfile, user, setUser, setShowQuiz, showQuiz } = useProfileModal();
   const { setIsOnboarding } = useOnboarding();
   const [needsOnboarding, setNeedsOnboarding] = useState<boolean | null>(null);
   const [completedQuiz, setCompletedQuiz] = useState<{ totalScore: number } | null>(null);
@@ -45,17 +45,19 @@ export default function HomePanel() {
       }
       setNeedsOnboarding(json.needsOnboarding ?? null);
       setUser(json.user ?? null);
-      const quizRes = await fetch("/api/quiz/current", { credentials: "include" });
-      const quizJson = await quizRes.json();
-      console.log("quiz current response:", quizJson);
-      if (quizJson.success && quizJson.quiz?.status === "completed") {
-        setCompletedQuiz({ totalScore: quizJson.quiz.totalScore ?? 0 });
-      } else {
-        setCompletedQuiz(null);
+      if (!showQuiz) {
+        const quizRes = await fetch("/api/quiz/current", { credentials: "include" });
+        const quizJson = await quizRes.json();
+        console.log("quiz current response:", quizJson);
+        if (quizJson.success && quizJson.quiz?.status === "completed") {
+          setCompletedQuiz({ totalScore: quizJson.quiz.totalScore ?? 0 });
+        } else {
+          setCompletedQuiz(null);
+        }
       }
     }
     initAuth();
-  }, [router, setUser]);
+  }, [router, setUser, showQuiz]);
 
   return (
     <div className="h-full overflow-hidden flex flex-col bg-[#f3e6c0] text-[#1b2833]">

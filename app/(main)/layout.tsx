@@ -13,7 +13,7 @@ function Modals() {
   return (
     <>
       <ProfileModal />
-      <QuizPlayer isOpen={showQuiz} onClose={() => setShowQuiz(false)} />
+      <QuizPlayer isOpen={showQuiz} onClose={() => { console.log("QuizPlayer onClose called"); setShowQuiz(false); }} />
     </>
   );
 }
