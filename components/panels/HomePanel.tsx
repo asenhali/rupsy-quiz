@@ -78,8 +78,8 @@ export default function HomePanel() {
       )}
 
       {needsOnboarding !== true && (
-        <div className="flex-1 flex flex-col w-full max-w-[480px] mx-auto pb-24 overflow-y-auto">
-          <section className="flex items-center gap-3 px-5 pt-10 pb-6">
+        <div className="flex-1 flex flex-col w-full max-w-[480px] mx-auto overflow-y-auto">
+          <section className="flex items-center gap-3 px-5 pt-12 pb-6">
             <button
               type="button"
               onClick={openProfile}
@@ -88,13 +88,13 @@ export default function HomePanel() {
               <img
                 src={avatarMap[user?.avatarId ?? ""] || avatarMap.default}
                 alt="avatar"
-                className="w-12 h-12 rounded-full object-cover border-2 border-[#1b2833]/10"
+                className="w-16 h-16 rounded-full object-cover border-2 border-[#1b2833]/10"
               />
             </button>
             <div className="flex-1 min-w-0 flex flex-col justify-center">
               <p className="text-base font-semibold tracking-tight truncate">{user?.nickname ?? ""}</p>
               <p className="text-[10px] font-medium uppercase tracking-widest opacity-35">Level {user?.level ?? 1}</p>
-              <div className="w-full h-1.5 bg-[#1b2833]/10 rounded-full mt-1.5 overflow-hidden">
+              <div className="w-full max-w-[140px] h-1.5 bg-[#1b2833]/10 rounded-full mt-1.5 overflow-hidden">
                 <div
                   className="h-full bg-[#1b2833] rounded-full"
                   style={{ width: `${Math.max((user?.totalXP ?? 0) % 100, 2)}%` }}
@@ -104,7 +104,7 @@ export default function HomePanel() {
             </div>
           </section>
 
-          <section className="mx-5 mt-0 rounded-3xl bg-[#1b2833] p-6 flex flex-col items-center text-[#f3e6c0]">
+          <section className="mx-5 mt-2 rounded-3xl bg-[#1b2833] p-6 flex flex-col items-center text-[#f3e6c0]">
             <p className="text-[10px] font-semibold uppercase tracking-[0.2em] opacity-50 mb-3">TÝŽDENNÝ KVÍZ</p>
             <p className="text-sm font-medium opacity-60 mb-6">Štartuje čoskoro</p>
             <button
@@ -117,7 +117,9 @@ export default function HomePanel() {
             <p className="text-[10px] font-medium uppercase tracking-widest opacity-30 mt-3">SEZÓNA 1</p>
           </section>
 
-          <section className="mx-5 mt-5 rounded-2xl bg-white/40 border border-[#1b2833]/[0.06] p-4">
+          <div className="flex-1" />
+
+          <section className="mx-5 mb-3 rounded-2xl bg-white/40 border border-[#1b2833]/[0.06] p-4">
             <p className="text-[10px] font-semibold uppercase tracking-[0.2em] opacity-35 mb-3">POSLEDNÝ TÝŽDEŇ</p>
             <div className="flex justify-between">
               <div className="flex flex-col items-center flex-1">
@@ -135,7 +137,7 @@ export default function HomePanel() {
             </div>
           </section>
 
-          <div className="mx-5 mt-5">
+          <div className="mx-5 mb-6">
             <button
               type="button"
               onClick={() => console.log("LEADERBOARD")}
