@@ -3,12 +3,14 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { SLOVAK_CITIES } from "@/config/cities";
+import QuizPlayer from "@/components/QuizPlayer";
 import { useOnboarding } from "@/context/OnboardingContext";
 import { useProfileModal } from "@/context/ProfileModalContext";
 
 export default function HomePanel() {
   const router = useRouter();
   const { openProfile, user, setUser } = useProfileModal();
+  const [showQuiz, setShowQuiz] = useState(false);
   const { setIsOnboarding } = useOnboarding();
   const [needsOnboarding, setNeedsOnboarding] = useState<boolean | null>(null);
 
@@ -187,7 +189,7 @@ export default function HomePanel() {
             <p className="text-base font-medium opacity-70 mb-8">Štartuje čoskoro</p>
             <button
               type="button"
-              onClick={() => console.log("PLAY")}
+              onClick={() => setShowQuiz(true)}
               className="w-full py-4 rounded-2xl bg-[#f3e6c0] text-[#1b2833] font-bold text-base tracking-wide text-center"
             >
               HRÁŤ KVÍZ
@@ -226,6 +228,7 @@ export default function HomePanel() {
           </div>
         </div>
       )}
+      <QuizPlayer isOpen={showQuiz} onClose={() => setShowQuiz(false)} />
     </div>
   );
 }
