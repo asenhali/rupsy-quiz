@@ -104,6 +104,8 @@ export default function HomePanel() {
             </div>
           </section>
 
+          <div className="flex-1 max-h-[60px]" />
+
           <section className="mx-5 mt-2 rounded-3xl bg-[#1b2833] p-6 flex flex-col items-center text-[#f3e6c0]">
             <p className="text-[10px] font-semibold uppercase tracking-[0.2em] opacity-50 mb-3">TÝŽDENNÝ KVÍZ</p>
             <p className="text-sm font-medium opacity-60 mb-6">Štartuje čoskoro</p>
@@ -117,7 +119,7 @@ export default function HomePanel() {
             <p className="text-[10px] font-medium uppercase tracking-widest opacity-30 mt-3">SEZÓNA 1</p>
           </section>
 
-          <div className="flex-1" />
+          <div className="flex-1 min-h-[20px]" />
 
           <section className="mx-5 mb-3 rounded-2xl bg-white/40 border border-[#1b2833]/[0.06] p-4">
             <p className="text-[10px] font-semibold uppercase tracking-[0.2em] opacity-35 mb-3">POSLEDNÝ TÝŽDEŇ</p>
