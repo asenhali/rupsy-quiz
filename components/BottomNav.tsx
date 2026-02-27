@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useOnboarding } from "@/context/OnboardingContext";
 
 const ITEMS = [
   { href: "/settings", icon: "/icons/nav-settings.svg", isCenter: false },
@@ -13,6 +14,9 @@ const ITEMS = [
 
 export default function BottomNav() {
   const pathname = usePathname();
+  const { isOnboarding } = useOnboarding();
+
+  if (isOnboarding) return null;
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 bg-[#f3e6c0]/80 backdrop-blur-xl border-t border-[#1b2833]/[0.04] pb-[env(safe-area-inset-bottom)]">
