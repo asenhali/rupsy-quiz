@@ -35,6 +35,7 @@ export default function QuizPlayer({ isOpen, onClose }: Props) {
   const [currentCategory, setCurrentCategory] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [ranking, setRanking] = useState<string | null>(null);
+  const [rank, setRank] = useState<number | null>(null);
   const [totalPlayers, setTotalPlayers] = useState<number | null>(null);
   const [countdownNum, setCountdownNum] = useState(3);
   const [displayedScore, setDisplayedScore] = useState(0);
@@ -110,6 +111,7 @@ export default function QuizPlayer({ isOpen, onClose }: Props) {
     setLastPointsEarned(0);
     setCurrentCategory("");
     setRanking(null);
+    setRank(null);
     setTotalPlayers(null);
     setDisplayedScore(0);
     setAnswersInteractive(false);
@@ -323,6 +325,7 @@ export default function QuizPlayer({ isOpen, onClose }: Props) {
         const completeJson = await completeRes.json();
         if (completeJson.success && completeJson.rank != null) {
           setRanking(`#${completeJson.rank} v Slovensku`);
+          setRank(completeJson.rank);
         }
         if (completeJson.success && completeJson.totalPlayers != null) {
           setTotalPlayers(completeJson.totalPlayers);
@@ -337,7 +340,7 @@ export default function QuizPlayer({ isOpen, onClose }: Props) {
   useEffect(() => {
     if (phase !== "summary") return;
     setDisplayedScore(0);
-    const startDelay = 1000;
+    const startDelay = 800;
     const duration = 2500;
     const step = 50;
     const steps = duration / step;
@@ -571,6 +574,9 @@ export default function QuizPlayer({ isOpen, onClose }: Props) {
                 transition={{ duration: 0.6, ease: "easeInOut" }}
               />
             </div>
+            <p className="text-[10px] uppercase tracking-widest opacity-40 text-right mt-2">
+              {currentQuestionIndex + 1} / {totalQuestions}
+            </p>
           </div>
           <motion.div
             initial={{ opacity: 0 }}
@@ -648,48 +654,40 @@ export default function QuizPlayer({ isOpen, onClose }: Props) {
       );
     }
 
-    const progressPct = totalQuestions > 0 ? ((currentQuestionIndex + 1) / totalQuestions) * 100 : 0;
+    const progressPct = totalQuestions > 0 ? (currentQuestionIndex / totalQuestions) * 100 : 0;
 
     return (
       <div className={containerClass}>
-        <motion.div
-          animate={{ opacity: 0 }}
-          transition={{ delay: 1.5, duration: 0.5 }}
-          className={`${contentClass} flex-1 justify-start pt-6 pb-8`}
-        >
+        <div className={`${contentClass} flex-1 justify-start pt-6 pb-8`}>
           <div className="w-full">
             <div className="w-full h-1 bg-[#f3e6c0]/10 rounded-full overflow-hidden">
               <motion.div
                 className="h-full bg-[#f3e6c0] rounded-full"
                 animate={{ width: `${progressPct}%` }}
-                transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                transition={{ duration: 0.6, ease: "easeInOut" }}
               />
             </div>
-            <p className="text-[10px] uppercase tracking-widest opacity-30 text-right mt-2">
+            <p className="text-[10px] uppercase tracking-widest opacity-40 text-right mt-2">
               {currentQuestionIndex + 1} / {totalQuestions}
             </p>
           </div>
           <p className="text-[10px] uppercase tracking-widest opacity-40 text-center mt-4">{currentCategory}</p>
-          <motion.p
-            animate={{ opacity: 0.25 }}
-            transition={{ duration: 0.5 }}
-            className="text-xl font-bold text-center px-6 mt-3 leading-relaxed"
-          >
-            {currentQuestion?.text}
-          </motion.p>
-          {currentQuestion?.type === "image" && currentQuestion?.imageUrl && (
-            <img
-              src={currentQuestion.imageUrl}
-              alt=""
-              className="mx-auto mt-4 max-w-[260px] w-full rounded-2xl overflow-hidden object-contain opacity-25"
-            />
-          )}
-          <motion.div
-            animate={{ opacity: 0 }}
-            transition={{ duration: 0.5 }}
-            className="w-16 h-16 rounded-full border-2 flex items-center justify-center mx-auto mt-6 mb-6 border-[#f3e6c0]/20"
-          >
-            <span className="text-2xl font-bold tabular-nums">{timeRemaining}</span>
+          <motion.div animate={{ opacity: 0.25 }} transition={{ duration: 0.5 }}>
+            <p className="text-xl font-bold text-center px-6 mt-3 leading-relaxed">{currentQuestion?.text}</p>
+            {currentQuestion?.type === "image" && currentQuestion?.imageUrl && (
+              <img
+                src={currentQuestion.imageUrl}
+                alt=""
+                className="mx-auto mt-4 max-w-[260px] w-full rounded-2xl overflow-hidden object-contain opacity-25"
+              />
+            )}
+            <motion.div
+              animate={{ opacity: 0 }}
+              transition={{ duration: 0.5 }}
+              className="w-16 h-16 rounded-full border-2 flex items-center justify-center mx-auto mt-6 mb-6 border-[#f3e6c0]/20"
+            >
+              <span className="text-2xl font-bold tabular-nums">{timeRemaining}</span>
+            </motion.div>
           </motion.div>
           <div className="flex flex-col space-y-3 w-full">
             {currentQuestion?.answers?.map((a, i) => (
@@ -718,59 +716,86 @@ export default function QuizPlayer({ isOpen, onClose }: Props) {
 
   if (phase === "summary") {
     return (
-      <div className={containerClass}>
-        <div className={`${contentClass} justify-center text-center`}>
+      <div className={`${containerClass} relative`}>
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            background: "radial-gradient(circle at 50% 40%, rgba(243,230,192,0.06) 0%, transparent 60%)",
+          }}
+        />
+        <div className={`${contentClass} justify-center text-center relative`}>
           <motion.p
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ duration: 0.6, delay: 0.5 }}
-            className="text-4xl font-extrabold tracking-tight"
+            transition={{ duration: 1 }}
+            className="text-[10px] uppercase tracking-[0.3em] opacity-30"
           >
-            KONIEC
+            KVÍZ DOKONČENÝ
           </motion.p>
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ duration: 0.6, delay: 1 }}
+            transition={{ duration: 0.5, delay: 0.8 }}
           >
-            <span className="block text-6xl font-extrabold mt-4 tabular-nums">
-              {displayedScore}
-            </span>
-            <p className="text-sm opacity-40 mt-1">celkový počet bodov</p>
+            <span className="block text-7xl font-extrabold mt-4 tabular-nums">{displayedScore}</span>
+            <p className="text-xs uppercase tracking-widest opacity-30 mt-2">BODOV</p>
           </motion.div>
-
-          {ranking && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 3.5, duration: 0.8 }}
+            className="w-16 h-[1px] bg-[#f3e6c0]/15 mx-auto mt-6"
+          />
+          {rank != null && (
             <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.6, delay: 3.5 }}
-              className="mt-8"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 4, duration: 0.8 }}
+              className="bg-[#f3e6c0]/[0.05] rounded-2xl px-8 py-5 mt-6"
             >
-              <p className="text-2xl font-bold">{ranking}</p>
+              <p className="text-3xl font-extrabold">#{rank}</p>
+              <p className="text-xs opacity-40 mt-1">v Slovensku</p>
               {totalPlayers != null && (
-                <p className="text-sm opacity-40 mt-1">z {totalPlayers} hráčov</p>
+                <p className="text-[10px] opacity-20 mt-0.5">z {totalPlayers} hráčov</p>
               )}
             </motion.div>
           )}
-
           <motion.button
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ duration: 0.6, delay: 4.5 }}
+            transition={{ delay: 5.5, duration: 0.6 }}
             type="button"
             onClick={onClose}
-            className="mt-10 px-8 py-4 rounded-2xl bg-[#f3e6c0] text-[#1b2833] font-bold text-base"
+            className="mt-10 px-10 py-4 rounded-2xl bg-[#f3e6c0] text-[#1b2833] font-bold text-sm"
           >
             Späť na hlavnú
           </motion.button>
           <motion.p
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ duration: 0.6, delay: 5 }}
-            className="text-[10px] opacity-20 uppercase tracking-widest mt-6"
+            transition={{ delay: 6, duration: 0.6 }}
+            className="text-xs uppercase tracking-widest opacity-25 mt-4 underline-offset-4"
           >
-            Správne odpovede zverejníme na Instagrame
+            Zdieľať výsledok
           </motion.p>
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 6.5, duration: 0.8 }}
+            className="mt-8 text-center"
+          >
+            <p className="text-[8px] uppercase tracking-[0.2em] opacity-15">SPRÁVNE ODPOVEDE NÁJDEŠ NA</p>
+            <motion.a
+              href="https://www.instagram.com/rupsy_sirupy"
+              target="_blank"
+              rel="noopener noreferrer"
+              animate={{ opacity: [0.4, 0.7, 0.4] }}
+              transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
+              className="block text-sm font-semibold opacity-60 mt-2"
+            >
+              @rupsy_sirupy
+            </motion.a>
+          </motion.div>
         </div>
       </div>
     );

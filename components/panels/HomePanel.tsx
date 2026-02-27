@@ -47,6 +47,7 @@ export default function HomePanel() {
       setUser(json.user ?? null);
       const quizRes = await fetch("/api/quiz/current", { credentials: "include" });
       const quizJson = await quizRes.json();
+      console.log("quiz current response:", quizJson);
       if (quizJson.success && quizJson.quiz?.status === "completed") {
         setCompletedQuiz({ totalScore: quizJson.quiz.totalScore ?? 0 });
       } else {
@@ -194,10 +195,10 @@ export default function HomePanel() {
             <p className="text-[10px] font-semibold uppercase tracking-[0.2em] opacity-50 mb-3">TÝŽDENNÝ KVÍZ</p>
             {completedQuiz ? (
               <>
-                <p className="text-sm opacity-50 mb-2">Tvoje skóre</p>
-                <p className="text-4xl font-extrabold mb-8">{completedQuiz.totalScore}</p>
-                <div className="w-full py-4 rounded-2xl bg-[#f3e6c0]/10 border border-[#f3e6c0]/20 text-[#f3e6c0]/40 font-bold text-base text-center pointer-events-none">
-                  KVÍZ DOKONČENÝ
+                <p className="text-xs opacity-50 mt-1">Tvoje skóre</p>
+                <p className="text-4xl font-extrabold mt-2 mb-8">{completedQuiz.totalScore}</p>
+                <div className="w-full py-4 rounded-2xl bg-[#f3e6c0]/10 text-[#f3e6c0]/30 font-semibold text-sm text-center pointer-events-none">
+                  KVÍZ DOKONČENÝ ✓
                 </div>
               </>
             ) : (
