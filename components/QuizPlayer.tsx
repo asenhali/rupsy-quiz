@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useSwipeContext } from "@/context/SwipeContext";
 
-type Phase = "loading" | "countdown" | "category-reveal" | "question" | "answer-feedback" | "summary";
+type Phase = "loading" | "countdown" | "category-reveal" | "question-reveal" | "question-active" | "answer-feedback" | "summary";
 
 type QuestionData = {
   id: string;
@@ -42,7 +42,10 @@ export default function QuizPlayer({ isOpen, onClose }: Props) {
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const countdownRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const feedbackTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const questionRevealTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const timerStartTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const hasSubmittedForQuestionRef = useRef(false);
+  const completeCalledRef = useRef(false);
 
   useEffect(() => {
     setSwipeDisabled(isOpen);
@@ -54,6 +57,14 @@ export default function QuizPlayer({ isOpen, onClose }: Props) {
       if (feedbackTimeoutRef.current) {
         clearTimeout(feedbackTimeoutRef.current);
         feedbackTimeoutRef.current = null;
+      }
+      if (questionRevealTimeoutRef.current) {
+        clearTimeout(questionRevealTimeoutRef.current);
+        questionRevealTimeoutRef.current = null;
+      }
+      if (timerStartTimeoutRef.current) {
+        clearTimeout(timerStartTimeoutRef.current);
+        timerStartTimeoutRef.current = null;
       }
     }
   }, [isOpen]);
@@ -88,6 +99,7 @@ export default function QuizPlayer({ isOpen, onClose }: Props) {
     setRanking(null);
     setTotalPlayers(null);
     setDisplayedScore(0);
+    completeCalledRef.current = false;
 
     (async () => {
       try {
@@ -126,37 +138,59 @@ export default function QuizPlayer({ isOpen, onClose }: Props) {
         setPhase("category-reveal");
         return;
       }
-      countdownRef.current = setTimeout(tick, 1200);
+      countdownRef.current = setTimeout(tick, 1500);
     };
-    countdownRef.current = setTimeout(tick, 1200);
+    countdownRef.current = setTimeout(tick, 1500);
     return clearCountdown;
   }, [phase, isOpen, clearCountdown]);
 
   useEffect(() => {
     if (phase !== "category-reveal" || !isOpen) return;
     countdownRef.current = setTimeout(() => {
-      setPhase("question");
-    }, 2500);
+      setPhase("question-reveal");
+    }, 3000);
     return clearCountdown;
   }, [phase, isOpen, clearCountdown]);
 
   useEffect(() => {
-    if (phase !== "question" || !currentQuestion) return;
+    if (phase !== "question-reveal" || !currentQuestion || !isOpen) return;
+    questionRevealTimeoutRef.current = setTimeout(() => {
+      setPhase("question-active");
+    }, 1500);
+    return () => {
+      if (questionRevealTimeoutRef.current) {
+        clearTimeout(questionRevealTimeoutRef.current);
+        questionRevealTimeoutRef.current = null;
+      }
+    };
+  }, [phase, currentQuestion?.id, isOpen]);
+
+  useEffect(() => {
+    if (phase !== "question-active" || !currentQuestion) return;
     setTimeRemaining(currentQuestion.timeLimitSec ?? 30);
     setSelectedAnswer(null);
     hasSubmittedForQuestionRef.current = false;
     clearTimer();
-    timerRef.current = setInterval(() => {
-      setTimeRemaining((prev) => {
-        if (prev <= 1) {
-          clearTimer();
-          submitAnswer(-1, (currentQuestion.timeLimitSec ?? 30) * 1000);
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-    return clearTimer;
+    const timeLimitSec = currentQuestion.timeLimitSec ?? 30;
+    timerStartTimeoutRef.current = setTimeout(() => {
+      timerRef.current = setInterval(() => {
+        setTimeRemaining((prev) => {
+          if (prev <= 1) {
+            clearTimer();
+            submitAnswer(-1, timeLimitSec * 1000);
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    }, 500);
+    return () => {
+      clearTimer();
+      if (timerStartTimeoutRef.current) {
+        clearTimeout(timerStartTimeoutRef.current);
+        timerStartTimeoutRef.current = null;
+      }
+    };
   }, [phase, currentQuestion?.id]);
 
   async function submitAnswer(selectedIndex: number, timeMs: number) {
@@ -191,25 +225,6 @@ export default function QuizPlayer({ isOpen, onClose }: Props) {
       feedbackTimeoutRef.current = setTimeout(() => {
         if (json.completed) {
           setPhase("summary");
-          (async () => {
-            try {
-              const completeRes = await fetch("/api/quiz/complete", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                credentials: "include",
-                body: JSON.stringify({ sessionId }),
-              });
-              const completeJson = await completeRes.json();
-              if (completeJson.success && completeJson.rank != null) {
-                setRanking(`#${completeJson.rank} v Slovensku`);
-              }
-              if (completeJson.success && completeJson.totalPlayers != null) {
-                setTotalPlayers(completeJson.totalPlayers);
-              }
-            } catch {
-              // ignore
-            }
-          })();
         } else if (isNewCategory && nextQ) {
           setCurrentCategory(nextCat);
           setCurrentQuestion(nextQ);
@@ -219,9 +234,9 @@ export default function QuizPlayer({ isOpen, onClose }: Props) {
           setCurrentQuestion(nextQ);
           setCurrentQuestionIndex(json.currentQuestionIndex ?? 0);
           setSelectedAnswer(null);
-          setPhase("question");
+          setPhase("question-reveal");
         }
-      }, 2000);
+      }, 2500);
     } catch {
       setError("Chyba pri odoslaní");
       setPhase("answer-feedback");
@@ -235,6 +250,31 @@ export default function QuizPlayer({ isOpen, onClose }: Props) {
     setSelectedAnswer(index);
     submitAnswer(index, elapsedSec * 1000);
   }
+
+  useEffect(() => {
+    if (phase !== "summary" || !sessionId) return;
+    if (completeCalledRef.current) return;
+    completeCalledRef.current = true;
+    (async () => {
+      try {
+        const completeRes = await fetch("/api/quiz/complete", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({ sessionId }),
+        });
+        const completeJson = await completeRes.json();
+        if (completeJson.success && completeJson.rank != null) {
+          setRanking(`#${completeJson.rank} v Slovensku`);
+        }
+        if (completeJson.success && completeJson.totalPlayers != null) {
+          setTotalPlayers(completeJson.totalPlayers);
+        }
+      } catch {
+        // ignore
+      }
+    })();
+  }, [phase, sessionId]);
 
   const scoreIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   useEffect(() => {
@@ -368,7 +408,31 @@ export default function QuizPlayer({ isOpen, onClose }: Props) {
     );
   }
 
-  if (phase === "question" && currentQuestion) {
+  if (phase === "question-reveal" && currentQuestion) {
+    return (
+      <div className={containerClass}>
+        <div className={`${contentClass} justify-center flex-1`}>
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.8 }}
+            className="flex flex-col items-center justify-center w-full"
+          >
+            <p className="text-2xl font-bold text-center px-8 leading-relaxed">{currentQuestion.text}</p>
+            {currentQuestion.type === "image" && currentQuestion.imageUrl && (
+              <img
+                src={currentQuestion.imageUrl}
+                alt=""
+                className="mx-auto mt-6 max-w-[260px] w-full rounded-2xl overflow-hidden object-contain"
+              />
+            )}
+          </motion.div>
+        </div>
+      </div>
+    );
+  }
+
+  if (phase === "question-active" && currentQuestion) {
     const progressPct = totalQuestions > 0 ? (currentQuestionIndex / totalQuestions) * 100 : 0;
     const isUrgent = timeRemaining <= 3;
     const timeLimitSec = currentQuestion.timeLimitSec ?? 30;
@@ -376,15 +440,18 @@ export default function QuizPlayer({ isOpen, onClose }: Props) {
 
     return (
       <div className={containerClass}>
-        <AnimatePresence mode="wait">
+        <div className={`${contentClass} flex-1 justify-start pt-6 pb-8`}>
           <motion.div
-            key={currentQuestionIndex}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1, transition: { duration: 0.5 } }}
-            exit={{ opacity: 0, transition: { duration: 0.3 } }}
-            className={`${contentClass} flex-1 justify-start pt-6 pb-8`}
+            layout
+            transition={{ duration: 0.6, ease: "easeInOut" }}
+            className="w-full"
           >
-            <div className="w-full">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.2, duration: 0.4 }}
+              className="w-full"
+            >
               <div className="w-full h-1 bg-[#f3e6c0]/10 rounded-full overflow-hidden">
                 <motion.div
                   className="h-full bg-[#f3e6c0] rounded-full"
@@ -392,22 +459,31 @@ export default function QuizPlayer({ isOpen, onClose }: Props) {
                   transition={{ type: "spring", stiffness: 300, damping: 30 }}
                 />
               </div>
-              <p className="text-[10px] uppercase tracking-widest opacity-30 text-right mt-2">
-                {currentQuestionIndex + 1} / {totalQuestions}
-              </p>
-            </div>
-
-            <p className="text-[10px] uppercase tracking-widest opacity-40 text-center mt-4">{currentCategory}</p>
-
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }}
-              className="w-full"
-            >
-              <p className="text-xl font-bold text-center px-6 mt-3 leading-relaxed">{currentQuestion.text}</p>
             </motion.div>
-
+            <motion.p
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.3, duration: 0.4 }}
+              className="text-[10px] uppercase tracking-widest opacity-30 text-right mt-2"
+            >
+              {currentQuestionIndex + 1} / {totalQuestions}
+            </motion.p>
+            <motion.p
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.3, duration: 0.4 }}
+              className="text-[10px] uppercase tracking-widest opacity-40 text-center mt-4"
+            >
+              {currentCategory}
+            </motion.p>
+            <motion.p
+              initial={{ y: 60 }}
+              animate={{ y: 0 }}
+              transition={{ duration: 0.6, ease: "easeInOut" }}
+              className="text-xl font-bold text-center px-6 mt-3 leading-relaxed"
+            >
+              {currentQuestion.text}
+            </motion.p>
             {currentQuestion.type === "image" && currentQuestion.imageUrl && (
               <img
                 src={currentQuestion.imageUrl}
@@ -415,10 +491,9 @@ export default function QuizPlayer({ isOpen, onClose }: Props) {
                 className="mx-auto mt-4 max-w-[260px] w-full rounded-2xl overflow-hidden object-contain"
               />
             )}
-
             <motion.div
               key={timeRemaining}
-              initial={{ scale: 1.3, opacity: 0 }}
+              initial={{ opacity: 0, scale: 0.8 }}
               animate={
                 isUrgent
                   ? { scale: [1, 1.1, 1], opacity: 1 }
@@ -426,8 +501,8 @@ export default function QuizPlayer({ isOpen, onClose }: Props) {
               }
               transition={
                 isUrgent
-                  ? { scale: { duration: 0.5, repeat: Infinity } }
-                  : {}
+                  ? { opacity: { delay: 0.5, duration: 0.4 }, scale: { duration: 0.5, repeat: Infinity } }
+                  : { delay: 0.5, duration: 0.4 }
               }
               className={`w-16 h-16 rounded-full border-2 flex items-center justify-center mx-auto mt-6 mb-6 ${
                 isUrgent ? "border-red-400/50 text-red-400" : "border-[#f3e6c0]/20"
@@ -440,15 +515,14 @@ export default function QuizPlayer({ isOpen, onClose }: Props) {
             >
               <span className="text-2xl font-bold tabular-nums">{timeRemaining}</span>
             </motion.div>
-
             <div className="flex flex-col space-y-3 w-full">
               {currentQuestion.answers?.map((a, i) => (
                 <motion.button
                   key={i}
                   type="button"
-                  initial={{ opacity: 0, y: 15 }}
+                  initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.4, delay: i * 0.15 }}
+                  transition={{ delay: 0.7 + i * 0.2, duration: 0.4 }}
                   onClick={() => handleAnswerClick(i)}
                   disabled={selectedAnswer !== null}
                   className={`w-full py-4 rounded-2xl text-base font-semibold text-center border transition-colors ${
@@ -464,7 +538,7 @@ export default function QuizPlayer({ isOpen, onClose }: Props) {
               ))}
             </div>
           </motion.div>
-        </AnimatePresence>
+        </div>
       </div>
     );
   }
@@ -487,29 +561,62 @@ export default function QuizPlayer({ isOpen, onClose }: Props) {
       );
     }
 
+    const progressPct = totalQuestions > 0 ? ((currentQuestionIndex + 1) / totalQuestions) * 100 : 0;
+
     return (
       <div className={containerClass}>
-        <div className={`${contentClass} flex-1 justify-start pt-6 pb-8`}>
+        <motion.div
+          animate={{ opacity: 0 }}
+          transition={{ delay: 1.5, duration: 0.5 }}
+          className={`${contentClass} flex-1 justify-start pt-6 pb-8`}
+        >
+          <div className="w-full">
+            <div className="w-full h-1 bg-[#f3e6c0]/10 rounded-full overflow-hidden">
+              <motion.div
+                className="h-full bg-[#f3e6c0] rounded-full"
+                animate={{ width: `${progressPct}%` }}
+                transition={{ type: "spring", stiffness: 300, damping: 30 }}
+              />
+            </div>
+            <p className="text-[10px] uppercase tracking-widest opacity-30 text-right mt-2">
+              {currentQuestionIndex + 1} / {totalQuestions}
+            </p>
+          </div>
+          <p className="text-[10px] uppercase tracking-widest opacity-40 text-center mt-4">{currentCategory}</p>
           <motion.p
-            animate={{ opacity: 0.3 }}
+            animate={{ opacity: 0.25 }}
             transition={{ duration: 0.5 }}
             className="text-xl font-bold text-center px-6 mt-3 leading-relaxed"
           >
             {currentQuestion?.text}
           </motion.p>
-          <div className="flex flex-col space-y-3 w-full mt-4">
+          {currentQuestion?.type === "image" && currentQuestion?.imageUrl && (
+            <img
+              src={currentQuestion.imageUrl}
+              alt=""
+              className="mx-auto mt-4 max-w-[260px] w-full rounded-2xl overflow-hidden object-contain opacity-25"
+            />
+          )}
+          <motion.div
+            animate={{ opacity: 0 }}
+            transition={{ duration: 0.5 }}
+            className="w-16 h-16 rounded-full border-2 flex items-center justify-center mx-auto mt-6 mb-6 border-[#f3e6c0]/20"
+          >
+            <span className="text-2xl font-bold tabular-nums">{timeRemaining}</span>
+          </motion.div>
+          <div className="flex flex-col space-y-3 w-full">
             {currentQuestion?.answers?.map((a, i) => (
               <motion.button
                 key={i}
                 type="button"
                 animate={{
-                  scale: selectedAnswer === i ? 1.02 : 1,
-                  opacity: selectedAnswer === i ? 1 : 0.1,
+                  scale: selectedAnswer === i ? 1.03 : 1,
+                  opacity: selectedAnswer === i ? 1 : 0.08,
                 }}
                 transition={{ duration: 0.5 }}
                 className={`w-full py-4 rounded-2xl text-base font-semibold text-center border pointer-events-none ${
                   selectedAnswer === i
-                    ? "bg-[#f3e6c0]/15 border-[#f3e6c0]/30"
+                    ? "bg-[#f3e6c0]/20 border-[#f3e6c0]/30"
                     : "bg-[#f3e6c0]/[0.07] border-[#f3e6c0]/[0.12]"
                 }`}
               >
@@ -517,7 +624,7 @@ export default function QuizPlayer({ isOpen, onClose }: Props) {
               </motion.button>
             ))}
           </div>
-        </div>
+        </motion.div>
       </div>
     );
   }
