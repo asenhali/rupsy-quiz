@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import AppView from "@/components/AppView";
 import BottomNav from "@/components/BottomNav";
 import ProfileModal from "@/components/ProfileModal";
@@ -10,6 +11,9 @@ import { PANELS } from "@/config/panels";
 
 function Modals() {
   const { showQuiz, setShowQuiz } = useProfileModal();
+  useEffect(() => {
+    console.log("showQuiz changed to:", showQuiz);
+  }, [showQuiz]);
   return (
     <>
       <ProfileModal />

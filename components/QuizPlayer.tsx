@@ -60,6 +60,10 @@ export default function QuizPlayer({ isOpen, onClose }: Props) {
   }, []);
 
   useEffect(() => {
+    console.log("QuizPlayer phase changed to:", phase);
+  }, [phase]);
+
+  useEffect(() => {
     setSwipeDisabled(isOpen);
     return () => setSwipeDisabled(false);
   }, [isOpen, setSwipeDisabled]);
