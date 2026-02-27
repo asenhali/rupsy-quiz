@@ -41,6 +41,7 @@ export default function QuizPlayer({ isOpen, onClose }: Props) {
   const [answersInteractive, setAnswersInteractive] = useState(false);
 
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const questionStartTimeRef = useRef<number>(0);
   const countdownRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const feedbackTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const questionRevealTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -57,6 +58,7 @@ export default function QuizPlayer({ isOpen, onClose }: Props) {
 
   useEffect(() => {
     if (!isOpen) {
+      clearTimer();
       if (feedbackTimeoutRef.current) {
         clearTimeout(feedbackTimeoutRef.current);
         feedbackTimeoutRef.current = null;
@@ -78,7 +80,7 @@ export default function QuizPlayer({ isOpen, onClose }: Props) {
         timerStartTimeoutRef.current = null;
       }
     }
-  }, [isOpen]);
+  }, [isOpen, clearTimer]);
 
   const clearTimer = useCallback(() => {
     if (timerRef.current) {
@@ -177,32 +179,43 @@ export default function QuizPlayer({ isOpen, onClose }: Props) {
     };
   }, [phase, isOpen]);
 
-  useEffect(() => {
-    if (phase !== "question-reveal" || !currentQuestion || !isOpen) return;
+  const startQuestionTimer = useCallback(() => {
+    if (!currentQuestion) return;
     clearTimer();
-    setTimeRemaining(currentQuestion.timeLimitSec ?? 30);
     const timeLimitSec = currentQuestion.timeLimitSec ?? 30;
+    questionStartTimeRef.current = Date.now();
+    setTimeRemaining(timeLimitSec);
     timerRef.current = setInterval(() => {
-      setTimeRemaining((prev) => {
-        if (prev <= 1) {
-          clearTimer();
-          submitAnswer(-1, timeLimitSec * 1000);
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-    questionRevealTimeoutRef.current = setTimeout(() => {
-      setPhase("question-outro");
-    }, 1500);
+      const elapsed = (Date.now() - questionStartTimeRef.current) / 1000;
+      const remaining = Math.max(0, Math.ceil(timeLimitSec - elapsed));
+      setTimeRemaining(remaining);
+      if (remaining <= 0) {
+        clearTimer();
+        submitAnswer(-1, timeLimitSec * 1000);
+      }
+    }, 100);
+  }, [currentQuestion?.timeLimitSec, currentQuestion?.id]);
+
+  useEffect(() => {
+    if (!currentQuestion?.id) return;
     return () => {
       clearTimer();
+    };
+  }, [currentQuestion?.id]);
+
+  useEffect(() => {
+    if (phase !== "question-reveal" || !currentQuestion || !isOpen) return;
+    startQuestionTimer();
+    questionRevealTimeoutRef.current = setTimeout(() => {
+      setPhase("question-outro");
+    }, 2000);
+    return () => {
       if (questionRevealTimeoutRef.current) {
         clearTimeout(questionRevealTimeoutRef.current);
         questionRevealTimeoutRef.current = null;
       }
     };
-  }, [phase, currentQuestion?.id, isOpen]);
+  }, [phase, currentQuestion?.id, isOpen, startQuestionTimer]);
 
   useEffect(() => {
     if (phase !== "question-outro" || !currentQuestion || !isOpen) return;
