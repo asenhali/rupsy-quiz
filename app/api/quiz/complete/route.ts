@@ -94,15 +94,15 @@ export async function POST(request: Request) {
 
     const totalScore = sessionData.totalScore ?? 0;
 
-    const completedSessionsSnap = await db
+    const allSessionsSnap = await db
       .collection("quizSessions")
       .where("weekId", "==", weekId)
-      .where("completedAt", "!=", null)
       .get();
 
-    const totalPlayers = completedSessionsSnap.size;
+    const completedSessions = allSessionsSnap.docs.filter(doc => doc.data().completedAt != null);
+    const totalPlayers = completedSessions.length;
     let betterCount = 0;
-    completedSessionsSnap.docs.forEach((doc) => {
+    completedSessions.forEach((doc) => {
       const data = doc.data();
       if ((data.totalScore ?? 0) > totalScore) betterCount++;
     });
