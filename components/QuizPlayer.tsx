@@ -38,7 +38,6 @@ export default function QuizPlayer({ isOpen, onClose }: Props) {
   const [totalPlayers, setTotalPlayers] = useState<number | null>(null);
   const [countdownNum, setCountdownNum] = useState(3);
   const [displayedScore, setDisplayedScore] = useState(0);
-  const [timerStarted, setTimerStarted] = useState(false);
   const [answersInteractive, setAnswersInteractive] = useState(false);
 
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -111,7 +110,6 @@ export default function QuizPlayer({ isOpen, onClose }: Props) {
     setRanking(null);
     setTotalPlayers(null);
     setDisplayedScore(0);
-    setTimerStarted(false);
     setAnswersInteractive(false);
     completeCalledRef.current = false;
 
@@ -181,10 +179,24 @@ export default function QuizPlayer({ isOpen, onClose }: Props) {
 
   useEffect(() => {
     if (phase !== "question-reveal" || !currentQuestion || !isOpen) return;
+    clearTimer();
+    setTimeRemaining(currentQuestion.timeLimitSec ?? 30);
+    const timeLimitSec = currentQuestion.timeLimitSec ?? 30;
+    timerRef.current = setInterval(() => {
+      setTimeRemaining((prev) => {
+        if (prev <= 1) {
+          clearTimer();
+          submitAnswer(-1, timeLimitSec * 1000);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
     questionRevealTimeoutRef.current = setTimeout(() => {
       setPhase("question-outro");
     }, 1500);
     return () => {
+      clearTimer();
       if (questionRevealTimeoutRef.current) {
         clearTimeout(questionRevealTimeoutRef.current);
         questionRevealTimeoutRef.current = null;
@@ -207,33 +219,17 @@ export default function QuizPlayer({ isOpen, onClose }: Props) {
 
   useEffect(() => {
     if (phase !== "question-active" || !currentQuestion) return;
-    setTimeRemaining(currentQuestion.timeLimitSec ?? 30);
     setSelectedAnswer(null);
-    setTimerStarted(false);
     setAnswersInteractive(false);
     hasSubmittedForQuestionRef.current = false;
-    clearTimer();
-    const timeLimitSec = currentQuestion.timeLimitSec ?? 30;
     const answersCount = currentQuestion.answers?.length ?? 4;
     const answerDelays = answersCount === 2 ? [800, 1000] : [800, 1000, 1200, 1400];
     const lastAnswerStart = answerDelays[answersCount - 1] ?? 800 + (answersCount - 1) * 200;
     const timerStartDelay = lastAnswerStart + 400;
     timerStartTimeoutRef.current = setTimeout(() => {
-      setTimerStarted(true);
       setAnswersInteractive(true);
-      timerRef.current = setInterval(() => {
-        setTimeRemaining((prev) => {
-          if (prev <= 1) {
-            clearTimer();
-            submitAnswer(-1, timeLimitSec * 1000);
-            return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000);
     }, timerStartDelay);
     return () => {
-      clearTimer();
       if (timerStartTimeoutRef.current) {
         clearTimeout(timerStartTimeoutRef.current);
         timerStartTimeoutRef.current = null;
@@ -477,23 +473,36 @@ export default function QuizPlayer({ isOpen, onClose }: Props) {
   }
 
   if (phase === "question-reveal" && currentQuestion) {
+    const isUrgent = timeRemaining <= 3;
+    const timeLimitSec = currentQuestion.timeLimitSec ?? 30;
+    const borderOpacity = isUrgent ? undefined : 0.1 + (0.2 * timeRemaining) / timeLimitSec;
     return (
       <div className={containerClass}>
         <div className={`${contentClass} justify-center flex-1`}>
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ duration: 0.6 }}
+            transition={{ delay: 0.3, duration: 0.5 }}
             className="flex flex-col items-center justify-center w-full"
           >
             <p className="text-2xl font-bold text-center px-8 leading-relaxed">{currentQuestion.text}</p>
-            {currentQuestion.type === "image" && currentQuestion.imageUrl && (
-              <img
-                src={currentQuestion.imageUrl}
-                alt=""
-                className="mx-auto mt-6 max-w-[260px] w-full rounded-2xl overflow-hidden object-contain"
-              />
-            )}
+            <div
+              className={`w-16 h-16 rounded-full border-2 flex items-center justify-center mx-auto mt-6 ${isUrgent ? "border-red-400/50 text-red-400" : "border-[#f3e6c0]/20"}`}
+              style={
+                !isUrgent && borderOpacity != null
+                  ? { borderColor: `rgba(243, 230, 192, ${borderOpacity})` }
+                  : undefined
+              }
+            >
+              <motion.span
+                key={timeRemaining}
+                className="text-2xl font-bold tabular-nums"
+                animate={isUrgent ? { scale: [1, 1.1, 1] } : {}}
+                transition={isUrgent ? { duration: 0.5, repeat: Infinity } : {}}
+              >
+                {timeRemaining}
+              </motion.span>
+            </div>
           </motion.div>
         </div>
       </div>
@@ -501,6 +510,9 @@ export default function QuizPlayer({ isOpen, onClose }: Props) {
   }
 
   if (phase === "question-outro" && currentQuestion) {
+    const isUrgent = timeRemaining <= 3;
+    const timeLimitSec = currentQuestion.timeLimitSec ?? 30;
+    const borderOpacity = isUrgent ? undefined : 0.1 + (0.2 * timeRemaining) / timeLimitSec;
     return (
       <div className={containerClass}>
         <div className={`${contentClass} justify-center flex-1`}>
@@ -511,13 +523,16 @@ export default function QuizPlayer({ isOpen, onClose }: Props) {
             className="flex flex-col items-center justify-center w-full"
           >
             <p className="text-2xl font-bold text-center px-8 leading-relaxed">{currentQuestion.text}</p>
-            {currentQuestion.type === "image" && currentQuestion.imageUrl && (
-              <img
-                src={currentQuestion.imageUrl}
-                alt=""
-                className="mx-auto mt-6 max-w-[260px] w-full rounded-2xl overflow-hidden object-contain"
-              />
-            )}
+            <div
+              className={`w-16 h-16 rounded-full border-2 flex items-center justify-center mx-auto mt-6 ${isUrgent ? "border-red-400/50 text-red-400" : "border-[#f3e6c0]/20"}`}
+              style={
+                !isUrgent && borderOpacity != null
+                  ? { borderColor: `rgba(243, 230, 192, ${borderOpacity})` }
+                  : undefined
+              }
+            >
+              <span className="text-2xl font-bold tabular-nums">{timeRemaining}</span>
+            </div>
           </motion.div>
         </div>
       </div>
@@ -560,11 +575,9 @@ export default function QuizPlayer({ isOpen, onClose }: Props) {
             )}
           </motion.div>
           <div
-            className={`w-16 h-16 rounded-full border-2 flex items-center justify-center mx-auto mt-6 mb-6 transition-opacity duration-500 ${
-              timerStarted ? "opacity-100" : "opacity-0"
-            } ${isUrgent ? "border-red-400/50 text-red-400" : "border-[#f3e6c0]/20"}`}
+            className={`w-16 h-16 rounded-full border-2 flex items-center justify-center mx-auto mt-6 mb-6 ${isUrgent ? "border-red-400/50 text-red-400" : "border-[#f3e6c0]/20"}`}
             style={
-              !isUrgent && timerStarted && borderOpacity != null
+              !isUrgent && borderOpacity != null
                 ? { borderColor: `rgba(243, 230, 192, ${borderOpacity})` }
                 : undefined
             }
