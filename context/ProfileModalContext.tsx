@@ -1,0 +1,57 @@
+"use client";
+
+import { createContext, useContext, useState, type ReactNode } from "react";
+
+export type ProfileUser = {
+  nickname?: string;
+  rupsyId?: string;
+  city?: string;
+  level?: number;
+  totalXP?: number;
+  totalPoints?: number;
+  totalGames?: number;
+  totalCorrect?: number;
+  avatarId?: string;
+};
+
+type ProfileModalContextValue = {
+  isOpen: boolean;
+  openProfile: () => void;
+  closeProfile: () => void;
+  user: ProfileUser | null;
+  setUser: (u: ProfileUser | null | ((prev: ProfileUser | null) => ProfileUser | null)) => void;
+};
+
+const defaultValue: ProfileModalContextValue = {
+  isOpen: false,
+  openProfile: () => {},
+  closeProfile: () => {},
+  user: null,
+  setUser: () => {},
+};
+
+const ProfileModalContext = createContext<ProfileModalContextValue>(defaultValue);
+
+export function ProfileModalProvider({ children }: { children: ReactNode }) {
+  const [isOpen, setIsOpen] = useState(false);
+  const [user, setUser] = useState<ProfileUser | null>(null);
+
+  const value: ProfileModalContextValue = {
+    isOpen,
+    openProfile: () => setIsOpen(true),
+    closeProfile: () => setIsOpen(false),
+    user,
+    setUser,
+  };
+
+  return (
+    <ProfileModalContext.Provider value={value}>
+      {children}
+    </ProfileModalContext.Provider>
+  );
+}
+
+export function useProfileModal() {
+  const ctx = useContext(ProfileModalContext);
+  return ctx ?? defaultValue;
+}

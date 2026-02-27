@@ -2,33 +2,11 @@
 
 import { useEffect, useState } from "react";
 import { AVAILABLE_AVATARS } from "@/config/avatars";
+import { useProfileModal } from "@/context/ProfileModalContext";
 import { useSwipeContext } from "@/context/SwipeContext";
 
-type ProfileUser = {
-  nickname?: string;
-  rupsyId?: string;
-  city?: string;
-  level?: number;
-  totalXP?: number;
-  totalPoints?: number;
-  totalGames?: number;
-  totalCorrect?: number;
-  avatarId?: string;
-};
-
-type ProfileModalProps = {
-  isOpen: boolean;
-  onClose: () => void;
-  user: ProfileUser | null;
-  onAvatarChange: (newAvatarId: string) => void;
-};
-
-export default function ProfileModal({
-  isOpen,
-  onClose,
-  user,
-  onAvatarChange,
-}: ProfileModalProps) {
+export default function ProfileModal() {
+  const { isOpen, closeProfile, user, setUser } = useProfileModal();
   const [showAvatarPicker, setShowAvatarPicker] = useState(false);
   const { setSwipeDisabled } = useSwipeContext();
 
@@ -47,6 +25,20 @@ export default function ProfileModal({
     }
   }, [isOpen]);
 
+  async function handleAvatarChange(newAvatarId: string) {
+    const res = await fetch("/api/profile/update", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ avatarId: newAvatarId }),
+    });
+    const json = await res.json();
+    if (json.success) {
+      setUser((prev) => (prev ? { ...prev, avatarId: newAvatarId } : null));
+    }
+    setShowAvatarPicker(false);
+  }
+
   if (!isOpen) return null;
 
   const avatarId = user?.avatarId ?? "default";
@@ -58,7 +50,7 @@ export default function ProfileModal({
         <div className="flex items-center gap-3 mb-2">
           <button
             type="button"
-            onClick={onClose}
+            onClick={closeProfile}
             className="p-2 -ml-2 bg-transparent text-sm font-medium opacity-50 text-[#1b2833] border-0"
           >
             ← Späť
@@ -90,10 +82,7 @@ export default function ProfileModal({
               <button
                 key={id}
                 type="button"
-                onClick={() => {
-                  onAvatarChange(id);
-                  setShowAvatarPicker(false);
-                }}
+                onClick={() => handleAvatarChange(id)}
                 className="p-0 border-0 bg-transparent cursor-pointer rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-[#1b2833]"
               >
                 <img

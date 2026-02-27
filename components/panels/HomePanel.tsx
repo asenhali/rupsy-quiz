@@ -2,41 +2,18 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import ProfileModal from "@/components/ProfileModal";
+import { useProfileModal } from "@/context/ProfileModalContext";
 
 export default function HomePanel() {
   const router = useRouter();
+  const { openProfile, user, setUser } = useProfileModal();
   const [needsOnboarding, setNeedsOnboarding] = useState<boolean | null>(null);
-  const [showProfile, setShowProfile] = useState(false);
-  const [user, setUser] = useState<{
-    nickname?: string;
-    avatarId?: string;
-    city?: string;
-    level?: number;
-    totalXP?: number;
-    totalPoints?: number;
-    totalGames?: number;
-    totalCorrect?: number;
-  } | null>(null);
 
   const avatarMap: Record<string, string> = {
     default: "/avatars/default.png",
   };
   const [nickname, setNickname] = useState("");
   const [city, setCity] = useState("");
-
-  async function handleAvatarChange(newAvatarId: string) {
-    const res = await fetch("/api/profile/update", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-      body: JSON.stringify({ avatarId: newAvatarId }),
-    });
-    const json = await res.json();
-    if (json.success) {
-      setUser((prev) => (prev ? { ...prev, avatarId: newAvatarId } : null));
-    }
-  }
 
   useEffect(() => {
     async function initAuth() {
@@ -50,7 +27,7 @@ export default function HomePanel() {
       setUser(json.user ?? null);
     }
     initAuth();
-  }, [router]);
+  }, [router, setUser]);
 
   return (
     <div className="h-full overflow-hidden flex flex-col bg-[#f3e6c0] text-[#1b2833]">
@@ -74,6 +51,8 @@ export default function HomePanel() {
                 setNeedsOnboarding(meJson.needsOnboarding ?? false);
                 setUser(meJson.user ?? null);
               } else {
+                console.error(response);
+              }
                 console.error(response);
               }
             }}
@@ -105,7 +84,7 @@ export default function HomePanel() {
           <section className="flex-shrink-0 flex flex-row items-center gap-4 py-2 px-4">
             <button
               type="button"
-              onClick={() => setShowProfile(true)}
+              onClick={openProfile}
               className="border-0 bg-transparent p-0 cursor-pointer flex-shrink-0"
             >
               <img
@@ -168,13 +147,6 @@ export default function HomePanel() {
           </section>
         </div>
       )}
-
-      <ProfileModal
-        isOpen={showProfile}
-        onClose={() => setShowProfile(false)}
-        user={user}
-        onAvatarChange={handleAvatarChange}
-      />
     </div>
   );
 }
