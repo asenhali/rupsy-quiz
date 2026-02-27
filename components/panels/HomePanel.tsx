@@ -102,6 +102,10 @@ export default function HomePanel() {
               </div>
               <p className="text-[9px] font-medium opacity-25 mt-0.5">{user?.totalXP ?? 0} / {(user?.level ?? 1) * 100} XP</p>
             </div>
+            <div className="flex items-center gap-1.5 bg-[#1b2833]/[0.07] rounded-full px-3 py-1.5 shrink-0">
+              <span className="w-5 h-5 rounded-full bg-[#1b2833] text-[#f3e6c0] text-[10px] font-bold flex items-center justify-center">R</span>
+              <span className="text-sm font-semibold">{user?.rCoins ?? 0}</span>
+            </div>
           </section>
 
           <section className="mx-5 mt-2 rounded-3xl bg-[#1b2833] py-8 px-6 flex flex-col items-center text-[#f3e6c0] shadow-[0_8px_30px_rgba(27,40,51,0.15)]">

@@ -67,6 +67,7 @@ export async function GET(request: Request) {
         level: data?.level,
         avatarId: data?.avatarId ?? "default",
         totalPoints: data?.totalPoints ?? 0,
+        rCoins: data?.rCoins ?? 0,
         totalGames: data?.totalGames ?? 0,
         totalCorrect: data?.totalCorrect ?? 0,
       },
