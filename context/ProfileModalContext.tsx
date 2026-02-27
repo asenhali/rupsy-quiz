@@ -9,6 +9,7 @@ export type ProfileUser = {
   level?: number;
   totalXP?: number;
   totalPoints?: number;
+  rCoins?: number;
   totalGames?: number;
   totalCorrect?: number;
   avatarId?: string;
