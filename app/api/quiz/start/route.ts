@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import jwt from "jsonwebtoken";
+import type { DocumentSnapshot, QueryDocumentSnapshot } from "firebase-admin/firestore";
 import { db } from "@/lib/firebaseAdmin";
 
 async function getWixUserId(): Promise<{ wixUserId: string } | { error: NextResponse }> {
@@ -56,14 +57,15 @@ export async function POST() {
       .limit(20)
       .get();
 
-    let activeQuiz: FirebaseFirestore.DocumentSnapshot | null = null;
-    snapshot.docs.forEach((doc) => {
+    let activeQuiz: QueryDocumentSnapshot | null = null;
+    for (const doc of snapshot.docs) {
       const data = doc.data();
       const startsAt = data.startsAt?.toDate?.() ?? data.startsAt;
       if (startsAt && new Date(startsAt) <= now) {
-        if (!activeQuiz) activeQuiz = doc;
+        activeQuiz = doc;
+        break;
       }
-    });
+    }
 
     if (!activeQuiz) {
       return NextResponse.json(
@@ -84,7 +86,7 @@ export async function POST() {
       .where("weekId", "==", weekId)
       .get();
 
-    let sessionDoc = existingSessions.docs[0] ?? null;
+    let sessionDoc: DocumentSnapshot | null = existingSessions.docs[0] ?? null;
     let sessionData = sessionDoc?.data();
 
     if (sessionData?.completedAt) {
