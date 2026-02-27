@@ -51,6 +51,13 @@ export default function QuizPlayer({ isOpen, onClose }: Props) {
   const hasSubmittedForQuestionRef = useRef(false);
   const completeCalledRef = useRef(false);
 
+  const clearTimer = useCallback(() => {
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
+  }, []);
+
   useEffect(() => {
     setSwipeDisabled(isOpen);
     return () => setSwipeDisabled(false);
@@ -81,13 +88,6 @@ export default function QuizPlayer({ isOpen, onClose }: Props) {
       }
     }
   }, [isOpen, clearTimer]);
-
-  const clearTimer = useCallback(() => {
-    if (timerRef.current) {
-      clearInterval(timerRef.current);
-      timerRef.current = null;
-    }
-  }, []);
 
   const clearCountdown = useCallback(() => {
     if (countdownRef.current) {
