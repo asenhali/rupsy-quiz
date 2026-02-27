@@ -3,9 +3,20 @@
 import AppView from "@/components/AppView";
 import BottomNav from "@/components/BottomNav";
 import ProfileModal from "@/components/ProfileModal";
+import QuizPlayer from "@/components/QuizPlayer";
 import { OnboardingProvider } from "@/context/OnboardingContext";
-import { ProfileModalProvider } from "@/context/ProfileModalContext";
+import { ProfileModalProvider, useProfileModal } from "@/context/ProfileModalContext";
 import { PANELS } from "@/config/panels";
+
+function Modals() {
+  const { showQuiz, setShowQuiz } = useProfileModal();
+  return (
+    <>
+      <ProfileModal />
+      <QuizPlayer isOpen={showQuiz} onClose={() => setShowQuiz(false)} />
+    </>
+  );
+}
 
 export default function MainLayout({
   children,
@@ -21,7 +32,7 @@ export default function MainLayout({
         </main>
         <BottomNav />
       </div>
-      <ProfileModal />
+      <Modals />
     </ProfileModalProvider>
     </OnboardingProvider>
   );

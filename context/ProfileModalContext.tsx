@@ -21,6 +21,8 @@ type ProfileModalContextValue = {
   closeProfile: () => void;
   user: ProfileUser | null;
   setUser: (u: ProfileUser | null | ((prev: ProfileUser | null) => ProfileUser | null)) => void;
+  showQuiz: boolean;
+  setShowQuiz: (v: boolean) => void;
 };
 
 const defaultValue: ProfileModalContextValue = {
@@ -29,6 +31,8 @@ const defaultValue: ProfileModalContextValue = {
   closeProfile: () => {},
   user: null,
   setUser: () => {},
+  showQuiz: false,
+  setShowQuiz: () => {},
 };
 
 const ProfileModalContext = createContext<ProfileModalContextValue>(defaultValue);
@@ -36,6 +40,7 @@ const ProfileModalContext = createContext<ProfileModalContextValue>(defaultValue
 export function ProfileModalProvider({ children }: { children: ReactNode }) {
   const [isOpen, setIsOpen] = useState(false);
   const [user, setUser] = useState<ProfileUser | null>(null);
+  const [showQuiz, setShowQuiz] = useState(false);
 
   const value: ProfileModalContextValue = {
     isOpen,
@@ -43,6 +48,8 @@ export function ProfileModalProvider({ children }: { children: ReactNode }) {
     closeProfile: () => setIsOpen(false),
     user,
     setUser,
+    showQuiz,
+    setShowQuiz,
   };
 
   return (
