@@ -53,8 +53,6 @@ export default function HomePanel() {
               } else {
                 console.error(response);
               }
-                console.error(response);
-              }
             }}
             className="flex flex-col gap-4 w-full max-w-[320px]"
           >
