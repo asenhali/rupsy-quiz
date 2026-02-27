@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { SLOVAK_CITIES } from "@/config/cities";
 import { useOnboarding } from "@/context/OnboardingContext";
@@ -18,7 +18,8 @@ export default function HomePanel() {
   const [nickname, setNickname] = useState("");
   const [city, setCity] = useState("");
   const [citySuggestions, setCitySuggestions] = useState<string[]>([]);
-  const [isCityFocused, setIsCityFocused] = useState(false);
+  const [showCitySuggestions, setShowCitySuggestions] = useState(false);
+  const cityInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     setIsOnboarding(needsOnboarding === true);
@@ -93,6 +94,7 @@ export default function HomePanel() {
 
               <div className="relative">
                 <input
+                  ref={cityInputRef}
                   type="text"
                   value={city}
                   onChange={(e) => {
@@ -101,7 +103,7 @@ export default function HomePanel() {
                     updateCitySuggestions(v);
                   }}
                   onFocus={() => {
-                    setIsCityFocused(true);
+                    setShowCitySuggestions(true);
                     if (!city.trim()) {
                       setCitySuggestions(SLOVAK_CITIES);
                     } else {
@@ -109,13 +111,13 @@ export default function HomePanel() {
                     }
                   }}
                   onBlur={() => {
-                    setTimeout(() => setIsCityFocused(false), 200);
+                    setTimeout(() => setShowCitySuggestions(false), 150);
                   }}
                   placeholder="Mesto"
                   className="w-full p-4 border border-[#1b2833]/10 rounded-2xl bg-white/40 text-base font-medium placeholder:opacity-30"
                   autoComplete="off"
                 />
-                {isCityFocused && citySuggestions.length > 0 && (
+                {showCitySuggestions && citySuggestions.length > 0 && (
                   <div className="absolute top-full left-0 right-0 mt-1 z-10 bg-white/95 backdrop-blur-xl rounded-2xl border border-[#1b2833]/10 max-h-[200px] overflow-y-auto shadow-[0_8px_30px_rgba(27,40,51,0.1)]">
                     {citySuggestions.map((c) => (
                       <button
@@ -125,7 +127,8 @@ export default function HomePanel() {
                           e.preventDefault();
                           setCity(c);
                           setCitySuggestions([]);
-                          setIsCityFocused(false);
+                          setShowCitySuggestions(false);
+                          cityInputRef.current?.blur();
                         }}
                         className="w-full text-left px-4 py-3 text-sm font-medium hover:bg-[#1b2833]/5 border-0 bg-transparent"
                       >
@@ -144,10 +147,6 @@ export default function HomePanel() {
                 Začať hrať
               </button>
             </form>
-
-            <p className="text-[10px] font-medium opacity-20 text-center mt-4">
-              Meno a mesto môžeš neskôr zmeniť v nastaveniach
-            </p>
           </div>
         </div>
       )}

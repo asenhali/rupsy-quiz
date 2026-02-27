@@ -3,6 +3,7 @@
 import { usePathname, useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef } from "react";
 import { motion, useMotionValue, useSpring, PanInfo } from "framer-motion";
+import { useOnboarding } from "@/context/OnboardingContext";
 import { SwipeProvider, useSwipeContext } from "@/context/SwipeContext";
 
 export interface PanelDef {
@@ -27,6 +28,7 @@ function getViewportWidth() {
 function AppViewInner({ panels, showDots = false }: AppViewProps) {
   const pathname = usePathname();
   const { swipeDisabled } = useSwipeContext();
+  const { isOnboarding } = useOnboarding();
   const router = useRouter();
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -87,7 +89,7 @@ function AppViewInner({ panels, showDots = false }: AppViewProps) {
           width: `${panelCount * 100}%`,
           x: springX,
         }}
-        drag={swipeDisabled ? false : "x"}
+        drag={swipeDisabled || isOnboarding ? false : "x"}
         dragConstraints={containerRef}
         dragElastic={0.15}
         dragDirectionLock
