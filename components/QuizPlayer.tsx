@@ -709,7 +709,7 @@ export default function QuizPlayer({ isOpen, onClose }: Props) {
               </motion.button>
             ))}
           </div>
-        </motion.div>
+        </div>
       </div>
     );
   }
