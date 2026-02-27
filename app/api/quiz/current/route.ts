@@ -61,11 +61,10 @@ export async function GET() {
       .collection("quizSessions")
       .where("userId", "==", wixUserId)
       .where("weekId", "==", weekId)
-      .where("completedAt", "!=", null)
       .limit(1)
       .get();
 
-    if (!completedSession.empty) {
+    if (!completedSession.empty && completedSession.docs[0].data().completedAt != null) {
       const sessionData = completedSession.docs[0].data();
       return NextResponse.json({
         success: true,
