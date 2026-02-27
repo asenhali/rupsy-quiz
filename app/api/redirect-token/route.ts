@@ -19,7 +19,7 @@ export async function GET(request: Request) {
     secure: true,
     sameSite: "none",
     path: "/",
-    maxAge: 60 * 60 * 2, // 2 hours
+    maxAge: 2592000, // 30 days
   });
 
   return response;

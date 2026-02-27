@@ -11,6 +11,7 @@ export default function HomePanel() {
   const { openProfile, user, setUser, setShowQuiz } = useProfileModal();
   const { setIsOnboarding } = useOnboarding();
   const [needsOnboarding, setNeedsOnboarding] = useState<boolean | null>(null);
+  const [completedQuiz, setCompletedQuiz] = useState<{ totalScore: number } | null>(null);
 
   const avatarMap: Record<string, string> = {
     default: "/avatars/default.png",
@@ -44,6 +45,13 @@ export default function HomePanel() {
       }
       setNeedsOnboarding(json.needsOnboarding ?? null);
       setUser(json.user ?? null);
+      const quizRes = await fetch("/api/quiz/current", { credentials: "include" });
+      const quizJson = await quizRes.json();
+      if (quizJson.success && quizJson.quiz?.status === "completed") {
+        setCompletedQuiz({ totalScore: quizJson.quiz.totalScore ?? 0 });
+      } else {
+        setCompletedQuiz(null);
+      }
     }
     initAuth();
   }, [router, setUser]);
@@ -184,14 +192,26 @@ export default function HomePanel() {
 
           <section className="mx-5 mt-2 rounded-3xl bg-[#1b2833] py-8 px-6 flex flex-col items-center text-[#f3e6c0] shadow-[0_8px_30px_rgba(27,40,51,0.15)]">
             <p className="text-[10px] font-semibold uppercase tracking-[0.2em] opacity-50 mb-3">TÝŽDENNÝ KVÍZ</p>
-            <p className="text-base font-medium opacity-70 mb-8">Štartuje čoskoro</p>
-            <button
-              type="button"
-              onClick={() => setShowQuiz(true)}
-              className="w-full py-4 rounded-2xl bg-[#f3e6c0] text-[#1b2833] font-bold text-base tracking-wide text-center"
-            >
-              HRÁŤ KVÍZ
-            </button>
+            {completedQuiz ? (
+              <>
+                <p className="text-sm opacity-50 mb-2">Tvoje skóre</p>
+                <p className="text-4xl font-extrabold mb-8">{completedQuiz.totalScore}</p>
+                <div className="w-full py-4 rounded-2xl bg-[#f3e6c0]/10 border border-[#f3e6c0]/20 text-[#f3e6c0]/40 font-bold text-base text-center pointer-events-none">
+                  KVÍZ DOKONČENÝ
+                </div>
+              </>
+            ) : (
+              <>
+                <p className="text-base font-medium opacity-70 mb-8">Štartuje čoskoro</p>
+                <button
+                  type="button"
+                  onClick={() => setShowQuiz(true)}
+                  className="w-full py-4 rounded-2xl bg-[#f3e6c0] text-[#1b2833] font-bold text-base tracking-wide text-center"
+                >
+                  HRÁŤ KVÍZ
+                </button>
+              </>
+            )}
             <p className="text-[10px] font-medium uppercase tracking-widest opacity-30 mt-3">SEZÓNA 1</p>
           </section>
 

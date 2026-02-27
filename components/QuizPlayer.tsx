@@ -568,7 +568,7 @@ export default function QuizPlayer({ isOpen, onClose }: Props) {
               <motion.div
                 className="h-full bg-[#f3e6c0] rounded-full"
                 animate={{ width: `${progressPct}%` }}
-                transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                transition={{ duration: 0.6, ease: "easeInOut" }}
               />
             </div>
           </div>
