@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useSwipeContext } from "@/context/SwipeContext";
 
-type Phase = "loading" | "countdown" | "category-reveal" | "question-reveal" | "question-active" | "answer-feedback" | "summary";
+type Phase = "loading" | "countdown" | "category-reveal" | "category-outro" | "question-reveal" | "question-outro" | "question-active" | "answer-feedback" | "summary";
 
 type QuestionData = {
   id: string;
@@ -43,6 +43,8 @@ export default function QuizPlayer({ isOpen, onClose }: Props) {
   const countdownRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const feedbackTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const questionRevealTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const questionOutroTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const categoryOutroTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const timerStartTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const hasSubmittedForQuestionRef = useRef(false);
   const completeCalledRef = useRef(false);
@@ -61,6 +63,14 @@ export default function QuizPlayer({ isOpen, onClose }: Props) {
       if (questionRevealTimeoutRef.current) {
         clearTimeout(questionRevealTimeoutRef.current);
         questionRevealTimeoutRef.current = null;
+      }
+      if (questionOutroTimeoutRef.current) {
+        clearTimeout(questionOutroTimeoutRef.current);
+        questionOutroTimeoutRef.current = null;
+      }
+      if (categoryOutroTimeoutRef.current) {
+        clearTimeout(categoryOutroTimeoutRef.current);
+        categoryOutroTimeoutRef.current = null;
       }
       if (timerStartTimeoutRef.current) {
         clearTimeout(timerStartTimeoutRef.current);
@@ -147,20 +157,46 @@ export default function QuizPlayer({ isOpen, onClose }: Props) {
   useEffect(() => {
     if (phase !== "category-reveal" || !isOpen) return;
     countdownRef.current = setTimeout(() => {
-      setPhase("question-reveal");
-    }, 3000);
+      setPhase("category-outro");
+    }, 2500);
     return clearCountdown;
   }, [phase, isOpen, clearCountdown]);
 
   useEffect(() => {
+    if (phase !== "category-outro" || !isOpen) return;
+    categoryOutroTimeoutRef.current = setTimeout(() => {
+      setPhase("question-reveal");
+    }, 900);
+    return () => {
+      if (categoryOutroTimeoutRef.current) {
+        clearTimeout(categoryOutroTimeoutRef.current);
+        categoryOutroTimeoutRef.current = null;
+      }
+    };
+  }, [phase, isOpen]);
+
+  useEffect(() => {
     if (phase !== "question-reveal" || !currentQuestion || !isOpen) return;
     questionRevealTimeoutRef.current = setTimeout(() => {
-      setPhase("question-active");
+      setPhase("question-outro");
     }, 1500);
     return () => {
       if (questionRevealTimeoutRef.current) {
         clearTimeout(questionRevealTimeoutRef.current);
         questionRevealTimeoutRef.current = null;
+      }
+    };
+  }, [phase, currentQuestion?.id, isOpen]);
+
+  useEffect(() => {
+    if (phase !== "question-outro" || !currentQuestion || !isOpen) return;
+    questionOutroTimeoutRef.current = setTimeout(() => {
+      setPhase("question-active");
+    }, 700);
+    return () => {
+      if (questionOutroTimeoutRef.current) {
+        clearTimeout(questionOutroTimeoutRef.current);
+        questionOutroTimeoutRef.current = null;
       }
     };
   }, [phase, currentQuestion?.id, isOpen]);
@@ -408,14 +444,58 @@ export default function QuizPlayer({ isOpen, onClose }: Props) {
     );
   }
 
+  if (phase === "category-outro") {
+    const questionNum = currentQuestionIndex + 1;
+    return (
+      <div className={containerClass}>
+        <div className={`${contentClass} justify-center`}>
+          <motion.div
+            initial={{ opacity: 1 }}
+            animate={{ opacity: 0 }}
+            transition={{ duration: 0.6 }}
+            className="flex flex-col items-center text-center"
+          >
+            <p className="text-3xl font-extrabold uppercase tracking-widest">{currentCategory}</p>
+            <p className="text-sm opacity-40 mt-2">Otázka {questionNum} z {totalQuestions}</p>
+            <div className="w-12 h-0.5 bg-[#f3e6c0]/20 mx-auto mt-6" />
+          </motion.div>
+        </div>
+      </div>
+    );
+  }
+
   if (phase === "question-reveal" && currentQuestion) {
     return (
       <div className={containerClass}>
         <div className={`${contentClass} justify-center flex-1`}>
           <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.8 }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.6 }}
+            className="flex flex-col items-center justify-center w-full"
+          >
+            <p className="text-2xl font-bold text-center px-8 leading-relaxed">{currentQuestion.text}</p>
+            {currentQuestion.type === "image" && currentQuestion.imageUrl && (
+              <img
+                src={currentQuestion.imageUrl}
+                alt=""
+                className="mx-auto mt-6 max-w-[260px] w-full rounded-2xl overflow-hidden object-contain"
+              />
+            )}
+          </motion.div>
+        </div>
+      </div>
+    );
+  }
+
+  if (phase === "question-outro" && currentQuestion) {
+    return (
+      <div className={containerClass}>
+        <div className={`${contentClass} justify-center flex-1`}>
+          <motion.div
+            initial={{ opacity: 1 }}
+            animate={{ opacity: 0 }}
+            transition={{ duration: 0.5 }}
             className="flex flex-col items-center justify-center w-full"
           >
             <p className="text-2xl font-bold text-center px-8 leading-relaxed">{currentQuestion.text}</p>
@@ -440,105 +520,77 @@ export default function QuizPlayer({ isOpen, onClose }: Props) {
 
     return (
       <div className={containerClass}>
-        <div className={`${contentClass} flex-1 justify-start pt-6 pb-8`}>
-          <motion.div
-            layout
-            transition={{ duration: 0.6, ease: "easeInOut" }}
-            className="w-full"
-          >
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.2, duration: 0.4 }}
-              className="w-full"
-            >
-              <div className="w-full h-1 bg-[#f3e6c0]/10 rounded-full overflow-hidden">
-                <motion.div
-                  className="h-full bg-[#f3e6c0] rounded-full"
-                  animate={{ width: `${progressPct}%` }}
-                  transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                />
-              </div>
-            </motion.div>
-            <motion.p
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.3, duration: 0.4 }}
-              className="text-[10px] uppercase tracking-widest opacity-30 text-right mt-2"
-            >
-              {currentQuestionIndex + 1} / {totalQuestions}
-            </motion.p>
-            <motion.p
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.3, duration: 0.4 }}
-              className="text-[10px] uppercase tracking-widest opacity-40 text-center mt-4"
-            >
-              {currentCategory}
-            </motion.p>
-            <motion.p
-              initial={{ y: 60 }}
-              animate={{ y: 0 }}
-              transition={{ duration: 0.6, ease: "easeInOut" }}
-              className="text-xl font-bold text-center px-6 mt-3 leading-relaxed"
-            >
-              {currentQuestion.text}
-            </motion.p>
-            {currentQuestion.type === "image" && currentQuestion.imageUrl && (
-              <img
-                src={currentQuestion.imageUrl}
-                alt=""
-                className="mx-auto mt-4 max-w-[260px] w-full rounded-2xl overflow-hidden object-contain"
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.6 }}
+          className={`${contentClass} flex-1 justify-start pt-6 pb-8`}
+        >
+          <div className="w-full">
+            <div className="w-full h-1 bg-[#f3e6c0]/10 rounded-full overflow-hidden">
+              <motion.div
+                className="h-full bg-[#f3e6c0] rounded-full"
+                animate={{ width: `${progressPct}%` }}
+                transition={{ type: "spring", stiffness: 300, damping: 30 }}
               />
-            )}
-            <motion.div
-              key={timeRemaining}
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={
-                isUrgent
-                  ? { scale: [1, 1.1, 1], opacity: 1 }
-                  : { scale: 1, opacity: 1 }
-              }
-              transition={
-                isUrgent
-                  ? { opacity: { delay: 0.5, duration: 0.4 }, scale: { duration: 0.5, repeat: Infinity } }
-                  : { delay: 0.5, duration: 0.4 }
-              }
-              className={`w-16 h-16 rounded-full border-2 flex items-center justify-center mx-auto mt-6 mb-6 ${
-                isUrgent ? "border-red-400/50 text-red-400" : "border-[#f3e6c0]/20"
-              }`}
-              style={
-                !isUrgent && borderOpacity != null
-                  ? { borderColor: `rgba(243, 230, 192, ${borderOpacity})` }
-                  : undefined
-              }
-            >
-              <span className="text-2xl font-bold tabular-nums">{timeRemaining}</span>
-            </motion.div>
-            <div className="flex flex-col space-y-3 w-full">
-              {currentQuestion.answers?.map((a, i) => (
-                <motion.button
-                  key={i}
-                  type="button"
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.7 + i * 0.2, duration: 0.4 }}
-                  onClick={() => handleAnswerClick(i)}
-                  disabled={selectedAnswer !== null}
-                  className={`w-full py-4 rounded-2xl text-base font-semibold text-center border transition-colors ${
-                    selectedAnswer !== null ? "pointer-events-none" : ""
-                  } ${
-                    selectedAnswer === i
-                      ? "bg-[#f3e6c0]/20 border-[#f3e6c0]/30"
-                      : "bg-[#f3e6c0]/[0.07] border-[#f3e6c0]/[0.12] active:bg-[#f3e6c0]/20"
-                  }`}
-                >
-                  {a}
-                </motion.button>
-              ))}
             </div>
+            <p className="text-[10px] uppercase tracking-widest opacity-30 text-right mt-2">
+              {currentQuestionIndex + 1} / {totalQuestions}
+            </p>
+          </div>
+          <p className="text-[10px] uppercase tracking-widest opacity-40 text-center mt-4">{currentCategory}</p>
+          <p className="text-xl font-bold text-center px-6 mt-3 leading-relaxed">{currentQuestion.text}</p>
+          {currentQuestion.type === "image" && currentQuestion.imageUrl && (
+            <img
+              src={currentQuestion.imageUrl}
+              alt=""
+              className="mx-auto mt-4 max-w-[260px] w-full rounded-2xl overflow-hidden object-contain"
+            />
+          )}
+          <motion.div
+            key={timeRemaining}
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={
+              isUrgent
+                ? { scale: [1, 1.1, 1], opacity: 1 }
+                : { scale: 1, opacity: 1 }
+            }
+            transition={
+              isUrgent
+                ? { scale: { duration: 0.5, repeat: Infinity } }
+                : {}
+            }
+            className={`w-16 h-16 rounded-full border-2 flex items-center justify-center mx-auto mt-6 mb-6 ${
+              isUrgent ? "border-red-400/50 text-red-400" : "border-[#f3e6c0]/20"
+            }`}
+            style={
+              !isUrgent && borderOpacity != null
+                ? { borderColor: `rgba(243, 230, 192, ${borderOpacity})` }
+                : undefined
+            }
+          >
+            <span className="text-2xl font-bold tabular-nums">{timeRemaining}</span>
           </motion.div>
-        </div>
+          <div className="flex flex-col space-y-3 w-full">
+            {currentQuestion.answers?.map((a, i) => (
+              <button
+                key={i}
+                type="button"
+                onClick={() => handleAnswerClick(i)}
+                disabled={selectedAnswer !== null}
+                className={`w-full py-4 rounded-2xl text-base font-semibold text-center border transition-colors ${
+                  selectedAnswer !== null ? "pointer-events-none" : ""
+                } ${
+                  selectedAnswer === i
+                    ? "bg-[#f3e6c0]/20 border-[#f3e6c0]/30"
+                    : "bg-[#f3e6c0]/[0.07] border-[#f3e6c0]/[0.12] active:bg-[#f3e6c0]/20"
+                }`}
+              >
+                {a}
+              </button>
+            ))}
+          </div>
+        </motion.div>
       </div>
     );
   }
