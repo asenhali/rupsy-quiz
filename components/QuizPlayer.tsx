@@ -38,6 +38,8 @@ export default function QuizPlayer({ isOpen, onClose }: Props) {
   const [totalPlayers, setTotalPlayers] = useState<number | null>(null);
   const [countdownNum, setCountdownNum] = useState(3);
   const [displayedScore, setDisplayedScore] = useState(0);
+  const [timerStarted, setTimerStarted] = useState(false);
+  const [answersInteractive, setAnswersInteractive] = useState(false);
 
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const countdownRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -109,6 +111,8 @@ export default function QuizPlayer({ isOpen, onClose }: Props) {
     setRanking(null);
     setTotalPlayers(null);
     setDisplayedScore(0);
+    setTimerStarted(false);
+    setAnswersInteractive(false);
     completeCalledRef.current = false;
 
     (async () => {
@@ -205,10 +209,18 @@ export default function QuizPlayer({ isOpen, onClose }: Props) {
     if (phase !== "question-active" || !currentQuestion) return;
     setTimeRemaining(currentQuestion.timeLimitSec ?? 30);
     setSelectedAnswer(null);
+    setTimerStarted(false);
+    setAnswersInteractive(false);
     hasSubmittedForQuestionRef.current = false;
     clearTimer();
     const timeLimitSec = currentQuestion.timeLimitSec ?? 30;
+    const answersCount = currentQuestion.answers?.length ?? 4;
+    const answerDelays = answersCount === 2 ? [800, 1000] : [800, 1000, 1200, 1400];
+    const lastAnswerStart = answerDelays[answersCount - 1] ?? 800 + (answersCount - 1) * 200;
+    const timerStartDelay = lastAnswerStart + 400;
     timerStartTimeoutRef.current = setTimeout(() => {
+      setTimerStarted(true);
+      setAnswersInteractive(true);
       timerRef.current = setInterval(() => {
         setTimeRemaining((prev) => {
           if (prev <= 1) {
@@ -219,7 +231,7 @@ export default function QuizPlayer({ isOpen, onClose }: Props) {
           return prev - 1;
         });
       }, 1000);
-    }, 500);
+    }, timerStartDelay);
     return () => {
       clearTimer();
       if (timerStartTimeoutRef.current) {
@@ -517,15 +529,12 @@ export default function QuizPlayer({ isOpen, onClose }: Props) {
     const isUrgent = timeRemaining <= 3;
     const timeLimitSec = currentQuestion.timeLimitSec ?? 30;
     const borderOpacity = isUrgent ? undefined : 0.1 + (0.2 * timeRemaining) / timeLimitSec;
+    const answersCount = currentQuestion.answers?.length ?? 4;
+    const answerDelays = answersCount === 2 ? [800, 1000] : [800, 1000, 1200, 1400];
 
     return (
       <div className={containerClass}>
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.6 }}
-          className={`${contentClass} flex-1 justify-start pt-6 pb-8`}
-        >
+        <div className={`${contentClass} flex-1 justify-start pt-6 pb-8`}>
           <div className="w-full">
             <div className="w-full h-1 bg-[#f3e6c0]/10 rounded-full overflow-hidden">
               <motion.div
@@ -534,63 +543,63 @@ export default function QuizPlayer({ isOpen, onClose }: Props) {
                 transition={{ type: "spring", stiffness: 300, damping: 30 }}
               />
             </div>
-            <p className="text-[10px] uppercase tracking-widest opacity-30 text-right mt-2">
-              {currentQuestionIndex + 1} / {totalQuestions}
-            </p>
           </div>
-          <p className="text-[10px] uppercase tracking-widest opacity-40 text-center mt-4">{currentCategory}</p>
-          <p className="text-xl font-bold text-center px-6 mt-3 leading-relaxed">{currentQuestion.text}</p>
-          {currentQuestion.type === "image" && currentQuestion.imageUrl && (
-            <img
-              src={currentQuestion.imageUrl}
-              alt=""
-              className="mx-auto mt-4 max-w-[260px] w-full rounded-2xl overflow-hidden object-contain"
-            />
-          )}
           <motion.div
-            key={timeRemaining}
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={
-              isUrgent
-                ? { scale: [1, 1.1, 1], opacity: 1 }
-                : { scale: 1, opacity: 1 }
-            }
-            transition={
-              isUrgent
-                ? { scale: { duration: 0.5, repeat: Infinity } }
-                : {}
-            }
-            className={`w-16 h-16 rounded-full border-2 flex items-center justify-center mx-auto mt-6 mb-6 ${
-              isUrgent ? "border-red-400/50 text-red-400" : "border-[#f3e6c0]/20"
-            }`}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.6 }}
+          >
+            <p className="text-[10px] uppercase tracking-widest opacity-40 text-center mt-4">{currentCategory}</p>
+            <p className="text-xl font-bold text-center px-6 mt-3 leading-relaxed">{currentQuestion.text}</p>
+            {currentQuestion.type === "image" && currentQuestion.imageUrl && (
+              <img
+                src={currentQuestion.imageUrl}
+                alt=""
+                className="mx-auto mt-4 max-w-[260px] w-full rounded-2xl overflow-hidden object-contain"
+              />
+            )}
+          </motion.div>
+          <div
+            className={`w-16 h-16 rounded-full border-2 flex items-center justify-center mx-auto mt-6 mb-6 transition-opacity duration-500 ${
+              timerStarted ? "opacity-100" : "opacity-0"
+            } ${isUrgent ? "border-red-400/50 text-red-400" : "border-[#f3e6c0]/20"}`}
             style={
-              !isUrgent && borderOpacity != null
+              !isUrgent && timerStarted && borderOpacity != null
                 ? { borderColor: `rgba(243, 230, 192, ${borderOpacity})` }
                 : undefined
             }
           >
-            <span className="text-2xl font-bold tabular-nums">{timeRemaining}</span>
-          </motion.div>
+            <motion.span
+              key={timeRemaining}
+              className="text-2xl font-bold tabular-nums"
+              animate={isUrgent ? { scale: [1, 1.1, 1] } : {}}
+              transition={isUrgent ? { duration: 0.5, repeat: Infinity } : {}}
+            >
+              {timeRemaining}
+            </motion.span>
+          </div>
           <div className="flex flex-col space-y-3 w-full">
             {currentQuestion.answers?.map((a, i) => (
-              <button
+              <motion.button
                 key={i}
                 type="button"
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: (answerDelays[i] ?? 1400) / 1000, duration: 0.4 }}
                 onClick={() => handleAnswerClick(i)}
-                disabled={selectedAnswer !== null}
+                disabled={selectedAnswer !== null || !answersInteractive}
+                style={{ pointerEvents: selectedAnswer !== null || !answersInteractive ? "none" : "auto" }}
                 className={`w-full py-4 rounded-2xl text-base font-semibold text-center border transition-colors ${
-                  selectedAnswer !== null ? "pointer-events-none" : ""
-                } ${
                   selectedAnswer === i
                     ? "bg-[#f3e6c0]/20 border-[#f3e6c0]/30"
                     : "bg-[#f3e6c0]/[0.07] border-[#f3e6c0]/[0.12] active:bg-[#f3e6c0]/20"
                 }`}
               >
                 {a}
-              </button>
+              </motion.button>
             ))}
           </div>
-        </motion.div>
+        </div>
       </div>
     );
   }
