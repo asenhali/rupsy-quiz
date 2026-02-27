@@ -36,6 +36,7 @@ export default function HomePanel() {
   }, []);
 
   useEffect(() => {
+    if (showQuiz) return;
     async function initAuth() {
       const res = await fetch("/api/me", { credentials: "include" });
       const json = await res.json();
@@ -45,15 +46,12 @@ export default function HomePanel() {
       }
       setNeedsOnboarding(json.needsOnboarding ?? null);
       setUser(json.user ?? null);
-      if (!showQuiz) {
-        const quizRes = await fetch("/api/quiz/current", { credentials: "include" });
-        const quizJson = await quizRes.json();
-        console.log("quiz current response:", quizJson);
-        if (quizJson.success && quizJson.quiz?.status === "completed") {
-          setCompletedQuiz({ totalScore: quizJson.quiz.totalScore ?? 0 });
-        } else {
-          setCompletedQuiz(null);
-        }
+      const quizRes = await fetch("/api/quiz/current", { credentials: "include" });
+      const quizJson = await quizRes.json();
+      if (quizJson.success && quizJson.quiz?.status === "completed") {
+        setCompletedQuiz({ totalScore: quizJson.quiz.totalScore ?? 0 });
+      } else {
+        setCompletedQuiz(null);
       }
     }
     initAuth();
