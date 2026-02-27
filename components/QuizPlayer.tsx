@@ -380,12 +380,8 @@ export default function QuizPlayer({ isOpen, onClose }: Props) {
           <motion.div
             key={currentQuestionIndex}
             initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{
-              exit: { duration: 0.3 },
-              enter: { duration: 0.5 },
-            }}
+            animate={{ opacity: 1, transition: { duration: 0.5 } }}
+            exit={{ opacity: 0, transition: { duration: 0.3 } }}
             className={`${contentClass} flex-1 justify-start pt-6 pb-8`}
           >
             <div className="w-full">
