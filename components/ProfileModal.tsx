@@ -15,16 +15,6 @@ export default function ProfileModal() {
     return () => setSwipeDisabled(false);
   }, [isOpen, setSwipeDisabled]);
 
-  useEffect(() => {
-    if (isOpen) {
-      const prev = document.body.style.overflow;
-      document.body.style.overflow = "hidden";
-      return () => {
-        document.body.style.overflow = prev;
-      };
-    }
-  }, [isOpen]);
-
   async function handleAvatarChange(newAvatarId: string) {
     const res = await fetch("/api/profile/update", {
       method: "POST",
@@ -112,12 +102,12 @@ export default function ProfileModal() {
           <p className="text-xs font-semibold uppercase tracking-widest opacity-40 mb-4">UMIESTNENIA</p>
           <div className="grid grid-cols-3 gap-2">
             <div className="rounded-2xl bg-white/40 border border-[#1b2833]/[0.06] p-3 flex flex-col items-center">
-              <span className="text-[9px] uppercase tracking-widest opacity-40 font-medium mb-1 text-center leading-tight">SLOVENSKO</span>
-              <span className="text-xl font-bold">—</span>
-            </div>
-            <div className="rounded-2xl bg-white/40 border border-[#1b2833]/[0.06] p-3 flex flex-col items-center">
               <span className="text-[9px] uppercase tracking-widest opacity-40 font-medium mb-1 text-center leading-tight">{(user?.city ?? "").toUpperCase() || "MESTO"}</span>
               <span className="text-xl font-bold">—</span>
+            </div>
+            <div className="rounded-2xl bg-white/60 border border-[#1b2833]/[0.08] p-4 flex flex-col items-center">
+              <span className="text-[9px] uppercase tracking-widest opacity-40 font-medium mb-1 text-center leading-tight">SLOVENSKO</span>
+              <span className="text-2xl font-bold">—</span>
             </div>
             <div className="rounded-2xl bg-white/40 border border-[#1b2833]/[0.06] p-3 flex flex-col items-center">
               <span className="text-[9px] uppercase tracking-widest opacity-40 font-medium mb-1 text-center leading-tight">MESTÁ</span>
