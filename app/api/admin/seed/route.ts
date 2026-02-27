@@ -5,7 +5,7 @@ import { db } from "@/lib/firebaseAdmin";
 
 const SEED_ADMIN_ID = "f29e1405-226d-4491-8df4-5ed0bd881e76";
 
-export async function POST() {
+export async function GET() {
   try {
     const cookieStore = await cookies();
     const token = cookieStore.get("rupsy_token")?.value ?? null;
