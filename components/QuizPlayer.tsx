@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { useSwipeContext } from "@/context/SwipeContext";
 
@@ -382,7 +383,7 @@ export default function QuizPlayer({ isOpen, onClose }: Props) {
 
   const contentClass = "w-full max-w-[480px] mx-auto px-6 flex flex-col items-center";
 
-  return (
+  return createPortal(
     <div className={`${containerClass} relative`}>
       {phase !== "summary" && (
         <>
@@ -625,6 +626,7 @@ export default function QuizPlayer({ isOpen, onClose }: Props) {
           </div>
         </motion.div>
       )}
-    </div>
+    </div>,
+    document.body
   );
 }
