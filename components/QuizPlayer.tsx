@@ -383,7 +383,10 @@ export default function QuizPlayer({ isOpen, onClose }: Props) {
   const contentClass = "w-full max-w-[480px] mx-auto px-6 flex flex-col items-center";
 
   return (
-    <div className={`${containerClass} relative`}>
+    <div
+      className={`${containerClass} relative`}
+      style={{ position: "fixed", top: 0, left: 0, width: "100vw", height: "100vh", zIndex: 9999 }}
+    >
       {phase !== "summary" && (
         <>
           {phase === "loading" && (
