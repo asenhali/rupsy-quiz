@@ -1,7 +1,6 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { useSwipeContext } from "@/context/SwipeContext";
 
@@ -24,7 +23,6 @@ type Props = {
 
 export default function QuizPlayer({ isOpen, onClose }: Props) {
   const { setSwipeDisabled } = useSwipeContext();
-  const [mounted, setMounted] = useState(false);
   const [phase, setPhase] = useState<Phase>("loading");
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [currentQuestion, setCurrentQuestion] = useState<QuestionData | null>(null);
@@ -59,10 +57,6 @@ export default function QuizPlayer({ isOpen, onClose }: Props) {
       clearInterval(timerRef.current);
       timerRef.current = null;
     }
-  }, []);
-
-  useEffect(() => {
-    setMounted(true);
   }, []);
 
   useEffect(() => {
@@ -381,7 +375,6 @@ export default function QuizPlayer({ isOpen, onClose }: Props) {
     };
   }, [phase, totalScore]);
 
-  if (!mounted) return null;
   if (!isOpen) return null;
 
   const containerClass =
@@ -389,7 +382,7 @@ export default function QuizPlayer({ isOpen, onClose }: Props) {
 
   const contentClass = "w-full max-w-[480px] mx-auto px-6 flex flex-col items-center";
 
-  return createPortal(
+  return (
     <div className={`${containerClass} relative`}>
       {phase !== "summary" && (
         <>
@@ -632,7 +625,6 @@ export default function QuizPlayer({ isOpen, onClose }: Props) {
           </div>
         </motion.div>
       )}
-    </div>,
-    document.body
+    </div>
   );
 }
