@@ -24,6 +24,7 @@ type Props = {
 
 export default function QuizPlayer({ isOpen, onClose }: Props) {
   const { setSwipeDisabled } = useSwipeContext();
+  const [mounted, setMounted] = useState(false);
   const [phase, setPhase] = useState<Phase>("loading");
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [currentQuestion, setCurrentQuestion] = useState<QuestionData | null>(null);
@@ -58,6 +59,10 @@ export default function QuizPlayer({ isOpen, onClose }: Props) {
       clearInterval(timerRef.current);
       timerRef.current = null;
     }
+  }, []);
+
+  useEffect(() => {
+    setMounted(true);
   }, []);
 
   useEffect(() => {
@@ -376,6 +381,7 @@ export default function QuizPlayer({ isOpen, onClose }: Props) {
     };
   }, [phase, totalScore]);
 
+  if (!mounted) return null;
   if (!isOpen) return null;
 
   const containerClass =
