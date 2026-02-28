@@ -74,7 +74,11 @@ export default function HomePanel() {
       setRanking(null);
       return;
     }
+    if (showQuiz) return;
+
     let cancelled = false;
+    let intervalId: ReturnType<typeof setInterval> | null = null;
+
     setRankingLoading(true);
     setRanking(null);
     fetch("/api/quiz/my-ranking", { credentials: "include" })
@@ -82,12 +86,23 @@ export default function HomePanel() {
       .then((json) => {
         if (cancelled || !json.success) return;
         if (json.ranking) setRanking(json.ranking);
+        intervalId = setInterval(() => {
+          fetch("/api/quiz/my-ranking", { credentials: "include" })
+            .then((r) => r.json())
+            .then((data) => {
+              if (!cancelled && data.success && data.ranking) setRanking(data.ranking);
+            });
+        }, 5_000);
       })
       .finally(() => {
         if (!cancelled) setRankingLoading(false);
       });
-    return () => { cancelled = true; };
-  }, [completedQuiz]);
+
+    return () => {
+      cancelled = true;
+      if (intervalId) clearInterval(intervalId);
+    };
+  }, [completedQuiz, showQuiz]);
 
   return (
     <div className="h-full overflow-hidden flex flex-col bg-[#f3e6c0] text-[#1b2833]">
