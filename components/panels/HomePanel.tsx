@@ -12,6 +12,17 @@ export default function HomePanel() {
   const { setIsOnboarding } = useOnboarding();
   const [needsOnboarding, setNeedsOnboarding] = useState<boolean | null>(null);
   const [completedQuiz, setCompletedQuiz] = useState<{ totalScore: number } | null>(null);
+  const [ranking, setRanking] = useState<{
+    totalScore: number;
+    slovakiaRank: number;
+    slovakiaTotal: number;
+    cityRank: number;
+    cityTotal: number;
+    cityName: string;
+    citiesRank: number;
+    citiesTotal: number;
+  } | null>(null);
+  const [rankingLoading, setRankingLoading] = useState(false);
 
   const avatarMap: Record<string, string> = {
     default: "/avatars/default.png",
@@ -52,10 +63,31 @@ export default function HomePanel() {
         setCompletedQuiz({ totalScore: quizJson.quiz.totalScore ?? 0 });
       } else {
         setCompletedQuiz(null);
+        setRanking(null);
       }
     }
     initAuth();
   }, [router, setUser, showQuiz]);
+
+  useEffect(() => {
+    if (!completedQuiz) {
+      setRanking(null);
+      return;
+    }
+    let cancelled = false;
+    setRankingLoading(true);
+    setRanking(null);
+    fetch("/api/quiz/my-ranking", { credentials: "include" })
+      .then((res) => res.json())
+      .then((json) => {
+        if (cancelled || !json.success) return;
+        if (json.ranking) setRanking(json.ranking);
+      })
+      .finally(() => {
+        if (!cancelled) setRankingLoading(false);
+      });
+    return () => { cancelled = true; };
+  }, [completedQuiz]);
 
   return (
     <div className="h-full overflow-hidden flex flex-col bg-[#f3e6c0] text-[#1b2833]">
@@ -196,10 +228,28 @@ export default function HomePanel() {
             {completedQuiz ? (
               <>
                 <p className="text-xs opacity-50 mt-1">Tvoje skóre</p>
-                <p className="text-4xl font-extrabold mt-2 mb-8">{completedQuiz.totalScore}</p>
-                <div className="w-full py-4 rounded-2xl bg-[#f3e6c0]/10 text-[#f3e6c0]/30 font-semibold text-sm text-center pointer-events-none">
-                  KVÍZ DOKONČENÝ ✓
+                <p className="text-4xl font-extrabold mt-2">{completedQuiz.totalScore}</p>
+                <div className="w-full mt-4 py-4 px-2 flex justify-between items-center gap-2 text-[#f3e6c0]">
+                  <div className="flex flex-col items-center flex-1">
+                    <span className="text-[9px] uppercase tracking-widest opacity-50">{(ranking?.cityName ?? "MESTO").toUpperCase()}</span>
+                    <span className="text-lg font-bold text-[#f3e6c0] mt-1">
+                      {rankingLoading ? <span className="animate-pulse opacity-60">...</span> : ranking ? (ranking.cityRank > 0 ? `#${ranking.cityRank}` : "—") : "—"}
+                    </span>
+                  </div>
+                  <div className="flex flex-col items-center flex-1 border-l border-[#f3e6c0]/10 pl-2">
+                    <span className="text-[9px] uppercase tracking-widest opacity-50">SLOVENSKO</span>
+                    <span className="text-xl font-bold text-[#f3e6c0] mt-1">
+                      {rankingLoading ? <span className="animate-pulse opacity-60">...</span> : ranking && ranking.slovakiaRank > 0 ? `#${ranking.slovakiaRank}` : "—"}
+                    </span>
+                  </div>
+                  <div className="flex flex-col items-center flex-1 border-l border-[#f3e6c0]/10 pl-2">
+                    <span className="text-[9px] uppercase tracking-widest opacity-50">MESTÁ</span>
+                    <span className="text-lg font-bold text-[#f3e6c0] mt-1">
+                      {rankingLoading ? <span className="animate-pulse opacity-60">...</span> : ranking ? (ranking.citiesRank > 0 ? `#${ranking.citiesRank}` : "—") : "—"}
+                    </span>
+                  </div>
                 </div>
+                <p className="text-[10px] font-medium uppercase tracking-widest opacity-30 mt-4">KVÍZ DOKONČENÝ ✓</p>
               </>
             ) : (
               <>
@@ -211,9 +261,9 @@ export default function HomePanel() {
                 >
                   HRÁŤ KVÍZ
                 </button>
+                <p className="text-[10px] font-medium uppercase tracking-widest opacity-30 mt-3">SEZÓNA 1</p>
               </>
             )}
-            <p className="text-[10px] font-medium uppercase tracking-widest opacity-30 mt-3">SEZÓNA 1</p>
           </section>
 
           <div className="flex-1 min-h-[16px]" />
