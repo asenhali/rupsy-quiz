@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { motion, AnimatePresence } from "framer-motion";
 import { SLOVAK_CITIES } from "@/config/cities";
 import { useOnboarding } from "@/context/OnboardingContext";
 import { useProfileModal } from "@/context/ProfileModalContext";
@@ -23,6 +24,16 @@ export default function HomePanel() {
     citiesTotal: number;
   } | null>(null);
   const [rankingLoading, setRankingLoading] = useState(false);
+  const [rankDirection, setRankDirection] = useState<{
+    cityRank: "up" | "down" | "same" | null;
+    slovakiaRank: "up" | "down" | "same" | null;
+    citiesRank: "up" | "down" | "same" | null;
+  }>({ cityRank: null, slovakiaRank: null, citiesRank: null });
+  const prevRankingRef = useRef<{
+    slovakiaRank: number;
+    cityRank: number;
+    citiesRank: number;
+  } | null>(null);
 
   const avatarMap: Record<string, string> = {
     default: "/avatars/default.png",
@@ -72,6 +83,8 @@ export default function HomePanel() {
   useEffect(() => {
     if (!completedQuiz) {
       setRanking(null);
+      setRankDirection({ cityRank: null, slovakiaRank: null, citiesRank: null });
+      prevRankingRef.current = null;
       return;
     }
     if (showQuiz) return;
@@ -81,16 +94,40 @@ export default function HomePanel() {
 
     setRankingLoading(true);
     setRanking(null);
+    setRankDirection({ cityRank: null, slovakiaRank: null, citiesRank: null });
+    prevRankingRef.current = null;
     fetch("/api/quiz/my-ranking", { credentials: "include" })
       .then((res) => res.json())
       .then((json) => {
         if (cancelled || !json.success) return;
-        if (json.ranking) setRanking(json.ranking);
+        if (json.ranking) {
+          const r = json.ranking;
+          const prev = prevRankingRef.current;
+          const dir = {
+            cityRank: prev ? (r.cityRank < prev.cityRank ? "up" : r.cityRank > prev.cityRank ? "down" : "same") : null,
+            slovakiaRank: prev ? (r.slovakiaRank < prev.slovakiaRank ? "up" : r.slovakiaRank > prev.slovakiaRank ? "down" : "same") : null,
+            citiesRank: prev ? (r.citiesRank < prev.citiesRank ? "up" : r.citiesRank > prev.citiesRank ? "down" : "same") : null,
+          };
+          prevRankingRef.current = { cityRank: r.cityRank, slovakiaRank: r.slovakiaRank, citiesRank: r.citiesRank };
+          setRankDirection(dir);
+          setRanking(r);
+        }
         intervalId = setInterval(() => {
           fetch("/api/quiz/my-ranking", { credentials: "include" })
             .then((r) => r.json())
             .then((data) => {
-              if (!cancelled && data.success && data.ranking) setRanking(data.ranking);
+              if (!cancelled && data.success && data.ranking) {
+                const r = data.ranking;
+                const prev = prevRankingRef.current;
+                const dir = {
+                  cityRank: prev ? (r.cityRank < prev.cityRank ? "up" : r.cityRank > prev.cityRank ? "down" : "same") : null,
+                  slovakiaRank: prev ? (r.slovakiaRank < prev.slovakiaRank ? "up" : r.slovakiaRank > prev.slovakiaRank ? "down" : "same") : null,
+                  citiesRank: prev ? (r.citiesRank < prev.citiesRank ? "up" : r.citiesRank > prev.citiesRank ? "down" : "same") : null,
+                };
+                prevRankingRef.current = { cityRank: r.cityRank, slovakiaRank: r.slovakiaRank, citiesRank: r.citiesRank };
+                setRankDirection(dir);
+                setRanking(r);
+              }
             });
         }, 5_000);
       })
@@ -248,19 +285,88 @@ export default function HomePanel() {
                   <div className="flex flex-col items-center flex-1">
                     <span className="text-[9px] uppercase tracking-widest opacity-50">{(ranking?.cityName ?? "MESTO").toUpperCase()}</span>
                     <span className="text-lg font-bold text-[#f3e6c0] mt-1">
-                      {rankingLoading ? <span className="animate-pulse opacity-60">...</span> : ranking ? (ranking.cityRank > 0 ? `#${ranking.cityRank}` : "—") : "—"}
+                      {rankingLoading ? (
+                        <span className="animate-pulse opacity-60">...</span>
+                      ) : ranking && ranking.cityRank > 0 ? (
+                        <AnimatePresence mode="wait">
+                          <motion.span
+                            key={ranking.cityRank}
+                            initial={
+                              rankDirection.cityRank === "down"
+                                ? { y: -15, opacity: 0, color: "#ef4444" }
+                                : rankDirection.cityRank === "up"
+                                  ? { y: 15, opacity: 0, color: "#22c55e" }
+                                  : { y: 0, opacity: 1, color: "#f3e6c0" }
+                            }
+                            animate={{ y: 0, opacity: 1, color: "#f3e6c0" }}
+                            exit={{ opacity: 0, scale: 0.8 }}
+                            transition={{ duration: 0.5 }}
+                            className="inline-block"
+                          >
+                            #{ranking.cityRank}
+                          </motion.span>
+                        </AnimatePresence>
+                      ) : (
+                        "—"
+                      )}
                     </span>
                   </div>
                   <div className="flex flex-col items-center flex-1 border-l border-[#f3e6c0]/10 pl-2">
                     <span className="text-[9px] uppercase tracking-widest opacity-50">SLOVENSKO</span>
                     <span className="text-xl font-bold text-[#f3e6c0] mt-1">
-                      {rankingLoading ? <span className="animate-pulse opacity-60">...</span> : ranking && ranking.slovakiaRank > 0 ? `#${ranking.slovakiaRank}` : "—"}
+                      {rankingLoading ? (
+                        <span className="animate-pulse opacity-60">...</span>
+                      ) : ranking && ranking.slovakiaRank > 0 ? (
+                        <AnimatePresence mode="wait">
+                          <motion.span
+                            key={ranking.slovakiaRank}
+                            initial={
+                              rankDirection.slovakiaRank === "down"
+                                ? { y: -15, opacity: 0, color: "#ef4444" }
+                                : rankDirection.slovakiaRank === "up"
+                                  ? { y: 15, opacity: 0, color: "#22c55e" }
+                                  : { y: 0, opacity: 1, color: "#f3e6c0" }
+                            }
+                            animate={{ y: 0, opacity: 1, color: "#f3e6c0" }}
+                            exit={{ opacity: 0, scale: 0.8 }}
+                            transition={{ duration: 0.5 }}
+                            className="inline-block"
+                          >
+                            #{ranking.slovakiaRank}
+                          </motion.span>
+                        </AnimatePresence>
+                      ) : (
+                        "—"
+                      )}
                     </span>
                   </div>
                   <div className="flex flex-col items-center flex-1 border-l border-[#f3e6c0]/10 pl-2">
                     <span className="text-[9px] uppercase tracking-widest opacity-50">MESTÁ</span>
                     <span className="text-lg font-bold text-[#f3e6c0] mt-1">
-                      {rankingLoading ? <span className="animate-pulse opacity-60">...</span> : ranking ? (ranking.citiesRank > 0 ? `#${ranking.citiesRank}` : "—") : "—"}
+                      {rankingLoading ? (
+                        <span className="animate-pulse opacity-60">...</span>
+                      ) : ranking && ranking.citiesRank > 0 ? (
+                        <AnimatePresence mode="wait">
+                          <motion.span
+                            key={ranking.citiesRank}
+                            initial={
+                              rankDirection.citiesRank === "down"
+                                ? { y: -15, opacity: 0, color: "#ef4444" }
+                                : rankDirection.citiesRank === "up"
+                                  ? { y: 15, opacity: 0, color: "#22c55e" }
+                                  : { y: 0, opacity: 1, color: "#f3e6c0" }
+                            }
+                            animate={{ y: 0, opacity: 1, color: "#f3e6c0" }}
+                            exit={{ opacity: 0, scale: 0.8 }}
+                            transition={{ duration: 0.5 }}
+                            className="inline-block"
+                          >
+                            #{ranking.citiesRank}
+                          </motion.span>
+                        </AnimatePresence>
+                      ) : (
+                        "—"
+                      )}
                     </span>
                   </div>
                 </div>
