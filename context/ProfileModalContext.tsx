@@ -47,7 +47,6 @@ export function ProfileModalProvider({ children }: { children: ReactNode }) {
 
   const safeSetShowQuiz = useCallback((val: boolean) => {
     if (val === false && quizLockRef.current) {
-      console.log("BLOCKED: something tried to close quiz while locked");
       return;
     }
     if (val === true) {

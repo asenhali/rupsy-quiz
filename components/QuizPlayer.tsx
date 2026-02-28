@@ -69,7 +69,6 @@ export default function QuizPlayer({ isOpen, onClose }: Props) {
   }, [isOpen, setSwipeDisabled]);
 
   useEffect(() => {
-    console.log("QuizPlayer isOpen changed:", isOpen);
     if (!isOpen) {
       clearTimer();
       if (feedbackTimeoutRef.current) {
@@ -288,7 +287,6 @@ export default function QuizPlayer({ isOpen, onClose }: Props) {
       const isNewCategory = nextCat && nextCat !== currentCategory;
       feedbackTimeoutRef.current = setTimeout(() => {
         if (json.completed) {
-          console.log("Setting phase to summary, completed:", json.completed);
           setPhase("summary");
         } else if (isNewCategory && nextQ) {
           setCurrentCategory(nextCat);
@@ -620,8 +618,8 @@ export default function QuizPlayer({ isOpen, onClose }: Props) {
               Zdieľať výsledok
             </motion.p>
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 6.5, duration: 0.8 }} className="mt-8 text-center">
-              <p className="text-[8px] uppercase tracking-[0.2em] opacity-15">SPRÁVNE ODPOVEDE NÁJDEŠ NA</p>
-              <motion.a href="https://www.instagram.com/rupsy_sirupy" target="_blank" rel="noopener noreferrer" animate={{ opacity: [0.4, 0.7, 0.4] }} transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }} className="block text-sm font-semibold opacity-60 mt-2">
+              <p className="text-xs uppercase tracking-widest opacity-40">SPRÁVNE ODPOVEDE NÁJDEŠ NA</p>
+              <motion.a href="https://www.instagram.com/rupsy_sirupy" target="_blank" rel="noopener noreferrer" animate={{ scale: [1, 1.08, 1], opacity: [0.5, 0.9, 0.5] }} transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }} className="block text-base font-bold mt-2">
                 @rupsy_sirupy
               </motion.a>
             </motion.div>
