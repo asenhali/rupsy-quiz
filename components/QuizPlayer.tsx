@@ -382,430 +382,249 @@ export default function QuizPlayer({ isOpen, onClose }: Props) {
 
   const contentClass = "w-full max-w-[480px] mx-auto px-6 flex flex-col items-center";
 
-  if (phase === "loading") {
-    return (
-      <div className={containerClass}>
-        <div className={contentClass}>
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.8 }}
-            className="flex flex-col items-center"
-          >
-            <p className="text-5xl font-extrabold tracking-tight">RUPSY</p>
-            <p className="text-5xl font-extrabold tracking-tight opacity-40">KVÍZ</p>
-            {!error && (
-              <motion.p
-                animate={{ opacity: [0.3, 0.7, 0.3] }}
-                transition={{ duration: 1.5, repeat: Infinity }}
-                className="text-sm mt-6"
-              >
-                Načítavam...
-              </motion.p>
-            )}
-          </motion.div>
-          {error && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="mt-8 flex flex-col items-center gap-4"
-            >
-              <p className="text-base text-red-300">{error}</p>
-              <button
-                type="button"
-                onClick={onClose}
-                className="px-6 py-3 rounded-2xl bg-[#f3e6c0] text-[#1b2833] font-semibold"
-              >
-                Späť
-              </button>
-            </motion.div>
-          )}
-        </div>
-      </div>
-    );
-  }
-
-  if (phase === "countdown") {
-    return (
-      <div className={containerClass}>
-        <div className={`${contentClass} justify-center`}>
-          <AnimatePresence mode="wait">
-            {countdownNum > 0 && (
+  return (
+    <div className={`${containerClass} relative`}>
+      {phase !== "summary" && (
+        <>
+          {phase === "loading" && (
+            <div className={contentClass}>
               <motion.div
-                key={countdownNum}
-                initial={{ scale: 0.5, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                exit={{ scale: 1.5, opacity: 0 }}
-                transition={{ duration: 0.6 }}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.8 }}
                 className="flex flex-col items-center"
               >
-                <span className="text-8xl font-extrabold tabular-nums">{countdownNum}</span>
-                <p className="text-sm uppercase tracking-widest opacity-30 mt-4">Priprav sa</p>
+                <p className="text-5xl font-extrabold tracking-tight">RUPSY</p>
+                <p className="text-5xl font-extrabold tracking-tight opacity-40">KVÍZ</p>
+                {!error && (
+                  <motion.p
+                    animate={{ opacity: [0.3, 0.7, 0.3] }}
+                    transition={{ duration: 1.5, repeat: Infinity }}
+                    className="text-sm mt-6"
+                  >
+                    Načítavam...
+                  </motion.p>
+                )}
+              </motion.div>
+              {error && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="mt-8 flex flex-col items-center gap-4"
+                >
+                  <p className="text-base text-red-300">{error}</p>
+                  <button type="button" onClick={onClose} className="px-6 py-3 rounded-2xl bg-[#f3e6c0] text-[#1b2833] font-semibold">
+                    Späť
+                  </button>
+                </motion.div>
+              )}
+            </div>
+          )}
+          {phase === "countdown" && (
+            <div className={`${contentClass} justify-center`}>
+              <AnimatePresence mode="wait">
+                {countdownNum > 0 && (
+                  <motion.div
+                    key={countdownNum}
+                    initial={{ scale: 0.5, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    exit={{ scale: 1.5, opacity: 0 }}
+                    transition={{ duration: 0.6 }}
+                    className="flex flex-col items-center"
+                  >
+                    <span className="text-8xl font-extrabold tabular-nums">{countdownNum}</span>
+                    <p className="text-sm uppercase tracking-widest opacity-30 mt-4">Priprav sa</p>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          )}
+          {phase === "category-reveal" && currentQuestion && (
+            <div className={`${contentClass} justify-center`}>
+              <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8 }}
+                className="flex flex-col items-center text-center"
+              >
+                <p className="text-3xl font-extrabold uppercase tracking-widest">{currentCategory}</p>
+                <p className="text-sm opacity-40 mt-2">Otázka {currentQuestionIndex + 1} z {totalQuestions}</p>
+                <motion.div
+                  className="h-0.5 bg-[#f3e6c0]/20 mx-auto mt-6"
+                  initial={{ width: 0 }}
+                  animate={{ width: 48 }}
+                  transition={{ duration: 0.8, delay: 0.3 }}
+                />
+              </motion.div>
+            </div>
+          )}
+          {phase === "category-outro" && currentQuestion && (
+            <div className={`${contentClass} justify-center`}>
+              <motion.div
+                initial={{ opacity: 1 }}
+                animate={{ opacity: 0 }}
+                transition={{ duration: 0.6 }}
+                className="flex flex-col items-center text-center"
+              >
+                <p className="text-3xl font-extrabold uppercase tracking-widest">{currentCategory}</p>
+                <p className="text-sm opacity-40 mt-2">Otázka {currentQuestionIndex + 1} z {totalQuestions}</p>
+                <div className="w-12 h-0.5 bg-[#f3e6c0]/20 mx-auto mt-6" />
+              </motion.div>
+            </div>
+          )}
+          {phase === "question-reveal" && currentQuestion && (() => {
+            const isUrgent = timeRemaining <= 3;
+            const timeLimitSec = currentQuestion.timeLimitSec ?? 30;
+            const borderOpacity = isUrgent ? undefined : 0.1 + (0.2 * timeRemaining) / timeLimitSec;
+            return (
+              <div className={`${contentClass} justify-center flex-1`}>
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.3, duration: 0.5 }}
+                  className="flex flex-col items-center justify-center w-full"
+                >
+                  <p className="text-2xl font-bold text-center px-8 leading-relaxed">{currentQuestion.text}</p>
+                  <div
+                    className={`w-16 h-16 rounded-full border-2 flex items-center justify-center mx-auto mt-6 ${isUrgent ? "border-red-400/50 text-red-400" : "border-[#f3e6c0]/20"}`}
+                    style={!isUrgent && borderOpacity != null ? { borderColor: `rgba(243, 230, 192, ${borderOpacity})` } : undefined}
+                  >
+                    <motion.span key={timeRemaining} className="text-2xl font-bold tabular-nums" animate={isUrgent ? { scale: [1, 1.1, 1] } : {}} transition={isUrgent ? { duration: 0.5, repeat: Infinity } : {}}>
+                      {timeRemaining}
+                    </motion.span>
+                  </div>
+                </motion.div>
+              </div>
+            );
+          })()}
+          {phase === "question-outro" && currentQuestion && (() => {
+            const isUrgent = timeRemaining <= 3;
+            const timeLimitSec = currentQuestion.timeLimitSec ?? 30;
+            const borderOpacity = isUrgent ? undefined : 0.1 + (0.2 * timeRemaining) / timeLimitSec;
+            return (
+              <div className={`${contentClass} justify-center flex-1`}>
+                <motion.div initial={{ opacity: 1 }} animate={{ opacity: 0 }} transition={{ duration: 0.5 }} className="flex flex-col items-center justify-center w-full">
+                  <p className="text-2xl font-bold text-center px-8 leading-relaxed">{currentQuestion.text}</p>
+                  <div className={`w-16 h-16 rounded-full border-2 flex items-center justify-center mx-auto mt-6 ${isUrgent ? "border-red-400/50 text-red-400" : "border-[#f3e6c0]/20"}`} style={!isUrgent && borderOpacity != null ? { borderColor: `rgba(243, 230, 192, ${borderOpacity})` } : undefined}>
+                    <span className="text-2xl font-bold tabular-nums">{timeRemaining}</span>
+                  </div>
+                </motion.div>
+              </div>
+            );
+          })()}
+          {phase === "question-active" && currentQuestion && (() => {
+            const progressPct = totalQuestions > 0 ? (currentQuestionIndex / totalQuestions) * 100 : 0;
+            const isUrgent = timeRemaining <= 3;
+            const timeLimitSec = currentQuestion.timeLimitSec ?? 30;
+            const borderOpacity = isUrgent ? undefined : 0.1 + (0.2 * timeRemaining) / timeLimitSec;
+            const answersCount = currentQuestion.answers?.length ?? 4;
+            const answerDelays = answersCount === 2 ? [800, 1000] : [800, 1000, 1200, 1400];
+            return (
+              <div className={`${contentClass} flex-1 justify-start pt-6 pb-8`}>
+                <div className="w-full">
+                  <div className="w-full h-1 bg-[#f3e6c0]/10 rounded-full overflow-hidden">
+                    <motion.div className="h-full bg-[#f3e6c0] rounded-full" animate={{ width: `${progressPct}%` }} transition={{ duration: 0.6, ease: "easeInOut" }} />
+                  </div>
+                  <p className="text-[10px] uppercase tracking-widest opacity-40 text-right mt-2">{currentQuestionIndex + 1} / {totalQuestions}</p>
+                </div>
+                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.6 }}>
+                  <p className="text-[10px] uppercase tracking-widest opacity-40 text-center mt-4">{currentCategory}</p>
+                  <p className="text-xl font-bold text-center px-6 mt-3 leading-relaxed">{currentQuestion.text}</p>
+                  {currentQuestion.type === "image" && currentQuestion.imageUrl && <img src={currentQuestion.imageUrl} alt="" className="mx-auto mt-4 max-w-[260px] w-full rounded-2xl overflow-hidden object-contain" />}
+                </motion.div>
+                <div className={`w-16 h-16 rounded-full border-2 flex items-center justify-center mx-auto mt-6 mb-6 ${isUrgent ? "border-red-400/50 text-red-400" : "border-[#f3e6c0]/20"}`} style={!isUrgent && borderOpacity != null ? { borderColor: `rgba(243, 230, 192, ${borderOpacity})` } : undefined}>
+                  <motion.span key={timeRemaining} className="text-2xl font-bold tabular-nums" animate={isUrgent ? { scale: [1, 1.1, 1] } : {}} transition={isUrgent ? { duration: 0.5, repeat: Infinity } : {}}>{timeRemaining}</motion.span>
+                </div>
+                <div className="flex flex-col space-y-3 w-full">
+                  {currentQuestion.answers?.map((a, i) => (
+                    <motion.button key={i} type="button" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: (answerDelays[i] ?? 1400) / 1000, duration: 0.4 }} onClick={() => handleAnswerClick(i)} disabled={selectedAnswer !== null || !answersInteractive} style={{ pointerEvents: selectedAnswer !== null || !answersInteractive ? "none" : "auto" }} className={`w-full py-4 rounded-2xl text-base font-semibold text-center border transition-colors ${selectedAnswer === i ? "bg-[#f3e6c0]/20 border-[#f3e6c0]/30" : "bg-[#f3e6c0]/[0.07] border-[#f3e6c0]/[0.12] active:bg-[#f3e6c0]/20"}`}>
+                      {a}
+                    </motion.button>
+                  ))}
+                </div>
+              </div>
+            );
+          })()}
+          {phase === "answer-feedback" && (error ? (
+            <div className={contentClass}>
+              <p className="text-base text-red-300 mb-6">{error}</p>
+              <button type="button" onClick={onClose} className="px-6 py-3 rounded-2xl bg-[#f3e6c0] text-[#1b2833] font-semibold">Späť</button>
+            </div>
+          ) : (
+            (() => {
+              const progressPct = totalQuestions > 0 ? (currentQuestionIndex / totalQuestions) * 100 : 0;
+              return (
+                <div className={`${contentClass} flex-1 justify-start pt-6 pb-8`}>
+                  <div className="w-full">
+                    <div className="w-full h-1 bg-[#f3e6c0]/10 rounded-full overflow-hidden">
+                      <motion.div className="h-full bg-[#f3e6c0] rounded-full" animate={{ width: `${progressPct}%` }} transition={{ duration: 0.6, ease: "easeInOut" }} />
+                    </div>
+                    <p className="text-[10px] uppercase tracking-widest opacity-40 text-right mt-2">{currentQuestionIndex + 1} / {totalQuestions}</p>
+                  </div>
+                  <p className="text-[10px] uppercase tracking-widest opacity-40 text-center mt-4">{currentCategory}</p>
+                  <motion.div animate={{ opacity: 0.25 }} transition={{ duration: 0.5 }}>
+                    <p className="text-xl font-bold text-center px-6 mt-3 leading-relaxed">{currentQuestion?.text}</p>
+                    {currentQuestion?.type === "image" && currentQuestion?.imageUrl && <img src={currentQuestion.imageUrl} alt="" className="mx-auto mt-4 max-w-[260px] w-full rounded-2xl overflow-hidden object-contain opacity-25" />}
+                    <motion.div animate={{ opacity: 0 }} transition={{ duration: 0.5 }} className="w-16 h-16 rounded-full border-2 flex items-center justify-center mx-auto mt-6 mb-6 border-[#f3e6c0]/20">
+                      <span className="text-2xl font-bold tabular-nums">{timeRemaining}</span>
+                    </motion.div>
+                  </motion.div>
+                  <div className="flex flex-col space-y-3 w-full">
+                    {currentQuestion?.answers?.map((a, i) => (
+                      <motion.button key={i} type="button" animate={{ scale: selectedAnswer === i ? 1.03 : 1, opacity: selectedAnswer === i ? 1 : 0.08 }} transition={{ duration: 0.5 }} className={`w-full py-4 rounded-2xl text-base font-semibold text-center border pointer-events-none ${selectedAnswer === i ? "bg-[#f3e6c0]/20 border-[#f3e6c0]/30" : "bg-[#f3e6c0]/[0.07] border-[#f3e6c0]/[0.12]"}`}>
+                        {a}
+                      </motion.button>
+                    ))}
+                  </div>
+                </div>
+              );
+            })()
+          ))}
+        </>
+      )}
+      {phase === "summary" && (
+        <motion.div
+          key="summary-screen"
+          className="absolute inset-0 flex flex-col items-center justify-center z-50"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.8 }}
+        >
+          <div
+            className="absolute inset-0 pointer-events-none"
+            style={{ background: "radial-gradient(circle at 50% 40%, rgba(243,230,192,0.06) 0%, transparent 60%)" }}
+          />
+          <div className={`${contentClass} justify-center text-center relative`}>
+            <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 1 }} className="text-[10px] uppercase tracking-[0.3em] opacity-30">
+              KVÍZ DOKONČENÝ
+            </motion.p>
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5, delay: 0.8 }}>
+              <span className="block text-7xl font-extrabold mt-4 tabular-nums">{displayedScore}</span>
+              <p className="text-xs uppercase tracking-widest opacity-30 mt-2">BODOV</p>
+            </motion.div>
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 3.5, duration: 0.8 }} className="w-16 h-[1px] bg-[#f3e6c0]/15 mx-auto mt-6" />
+            {rank != null && (
+              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 4, duration: 0.8 }} className="bg-[#f3e6c0]/[0.05] rounded-2xl px-8 py-5 mt-6">
+                <p className="text-3xl font-extrabold">#{rank}</p>
+                <p className="text-xs opacity-40 mt-1">v Slovensku</p>
+                {totalPlayers != null && <p className="text-[10px] opacity-20 mt-0.5">z {totalPlayers} hráčov</p>}
               </motion.div>
             )}
-          </AnimatePresence>
-        </div>
-      </div>
-    );
-  }
-
-  if (phase === "category-reveal") {
-    const questionNum = currentQuestionIndex + 1;
-    return (
-      <div className={containerClass}>
-        <div className={`${contentClass} justify-center`}>
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-            className="flex flex-col items-center text-center"
-          >
-            <p className="text-3xl font-extrabold uppercase tracking-widest">{currentCategory}</p>
-            <p className="text-sm opacity-40 mt-2">Otázka {questionNum} z {totalQuestions}</p>
-            <motion.div
-              className="h-0.5 bg-[#f3e6c0]/20 mx-auto mt-6"
-              initial={{ width: 0 }}
-              animate={{ width: 48 }}
-              transition={{ duration: 0.8, delay: 0.3 }}
-            />
-          </motion.div>
-        </div>
-      </div>
-    );
-  }
-
-  if (phase === "category-outro") {
-    const questionNum = currentQuestionIndex + 1;
-    return (
-      <div className={containerClass}>
-        <div className={`${contentClass} justify-center`}>
-          <motion.div
-            initial={{ opacity: 1 }}
-            animate={{ opacity: 0 }}
-            transition={{ duration: 0.6 }}
-            className="flex flex-col items-center text-center"
-          >
-            <p className="text-3xl font-extrabold uppercase tracking-widest">{currentCategory}</p>
-            <p className="text-sm opacity-40 mt-2">Otázka {questionNum} z {totalQuestions}</p>
-            <div className="w-12 h-0.5 bg-[#f3e6c0]/20 mx-auto mt-6" />
-          </motion.div>
-        </div>
-      </div>
-    );
-  }
-
-  if (phase === "question-reveal" && currentQuestion) {
-    const isUrgent = timeRemaining <= 3;
-    const timeLimitSec = currentQuestion.timeLimitSec ?? 30;
-    const borderOpacity = isUrgent ? undefined : 0.1 + (0.2 * timeRemaining) / timeLimitSec;
-    return (
-      <div className={containerClass}>
-        <div className={`${contentClass} justify-center flex-1`}>
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.3, duration: 0.5 }}
-            className="flex flex-col items-center justify-center w-full"
-          >
-            <p className="text-2xl font-bold text-center px-8 leading-relaxed">{currentQuestion.text}</p>
-            <div
-              className={`w-16 h-16 rounded-full border-2 flex items-center justify-center mx-auto mt-6 ${isUrgent ? "border-red-400/50 text-red-400" : "border-[#f3e6c0]/20"}`}
-              style={
-                !isUrgent && borderOpacity != null
-                  ? { borderColor: `rgba(243, 230, 192, ${borderOpacity})` }
-                  : undefined
-              }
-            >
-              <motion.span
-                key={timeRemaining}
-                className="text-2xl font-bold tabular-nums"
-                animate={isUrgent ? { scale: [1, 1.1, 1] } : {}}
-                transition={isUrgent ? { duration: 0.5, repeat: Infinity } : {}}
-              >
-                {timeRemaining}
-              </motion.span>
-            </div>
-          </motion.div>
-        </div>
-      </div>
-    );
-  }
-
-  if (phase === "question-outro" && currentQuestion) {
-    const isUrgent = timeRemaining <= 3;
-    const timeLimitSec = currentQuestion.timeLimitSec ?? 30;
-    const borderOpacity = isUrgent ? undefined : 0.1 + (0.2 * timeRemaining) / timeLimitSec;
-    return (
-      <div className={containerClass}>
-        <div className={`${contentClass} justify-center flex-1`}>
-          <motion.div
-            initial={{ opacity: 1 }}
-            animate={{ opacity: 0 }}
-            transition={{ duration: 0.5 }}
-            className="flex flex-col items-center justify-center w-full"
-          >
-            <p className="text-2xl font-bold text-center px-8 leading-relaxed">{currentQuestion.text}</p>
-            <div
-              className={`w-16 h-16 rounded-full border-2 flex items-center justify-center mx-auto mt-6 ${isUrgent ? "border-red-400/50 text-red-400" : "border-[#f3e6c0]/20"}`}
-              style={
-                !isUrgent && borderOpacity != null
-                  ? { borderColor: `rgba(243, 230, 192, ${borderOpacity})` }
-                  : undefined
-              }
-            >
-              <span className="text-2xl font-bold tabular-nums">{timeRemaining}</span>
-            </div>
-          </motion.div>
-        </div>
-      </div>
-    );
-  }
-
-  if (phase === "question-active" && currentQuestion) {
-    const progressPct = totalQuestions > 0 ? (currentQuestionIndex / totalQuestions) * 100 : 0;
-    const isUrgent = timeRemaining <= 3;
-    const timeLimitSec = currentQuestion.timeLimitSec ?? 30;
-    const borderOpacity = isUrgent ? undefined : 0.1 + (0.2 * timeRemaining) / timeLimitSec;
-    const answersCount = currentQuestion.answers?.length ?? 4;
-    const answerDelays = answersCount === 2 ? [800, 1000] : [800, 1000, 1200, 1400];
-
-    return (
-      <div className={containerClass}>
-        <div className={`${contentClass} flex-1 justify-start pt-6 pb-8`}>
-          <div className="w-full">
-            <div className="w-full h-1 bg-[#f3e6c0]/10 rounded-full overflow-hidden">
-              <motion.div
-                className="h-full bg-[#f3e6c0] rounded-full"
-                animate={{ width: `${progressPct}%` }}
-                transition={{ duration: 0.6, ease: "easeInOut" }}
-              />
-            </div>
-            <p className="text-[10px] uppercase tracking-widest opacity-40 text-right mt-2">
-              {currentQuestionIndex + 1} / {totalQuestions}
-            </p>
-          </div>
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.6 }}
-          >
-            <p className="text-[10px] uppercase tracking-widest opacity-40 text-center mt-4">{currentCategory}</p>
-            <p className="text-xl font-bold text-center px-6 mt-3 leading-relaxed">{currentQuestion.text}</p>
-            {currentQuestion.type === "image" && currentQuestion.imageUrl && (
-              <img
-                src={currentQuestion.imageUrl}
-                alt=""
-                className="mx-auto mt-4 max-w-[260px] w-full rounded-2xl overflow-hidden object-contain"
-              />
-            )}
-          </motion.div>
-          <div
-            className={`w-16 h-16 rounded-full border-2 flex items-center justify-center mx-auto mt-6 mb-6 ${isUrgent ? "border-red-400/50 text-red-400" : "border-[#f3e6c0]/20"}`}
-            style={
-              !isUrgent && borderOpacity != null
-                ? { borderColor: `rgba(243, 230, 192, ${borderOpacity})` }
-                : undefined
-            }
-          >
-            <motion.span
-              key={timeRemaining}
-              className="text-2xl font-bold tabular-nums"
-              animate={isUrgent ? { scale: [1, 1.1, 1] } : {}}
-              transition={isUrgent ? { duration: 0.5, repeat: Infinity } : {}}
-            >
-              {timeRemaining}
-            </motion.span>
-          </div>
-          <div className="flex flex-col space-y-3 w-full">
-            {currentQuestion.answers?.map((a, i) => (
-              <motion.button
-                key={i}
-                type="button"
-                initial={{ opacity: 0, y: 15 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: (answerDelays[i] ?? 1400) / 1000, duration: 0.4 }}
-                onClick={() => handleAnswerClick(i)}
-                disabled={selectedAnswer !== null || !answersInteractive}
-                style={{ pointerEvents: selectedAnswer !== null || !answersInteractive ? "none" : "auto" }}
-                className={`w-full py-4 rounded-2xl text-base font-semibold text-center border transition-colors ${
-                  selectedAnswer === i
-                    ? "bg-[#f3e6c0]/20 border-[#f3e6c0]/30"
-                    : "bg-[#f3e6c0]/[0.07] border-[#f3e6c0]/[0.12] active:bg-[#f3e6c0]/20"
-                }`}
-              >
-                {a}
-              </motion.button>
-            ))}
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (phase === "answer-feedback") {
-    if (error) {
-      return (
-        <div className={containerClass}>
-          <div className={contentClass}>
-            <p className="text-base text-red-300 mb-6">{error}</p>
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-6 py-3 rounded-2xl bg-[#f3e6c0] text-[#1b2833] font-semibold"
-            >
-              Späť
-            </button>
-          </div>
-        </div>
-      );
-    }
-
-    const progressPct = totalQuestions > 0 ? (currentQuestionIndex / totalQuestions) * 100 : 0;
-
-    return (
-      <div className={containerClass}>
-        <div className={`${contentClass} flex-1 justify-start pt-6 pb-8`}>
-          <div className="w-full">
-            <div className="w-full h-1 bg-[#f3e6c0]/10 rounded-full overflow-hidden">
-              <motion.div
-                className="h-full bg-[#f3e6c0] rounded-full"
-                animate={{ width: `${progressPct}%` }}
-                transition={{ duration: 0.6, ease: "easeInOut" }}
-              />
-            </div>
-            <p className="text-[10px] uppercase tracking-widest opacity-40 text-right mt-2">
-              {currentQuestionIndex + 1} / {totalQuestions}
-            </p>
-          </div>
-          <p className="text-[10px] uppercase tracking-widest opacity-40 text-center mt-4">{currentCategory}</p>
-          <motion.div animate={{ opacity: 0.25 }} transition={{ duration: 0.5 }}>
-            <p className="text-xl font-bold text-center px-6 mt-3 leading-relaxed">{currentQuestion?.text}</p>
-            {currentQuestion?.type === "image" && currentQuestion?.imageUrl && (
-              <img
-                src={currentQuestion.imageUrl}
-                alt=""
-                className="mx-auto mt-4 max-w-[260px] w-full rounded-2xl overflow-hidden object-contain opacity-25"
-              />
-            )}
-            <motion.div
-              animate={{ opacity: 0 }}
-              transition={{ duration: 0.5 }}
-              className="w-16 h-16 rounded-full border-2 flex items-center justify-center mx-auto mt-6 mb-6 border-[#f3e6c0]/20"
-            >
-              <span className="text-2xl font-bold tabular-nums">{timeRemaining}</span>
+            <motion.button initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 5.5, duration: 0.6 }} type="button" onClick={onClose} className="mt-10 px-10 py-4 rounded-2xl bg-[#f3e6c0] text-[#1b2833] font-bold text-sm">
+              Späť na hlavnú
+            </motion.button>
+            <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 6, duration: 0.6 }} className="text-xs uppercase tracking-widest opacity-25 mt-4 underline-offset-4">
+              Zdieľať výsledok
+            </motion.p>
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 6.5, duration: 0.8 }} className="mt-8 text-center">
+              <p className="text-[8px] uppercase tracking-[0.2em] opacity-15">SPRÁVNE ODPOVEDE NÁJDEŠ NA</p>
+              <motion.a href="https://www.instagram.com/rupsy_sirupy" target="_blank" rel="noopener noreferrer" animate={{ opacity: [0.4, 0.7, 0.4] }} transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }} className="block text-sm font-semibold opacity-60 mt-2">
+                @rupsy_sirupy
+              </motion.a>
             </motion.div>
-          </motion.div>
-          <div className="flex flex-col space-y-3 w-full">
-            {currentQuestion?.answers?.map((a, i) => (
-              <motion.button
-                key={i}
-                type="button"
-                animate={{
-                  scale: selectedAnswer === i ? 1.03 : 1,
-                  opacity: selectedAnswer === i ? 1 : 0.08,
-                }}
-                transition={{ duration: 0.5 }}
-                className={`w-full py-4 rounded-2xl text-base font-semibold text-center border pointer-events-none ${
-                  selectedAnswer === i
-                    ? "bg-[#f3e6c0]/20 border-[#f3e6c0]/30"
-                    : "bg-[#f3e6c0]/[0.07] border-[#f3e6c0]/[0.12]"
-                }`}
-              >
-                {a}
-              </motion.button>
-            ))}
           </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (phase === "summary") {
-    return (
-      <div className={`${containerClass} relative`}>
-        <div
-          className="absolute inset-0 pointer-events-none"
-          style={{
-            background: "radial-gradient(circle at 50% 40%, rgba(243,230,192,0.06) 0%, transparent 60%)",
-          }}
-        />
-        <div className={`${contentClass} justify-center text-center relative`}>
-          <motion.p
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 1 }}
-            className="text-[10px] uppercase tracking-[0.3em] opacity-30"
-          >
-            KVÍZ DOKONČENÝ
-          </motion.p>
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.5, delay: 0.8 }}
-          >
-            <span className="block text-7xl font-extrabold mt-4 tabular-nums">{displayedScore}</span>
-            <p className="text-xs uppercase tracking-widest opacity-30 mt-2">BODOV</p>
-          </motion.div>
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 3.5, duration: 0.8 }}
-            className="w-16 h-[1px] bg-[#f3e6c0]/15 mx-auto mt-6"
-          />
-          {rank != null && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 4, duration: 0.8 }}
-              className="bg-[#f3e6c0]/[0.05] rounded-2xl px-8 py-5 mt-6"
-            >
-              <p className="text-3xl font-extrabold">#{rank}</p>
-              <p className="text-xs opacity-40 mt-1">v Slovensku</p>
-              {totalPlayers != null && (
-                <p className="text-[10px] opacity-20 mt-0.5">z {totalPlayers} hráčov</p>
-              )}
-            </motion.div>
-          )}
-          <motion.button
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 5.5, duration: 0.6 }}
-            type="button"
-            onClick={onClose}
-            className="mt-10 px-10 py-4 rounded-2xl bg-[#f3e6c0] text-[#1b2833] font-bold text-sm"
-          >
-            Späť na hlavnú
-          </motion.button>
-          <motion.p
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 6, duration: 0.6 }}
-            className="text-xs uppercase tracking-widest opacity-25 mt-4 underline-offset-4"
-          >
-            Zdieľať výsledok
-          </motion.p>
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 6.5, duration: 0.8 }}
-            className="mt-8 text-center"
-          >
-            <p className="text-[8px] uppercase tracking-[0.2em] opacity-15">SPRÁVNE ODPOVEDE NÁJDEŠ NA</p>
-            <motion.a
-              href="https://www.instagram.com/rupsy_sirupy"
-              target="_blank"
-              rel="noopener noreferrer"
-              animate={{ opacity: [0.4, 0.7, 0.4] }}
-              transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
-              className="block text-sm font-semibold opacity-60 mt-2"
-            >
-              @rupsy_sirupy
-            </motion.a>
-          </motion.div>
-        </div>
-      </div>
-    );
-  }
-
-  return null;
+        </motion.div>
+      )}
+    </div>
+  );
 }
