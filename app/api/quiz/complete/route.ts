@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import jwt from "jsonwebtoken";
+import { FieldValue } from "firebase-admin/firestore";
 import { db } from "@/lib/firebaseAdmin";
 
 async function getWixUserId(): Promise<{ wixUserId: string } | { error: NextResponse }> {
@@ -93,6 +94,15 @@ export async function POST(request: Request) {
     });
 
     const totalScore = sessionData.totalScore ?? 0;
+    const correctCount = (sessionData.answers ?? []).filter(
+      (a: { correct?: boolean }) => a.correct === true
+    ).length;
+
+    await db.collection("users").doc(wixUserId).update({
+      totalGames: FieldValue.increment(1),
+      totalCorrect: FieldValue.increment(correctCount),
+      totalPoints: FieldValue.increment(totalScore),
+    });
 
     const allSessionsSnap = await db
       .collection("quizSessions")
