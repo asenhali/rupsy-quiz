@@ -51,7 +51,7 @@ function Top3Card({
       </div>
       {dim && dim.w > 0 && dim.h > 0 && (
         <svg
-          className="absolute inset-0 w-full h-full pointer-events-none z-[2] overflow-visible"
+          className="leaderboard-svg-glow absolute inset-0 w-full h-full pointer-events-none z-[2] overflow-visible"
           width="100%"
           height="100%"
         >
