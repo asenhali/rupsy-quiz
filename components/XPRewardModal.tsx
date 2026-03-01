@@ -6,21 +6,35 @@ import { useSwipeContext } from "@/context/SwipeContext";
 import { useXPReward } from "@/context/XPRewardContext";
 import { calculateLevel } from "@/lib/xp";
 
-const STAGE_1_DURATION = 1500;
-const STAGE_2_LINE_DELAY = 800;
+const STAGE_1_FADE_IN = 500;
+const STAGE_1_HOLD = 2000;
+const STAGE_1_FADE_OUT = 500;
+const STAGE_2_LINE_DELAY = 1200;
 const STAGE_2_TOTAL_DELAY = 400;
-const STAGE_3_DURATION = 2000;
-const STAGE_4_DURATION = 2000;
+const STAGE_2_HOLD_AFTER_TOTAL = 2500;
+const STAGE_2_FADE_OUT = 500;
+const TRANSITION_BLACK = 500;
+const STAGE_3_BAR_DURATION = 2000;
+const STAGE_3_HOLD_AFTER_BAR = 1000;
+const STAGE_3_FADE_OUT = 500;
+const STAGE_4_HOLD = 3000;
+const STAGE_4_FADE_OUT = 500;
+
+type ViewState =
+  | { view: 1; phase: "in" | "hold" | "out" }
+  | { view: "transition"; from: number }
+  | { view: 2; phase: "in" | "hold" | "out"; breakdownLine: number; showTotal: boolean }
+  | { view: 3; phase: "in" | "bar" | "hold" | "out" }
+  | { view: 4; phase: "in" | "hold" | "out" }
+  | { view: 5 };
 
 export default function XPRewardModal() {
   const { xpRewardData, closeXPReward, isOpen } = useXPReward();
   const { setSwipeDisabled } = useSwipeContext();
-  const [stage, setStage] = useState(1);
-  const [breakdownLine, setBreakdownLine] = useState(0);
-  const [showTotal, setShowTotal] = useState(false);
-  const [xpBarProgress, setXpBarProgress] = useState(0);
+  const [state, setState] = useState<ViewState>({ view: 1, phase: "in" });
+  const [xpBarFillPercent, setXpBarFillPercent] = useState(0);
   const [displayedXP, setDisplayedXP] = useState(0);
-  const levelUpShownRef = useRef(false);
+  const rafRef = useRef<number | null>(null);
 
   useEffect(() => {
     setSwipeDisabled(isOpen);
@@ -30,215 +44,325 @@ export default function XPRewardModal() {
   useEffect(() => {
     if (!isOpen || !xpRewardData) return;
 
-    setStage(1);
-    setBreakdownLine(0);
-    setShowTotal(false);
-    setXpBarProgress(0);
-    setDisplayedXP(xpRewardData.newTotalXP - xpRewardData.xpBreakdown.totalXP);
-    levelUpShownRef.current = false;
+    const oldTotalXP = xpRewardData.newTotalXP - xpRewardData.xpBreakdown.totalXP;
+    setState({ view: 1, phase: "in" });
+    setXpBarFillPercent(0);
+    setDisplayedXP(oldTotalXP);
   }, [isOpen, xpRewardData]);
 
   useEffect(() => {
     if (!isOpen || !xpRewardData) return;
 
-    if (stage === 1) {
-      const t = setTimeout(() => setStage(2), STAGE_1_DURATION);
+    const oldTotalXP = xpRewardData.newTotalXP - xpRewardData.xpBreakdown.totalXP;
+    const levelBeforeData = calculateLevel(oldTotalXP);
+    const levelAfterData = calculateLevel(xpRewardData.newTotalXP);
+
+    if (state.view === 1 && state.phase === "in") {
+      const t = setTimeout(() => setState({ view: 1, phase: "hold" }), STAGE_1_FADE_IN);
       return () => clearTimeout(t);
     }
 
-    if (stage === 2) {
-      const { xpBreakdown } = xpRewardData;
-      const lines = [
-        { label: "+30 XP za účasť", value: xpBreakdown.participationXP },
-        {
-          label: "+X XP za správne odpovede",
-          value: xpBreakdown.correctXP,
-          substitute: xpBreakdown.correctXP,
-        },
-        {
-          label: "+X XP za #Y umiestnenie",
-          value: xpBreakdown.rankXP,
-          substitute: xpBreakdown.rankXP,
-        },
-      ];
-
-      if (breakdownLine < lines.length) {
-        const t = setTimeout(() => setBreakdownLine((p) => p + 1), STAGE_2_LINE_DELAY);
-        return () => clearTimeout(t);
-      }
-
-      if (!showTotal) {
-        const t = setTimeout(() => setShowTotal(true), STAGE_2_TOTAL_DELAY);
-        return () => clearTimeout(t);
-      }
-
-      const t = setTimeout(() => setStage(3), 600);
+    if (state.view === 1 && state.phase === "hold") {
+      const t = setTimeout(() => setState({ view: 1, phase: "out" }), STAGE_1_HOLD);
       return () => clearTimeout(t);
     }
 
-    if (stage === 3) {
-      const oldTotalXP = xpRewardData.newTotalXP - xpRewardData.xpBreakdown.totalXP;
-      const levelBeforeData = calculateLevel(oldTotalXP);
-      const levelAfterData = calculateLevel(xpRewardData.newTotalXP);
-      const startPercent = levelBeforeData.progressPercent;
-      const endPercent = levelAfterData.progressPercent;
+    if (state.view === 1 && state.phase === "out") {
+      const t = setTimeout(() => setState({ view: "transition", from: 1 }), STAGE_1_FADE_OUT);
+      return () => clearTimeout(t);
+    }
 
-      const startTime = Date.now();
-      const raf = () => {
-        const elapsed = Date.now() - startTime;
-        const p = Math.min(1, elapsed / STAGE_3_DURATION);
-        const eased = 1 - (1 - p) * (1 - p);
-        setXpBarProgress(startPercent + (endPercent - startPercent) * eased);
-        setDisplayedXP(
-          Math.round(oldTotalXP + (xpRewardData.newTotalXP - oldTotalXP) * eased)
+    if (state.view === "transition" && state.from === 1) {
+      const t = setTimeout(() => {
+        setState({ view: 2, phase: "in", breakdownLine: 1, showTotal: false });
+      }, TRANSITION_BLACK);
+      return () => clearTimeout(t);
+    }
+
+    if (state.view === 2 && state.phase === "in") {
+      const bl = state.breakdownLine;
+      const st = state.showTotal;
+      if (bl < 3) {
+        const t = setTimeout(
+          () => setState((s) => (s.view === 2 && s.phase === "in" ? { ...s, breakdownLine: bl + 1 } : s)),
+          bl === 0 ? 400 : STAGE_2_LINE_DELAY
         );
-        if (p < 1) requestAnimationFrame(raf);
+        return () => clearTimeout(t);
+      }
+      if (!st) {
+        const t = setTimeout(
+          () => setState((s) => (s.view === 2 && s.phase === "in" ? { ...s, showTotal: true } : s)),
+          STAGE_2_TOTAL_DELAY
+        );
+        return () => clearTimeout(t);
+      }
+      const t = setTimeout(
+        () => setState({ view: 2, phase: "hold", breakdownLine: 3, showTotal: true }),
+        400
+      );
+      return () => clearTimeout(t);
+    }
+
+    if (state.view === 2 && state.phase === "hold") {
+      const t = setTimeout(
+        () => setState({ view: 2, phase: "out", breakdownLine: 3, showTotal: true }),
+        STAGE_2_HOLD_AFTER_TOTAL
+      );
+      return () => clearTimeout(t);
+    }
+
+    if (state.view === 2 && state.phase === "out") {
+      const t = setTimeout(
+        () => setState({ view: "transition", from: 2 }),
+        STAGE_2_FADE_OUT
+      );
+      return () => clearTimeout(t);
+    }
+
+    if (state.view === "transition" && state.from === 2) {
+      const t = setTimeout(() => {
+        setState({ view: 3, phase: "in" });
+        setDisplayedXP(oldTotalXP);
+        setXpBarFillPercent(
+          levelBeforeData.xpForNextLevel != null
+            ? ((oldTotalXP - levelBeforeData.xpForCurrentLevel) /
+                (levelBeforeData.xpForNextLevel - levelBeforeData.xpForCurrentLevel)) *
+                100
+            : 100
+        );
+      }, TRANSITION_BLACK);
+      return () => clearTimeout(t);
+    }
+
+    if (state.view === 3 && state.phase === "in") {
+      const t = setTimeout(() => setState({ view: 3, phase: "bar" }), 400);
+      return () => clearTimeout(t);
+    }
+
+    if (state.view === 3 && state.phase === "bar") {
+      const startFill =
+        levelBeforeData.xpForNextLevel != null
+          ? ((oldTotalXP - levelBeforeData.xpForCurrentLevel) /
+              (levelBeforeData.xpForNextLevel - levelBeforeData.xpForCurrentLevel)) *
+            100
+          : 100;
+      const leveledUp = xpRewardData.levelAfter > xpRewardData.levelBefore;
+      const endFill =
+        leveledUp && levelBeforeData.xpForNextLevel != null
+          ? 100
+          : levelAfterData.progressPercent;
+      const endXP =
+        leveledUp && levelBeforeData.xpForNextLevel != null
+          ? levelBeforeData.xpForNextLevel
+          : xpRewardData.newTotalXP;
+      const startTime = Date.now();
+
+      const animateBar = () => {
+        const elapsed = Date.now() - startTime;
+        const p = Math.min(1, elapsed / STAGE_3_BAR_DURATION);
+        const eased = 1 - Math.pow(1 - p, 2);
+        setXpBarFillPercent(startFill + (endFill - startFill) * eased);
+        setDisplayedXP(Math.round(oldTotalXP + (endXP - oldTotalXP) * eased));
+        if (p < 1) {
+          rafRef.current = requestAnimationFrame(animateBar);
+        }
       };
-      requestAnimationFrame(raf);
+      rafRef.current = requestAnimationFrame(animateBar);
 
       const t = setTimeout(() => {
-        setXpBarProgress(endPercent);
-        setDisplayedXP(xpRewardData.newTotalXP);
-        if (xpRewardData.levelAfter > xpRewardData.levelBefore) {
-          levelUpShownRef.current = true;
-          setStage(4);
-        } else {
-          setStage(5);
-        }
-      }, STAGE_3_DURATION);
+        if (rafRef.current) cancelAnimationFrame(rafRef.current);
+        setXpBarFillPercent(endFill);
+        setDisplayedXP(endXP);
+        setState({ view: 3, phase: "hold" });
+      }, STAGE_3_BAR_DURATION);
+      return () => {
+        clearTimeout(t);
+        if (rafRef.current) cancelAnimationFrame(rafRef.current);
+      };
+    }
+
+    if (state.view === 3 && state.phase === "hold") {
+      const t = setTimeout(() => setState({ view: 3, phase: "out" }), STAGE_3_HOLD_AFTER_BAR);
       return () => clearTimeout(t);
     }
 
-    if (stage === 4) {
-      const t = setTimeout(() => setStage(5), STAGE_4_DURATION);
+    if (state.view === 3 && state.phase === "out") {
+      const t = setTimeout(() => setState({ view: "transition", from: 3 }), STAGE_3_FADE_OUT);
       return () => clearTimeout(t);
     }
-  }, [isOpen, xpRewardData, stage, breakdownLine, showTotal]);
+
+    if (state.view === "transition" && state.from === 3) {
+      const leveledUp = xpRewardData.levelAfter > xpRewardData.levelBefore;
+      const t = setTimeout(
+        () => setState(leveledUp ? { view: 4, phase: "in" } : { view: 5 }),
+        TRANSITION_BLACK
+      );
+      return () => clearTimeout(t);
+    }
+
+    if (state.view === 4 && state.phase === "in") {
+      const t = setTimeout(() => setState({ view: 4, phase: "hold" }), 500);
+      return () => clearTimeout(t);
+    }
+
+    if (state.view === 4 && state.phase === "hold") {
+      const t = setTimeout(() => setState({ view: 4, phase: "out" }), STAGE_4_HOLD);
+      return () => clearTimeout(t);
+    }
+
+    if (state.view === 4 && state.phase === "out") {
+      const t = setTimeout(() => setState({ view: "transition", from: 4 }), STAGE_4_FADE_OUT);
+      return () => clearTimeout(t);
+    }
+
+    if (state.view === "transition" && state.from === 4) {
+      const t = setTimeout(() => setState({ view: 5 }), TRANSITION_BLACK);
+      return () => clearTimeout(t);
+    }
+  }, [isOpen, xpRewardData, state]);
 
   if (!isOpen || !xpRewardData) return null;
 
   const { xpBreakdown, levelBefore, levelAfter, newTotalXP } = xpRewardData;
   const oldTotalXP = newTotalXP - xpBreakdown.totalXP;
+  const levelBeforeData = calculateLevel(oldTotalXP);
   const levelAfterData = calculateLevel(newTotalXP);
   const leveledUp = levelAfter > levelBefore;
 
   const breakdownLines = [
-    { label: "+30 XP za účasť", value: xpBreakdown.participationXP },
-    {
-      label: `+${xpBreakdown.correctXP} XP za správne odpovede`,
-      value: xpBreakdown.correctXP,
-    },
-    {
-      label: `+${xpBreakdown.rankXP} XP za #${xpRewardData.rank} umiestnenie`,
-      value: xpBreakdown.rankXP,
-    },
+    "+30 XP za účasť",
+    `+${xpBreakdown.correctXP} XP za správne odpovede`,
+    `+${xpBreakdown.rankXP} XP za #${xpRewardData.rank} umiestnenie`,
   ];
+
+  const currentBreakdown = state.view === 2 ? (state.breakdownLine ?? 0) : 0;
+  const currentShowTotal = state.view === 2 ? (state.showTotal ?? false) : false;
 
   return (
     <div
       className="fixed inset-0 z-[101] bg-[#1b2833] text-[#f3e6c0] flex flex-col items-center justify-center font-['Montserrat']"
       style={{ position: "fixed", top: 0, left: 0, width: "100vw", height: "100vh" }}
     >
-      <div className="w-full max-w-[480px] mx-auto px-6 flex flex-col items-center text-center">
-        {stage === 1 && (
-          <motion.p
+      <AnimatePresence mode="wait">
+        {state.view === 1 && (
+          <motion.div
             key="stage1"
             initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="text-3xl font-extrabold uppercase tracking-[0.2em]"
+            animate={{ opacity: state.phase === "out" ? 0 : 1 }}
+            exit={{ opacity: 0 }}
+            transition={{
+              duration: state.phase === "in" ? STAGE_1_FADE_IN / 1000 : STAGE_1_FADE_OUT / 1000,
+            }}
+            className="absolute inset-0 flex flex-col items-center justify-center"
           >
-            KVÍZ DOKONČENÝ
-          </motion.p>
+            <p className="text-3xl font-extrabold uppercase tracking-[0.2em]">KVÍZ DOKONČENÝ</p>
+          </motion.div>
         )}
 
-        {stage === 2 && (
+        {state.view === 2 && (
           <motion.div
             key="stage2"
             initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="flex flex-col gap-3"
+            animate={{ opacity: state.phase === "out" ? 0 : 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: state.phase === "out" ? STAGE_2_FADE_OUT / 1000 : 0.5 }}
+            className="absolute inset-0 flex flex-col items-center justify-center px-6"
           >
-            {breakdownLines.slice(0, breakdownLine).map((line, i) => (
-              <motion.p
-                key={i}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="text-lg font-semibold"
-              >
-                {line.label}
-              </motion.p>
-            ))}
-            {showTotal && (
-              <motion.p
-                key="total"
-                initial={{ scale: 0.8, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                transition={{ type: "spring", stiffness: 300 }}
-                className="text-2xl font-extrabold mt-4 text-[#FFD700]"
-              >
-                CELKOM +{xpBreakdown.totalXP} XP
-              </motion.p>
-            )}
+            <div className="flex flex-col gap-4">
+              {breakdownLines.slice(0, currentBreakdown).map((line, i) => (
+                <motion.p
+                  key={i}
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4 }}
+                  className="text-lg font-semibold"
+                >
+                  {line}
+                </motion.p>
+              ))}
+              {currentShowTotal && (
+                <motion.p
+                  key="total"
+                  initial={{ scale: 0.9, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  transition={{ type: "spring", stiffness: 200, damping: 20 }}
+                  className="text-2xl font-extrabold mt-2 text-[#FFD700]"
+                >
+                  CELKOM +{xpBreakdown.totalXP} XP
+                </motion.p>
+              )}
+            </div>
           </motion.div>
         )}
 
-        {(stage === 3 || stage === 4 || stage === 5) && (
+        {state.view === 3 && (
           <motion.div
             key="stage3"
             initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="w-full max-w-[280px]"
+            animate={{ opacity: state.phase === "out" ? 0 : 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: state.phase === "out" ? STAGE_3_FADE_OUT / 1000 : 0.5 }}
+            className="absolute inset-0 flex flex-col items-center justify-center px-6"
           >
-            <p className="text-sm font-bold uppercase tracking-widest opacity-70 mb-2">
-              LEVEL {stage === 3 ? levelBefore : levelAfter}
-            </p>
-            <div className="w-full h-3 bg-[#1b2833]/50 rounded-full overflow-hidden border border-[#f3e6c0]/20">
-              <motion.div
-                className="h-full bg-[#f3e6c0] rounded-full"
-                style={{ width: `${xpBarProgress}%` }}
-                transition={{ duration: stage === 3 ? 0 : 0.3 }}
-              />
+            <div className="w-full max-w-[320px]">
+              <p className="text-sm font-bold uppercase tracking-widest opacity-70 mb-3">
+                LEVEL {levelBefore}
+              </p>
+              <div
+                className="w-full rounded-full overflow-hidden border border-[#f3e6c0]/25"
+                style={{ height: 12, background: "rgba(27,40,51,0.6)" }}
+              >
+                <motion.div
+                  className="h-full rounded-full"
+                  style={{
+                    width: `${Math.min(100, Math.max(0, xpBarFillPercent))}%`,
+                    background: "linear-gradient(90deg, #FFD700 0%, #f3e6c0 100%)",
+                  }}
+                  transition={{ duration: 0.05 }}
+                />
+              </div>
+              <p className="text-sm font-medium opacity-70 mt-2 tabular-nums">
+                {levelBeforeData.xpForNextLevel != null
+                  ? `${displayedXP} / ${levelBeforeData.xpForNextLevel} XP`
+                  : `${displayedXP} XP (MAX)`}
+              </p>
             </div>
-            <p className="text-xs font-medium opacity-60 mt-2 tabular-nums">
-              {levelAfterData.xpForNextLevel != null
-                ? `${displayedXP} / ${levelAfterData.xpForNextLevel} XP`
-                : `${displayedXP} XP (MAX)`}
-            </p>
           </motion.div>
         )}
 
-        {stage === 4 && leveledUp && (
+        {state.view === 4 && (
           <motion.div
-            key="levelup"
-            initial={{ scale: 0.5, opacity: 0 }}
-            animate={{
-              scale: 1,
-              opacity: 1,
-              boxShadow: [
-                "0 0 20px rgba(255,215,0,0.3)",
-                "0 0 40px rgba(255,215,0,0.5)",
-                "0 0 20px rgba(255,215,0,0.3)",
-              ],
-            }}
-            transition={{
-              scale: { type: "spring", stiffness: 200 },
-              boxShadow: { duration: 1, repeat: Infinity },
-            }}
-            className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none"
+            key="stage4"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: state.phase === "out" ? 0 : 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: state.phase === "out" ? STAGE_4_FADE_OUT / 1000 : 0.6 }}
+            className="absolute inset-0 flex flex-col items-center justify-center"
           >
-            <p className="text-4xl font-extrabold text-[#FFD700] uppercase tracking-wider">
+            <motion.p
+              className="text-4xl font-extrabold text-[#FFD700] uppercase tracking-wider"
+              animate={{
+                textShadow: [
+                  "0 0 20px rgba(255,215,0,0.4)",
+                  "0 0 40px rgba(255,215,0,0.7)",
+                  "0 0 20px rgba(255,215,0,0.4)",
+                ],
+              }}
+              transition={{ duration: 1.2, repeat: Infinity }}
+            >
               LEVEL UP!
-            </p>
-            <p className="text-6xl font-black mt-4 text-[#f3e6c0]">{levelAfter}</p>
+            </motion.p>
+            <p className="text-7xl font-black mt-6 text-[#f3e6c0]">{levelAfter}</p>
           </motion.div>
         )}
 
-        {stage === 5 && (
+        {state.view === 5 && (
           <motion.div
             key="stage5"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="mt-8"
+            transition={{ duration: 0.8 }}
+            className="flex flex-col items-center justify-center"
           >
             <button
               type="button"
@@ -249,7 +373,11 @@ export default function XPRewardModal() {
             </button>
           </motion.div>
         )}
-      </div>
+
+        {state.view === "transition" && (
+          <div key="transition" className="absolute inset-0 bg-[#1b2833]" />
+        )}
+      </AnimatePresence>
     </div>
   );
 }
