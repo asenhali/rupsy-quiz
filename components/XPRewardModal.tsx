@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useSwipeContext } from "@/context/SwipeContext";
 import { useXPReward } from "@/context/XPRewardContext";
 import { calculateLevel } from "@/lib/xp";
+import ParticleExplosion from "@/components/ParticleExplosion";
 
 const STAGE_1_FADE_IN = 500;
 const STAGE_1_HOLD = 2000;
@@ -17,17 +18,17 @@ const TRANSITION_BLACK = 500;
 const STAGE_3_BAR_DURATION = 2000;
 const STAGE_3_HOLD_AFTER_BAR = 800;
 const STAGE_3_FADE_OUT = 500;
-const STAGE_4_EXPLOSION = 500;
-const STAGE_4_DRIP = 1000;
-const STAGE_4_HOLD = 3000;
-const STAGE_4_FADE_OUT = 500;
+const LEVEL_UP_FADE_BAR_DELAY = 500;
+const LEVEL_UP_TEXT_DELAY = 0;
+const LEVEL_UP_NUMBER_DELAY = 300;
+const LEVEL_UP_BUTTON_DELAY = 2000;
 
 type ViewState =
   | { view: 1; phase: "in" | "hold" | "out" }
   | { view: "transition"; from: number }
   | { view: 2; phase: "in" | "hold" | "out"; breakdownLine: number; showTotal: boolean }
-  | { view: 3; phase: "in" | "bar" | "hold" | "out" }
-  | { view: 4; phase: "explosion" | "drip" | "hold"; showButton?: boolean }
+  | { view: 3; phase: "in" | "bar" | "hold" | "particles" | "out" }
+  | { view: 4; phase: "hold"; showButton?: boolean }
   | { view: 5 };
 
 export default function XPRewardModal() {
@@ -36,7 +37,10 @@ export default function XPRewardModal() {
   const [state, setState] = useState<ViewState>({ view: 1, phase: "in" });
   const [xpBarFillPercent, setXpBarFillPercent] = useState(0);
   const [displayedXP, setDisplayedXP] = useState(0);
+  const [particlesActive, setParticlesActive] = useState(false);
+  const [particleSpawn, setParticleSpawn] = useState<{ x: number; y: number } | null>(null);
   const rafRef = useRef<number | null>(null);
+  const barContainerRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     setSwipeDisabled(isOpen);
@@ -50,6 +54,8 @@ export default function XPRewardModal() {
     setState({ view: 1, phase: "in" });
     setXpBarFillPercent(0);
     setDisplayedXP(oldTotalXP);
+    setParticleSpawn(null);
+    setParticlesActive(false);
   }, [isOpen, xpRewardData]);
 
   useEffect(() => {
@@ -175,12 +181,26 @@ export default function XPRewardModal() {
         if (rafRef.current) cancelAnimationFrame(rafRef.current);
         setXpBarFillPercent(endFill);
         setDisplayedXP(endXP);
-        setState(leveledUp ? { view: 4, phase: "explosion" } : { view: 3, phase: "hold" });
+        if (leveledUp) {
+          const rect = barContainerRef.current?.getBoundingClientRect();
+          const x = rect ? rect.left + rect.width / 2 : window.innerWidth / 2;
+          const y = rect ? rect.top + rect.height / 2 : window.innerHeight / 2;
+          setParticleSpawn({ x, y });
+          setParticlesActive(true);
+          setState({ view: 3, phase: "particles" });
+        } else {
+          setState({ view: 3, phase: "hold" });
+        }
       }, STAGE_3_BAR_DURATION);
       return () => {
         clearTimeout(t);
         if (rafRef.current) cancelAnimationFrame(rafRef.current);
       };
+    }
+
+    if (state.view === 3 && state.phase === "particles") {
+      const t = setTimeout(() => setState({ view: 3, phase: "out" }), LEVEL_UP_FADE_BAR_DELAY);
+      return () => clearTimeout(t);
     }
 
     if (state.view === 3 && state.phase === "hold") {
@@ -194,24 +214,18 @@ export default function XPRewardModal() {
     }
 
     if (state.view === "transition" && state.from === 3) {
-      const t = setTimeout(() => setState({ view: 5 }), TRANSITION_BLACK);
-      return () => clearTimeout(t);
-    }
-
-    if (state.view === 4 && state.phase === "explosion") {
-      const t = setTimeout(() => setState({ view: 4, phase: "drip" }), STAGE_4_EXPLOSION);
-      return () => clearTimeout(t);
-    }
-
-    if (state.view === 4 && state.phase === "drip") {
-      const t = setTimeout(() => setState({ view: 4, phase: "hold" }), STAGE_4_DRIP);
+      const leveledUp = xpRewardData.levelAfter > xpRewardData.levelBefore;
+      const t = setTimeout(
+        () => setState(leveledUp ? { view: 4, phase: "hold" } : { view: 5 }),
+        TRANSITION_BLACK
+      );
       return () => clearTimeout(t);
     }
 
     if (state.view === 4 && state.phase === "hold" && !state.showButton) {
       const t = setTimeout(
         () => setState({ view: 4, phase: "hold", showButton: true }),
-        STAGE_4_HOLD
+        LEVEL_UP_TEXT_DELAY + LEVEL_UP_BUTTON_DELAY
       );
       return () => clearTimeout(t);
     }
@@ -239,6 +253,28 @@ export default function XPRewardModal() {
       className="fixed inset-0 z-[101] bg-[#1b2833] text-[#f3e6c0] flex flex-col items-center justify-center font-['Montserrat']"
       style={{ position: "fixed", top: 0, left: 0, width: "100vw", height: "100vh" }}
     >
+      {particlesActive && particleSpawn && (
+        <>
+          <motion.div
+            className="fixed inset-0 z-[103] pointer-events-none"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: [0, 0.3, 0] }}
+            transition={{ duration: 0.3 }}
+            style={{
+              background:
+                "linear-gradient(135deg, rgba(255,255,255,0.4) 0%, rgba(255,215,0,0.3) 100%)",
+            }}
+          />
+          <ParticleExplosion
+            spawnX={particleSpawn.x}
+            spawnY={particleSpawn.y}
+            onComplete={() => {
+              setParticlesActive(false);
+              setParticleSpawn(null);
+            }}
+          />
+        </>
+      )}
       <AnimatePresence mode="wait">
         {state.view === 1 && (
           <motion.div
@@ -300,7 +336,7 @@ export default function XPRewardModal() {
             transition={{ duration: state.phase === "out" ? STAGE_3_FADE_OUT / 1000 : 0.5 }}
             className="absolute inset-0 flex flex-col items-center justify-center px-6"
           >
-            <div className="w-full max-w-[320px]">
+            <div ref={barContainerRef} className="w-full max-w-[320px]">
               <p className="text-sm font-bold uppercase tracking-widest opacity-70 mb-3">
                 LEVEL {levelBefore}
               </p>
@@ -333,29 +369,48 @@ export default function XPRewardModal() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.5 }}
-            className="absolute inset-0 flex flex-col items-center justify-center overflow-hidden"
+            className="absolute inset-0 flex flex-col items-center justify-center"
           >
-            {/* Base content - LEVEL UP text (revealed as gold drips away) */}
             <div className="relative z-10 flex flex-col items-center justify-center flex-1">
               <motion.p
                 className="text-4xl font-extrabold text-[#FFD700] uppercase tracking-wider"
+                initial={{ scale: 0.5, opacity: 0 }}
                 animate={{
+                  scale: [0.5, 1.1, 1],
+                  opacity: 1,
                   textShadow: [
                     "0 0 20px rgba(255,215,0,0.4)",
                     "0 0 40px rgba(255,215,0,0.7)",
                     "0 0 20px rgba(255,215,0,0.4)",
                   ],
                 }}
-                transition={{ duration: 1.2, repeat: Infinity }}
+                transition={{
+                  scale: {
+                    duration: 0.6,
+                    times: [0, 0.6, 1],
+                    delay: LEVEL_UP_TEXT_DELAY / 1000,
+                  },
+                  opacity: { duration: 0.3, delay: LEVEL_UP_TEXT_DELAY / 1000 },
+                  textShadow: { duration: 1.2, repeat: Infinity, delay: LEVEL_UP_TEXT_DELAY / 1000 },
+                }}
               >
                 LEVEL UP!
               </motion.p>
-              <p
+              <motion.p
                 className="font-black mt-6 text-[#f3e6c0]"
                 style={{ fontSize: "clamp(100px, 25vw, 140px)" }}
+                initial={{ scale: 0.5, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{
+                  duration: 0.5,
+                  delay: (LEVEL_UP_TEXT_DELAY + LEVEL_UP_NUMBER_DELAY) / 1000,
+                  type: "spring",
+                  stiffness: 200,
+                  damping: 20,
+                }}
               >
                 {levelAfter}
-              </p>
+              </motion.p>
               {state.showButton && (
                 <motion.button
                   initial={{ opacity: 0 }}
@@ -369,38 +424,6 @@ export default function XPRewardModal() {
                 </motion.button>
               )}
             </div>
-
-            {/* Gold explosion overlay - expands from center, then drips down */}
-            {(state.phase === "explosion" || state.phase === "drip") && (
-              <motion.div
-                className="absolute inset-0 z-20 pointer-events-none w-full h-full"
-                initial={{ scale: 0.05 }}
-                animate={
-                  state.phase === "explosion"
-                    ? { scale: 1 }
-                    : { scale: 1, y: "100%" }
-                }
-                transition={
-                  state.phase === "explosion"
-                    ? {
-                        scale: {
-                          duration: STAGE_4_EXPLOSION / 1000,
-                          ease: [0.16, 1, 0.3, 1],
-                        },
-                      }
-                    : {
-                        y: {
-                          duration: STAGE_4_DRIP / 1000,
-                          ease: "easeIn",
-                        },
-                      }
-                }
-                style={{
-                  background: "linear-gradient(180deg, #FFD700 0%, #E8C547 50%, #D4A017 100%)",
-                  transformOrigin: "center center",
-                }}
-              />
-            )}
           </motion.div>
         )}
 
