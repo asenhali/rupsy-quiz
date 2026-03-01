@@ -8,6 +8,9 @@ export type ProfileUser = {
   city?: string;
   level?: number;
   totalXP?: number;
+  xpForCurrentLevel?: number;
+  xpForNextLevel?: number | null;
+  progressPercent?: number;
   totalPoints?: number;
   rCoins?: number;
   totalGames?: number;

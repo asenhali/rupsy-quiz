@@ -351,14 +351,24 @@ export default function HomePanel() {
             </button>
             <div className="flex-1 min-w-0 flex flex-col justify-center">
               <p className="text-base font-semibold tracking-tight truncate">{user?.nickname ?? ""}</p>
-              <p className="text-[10px] font-medium uppercase tracking-widest opacity-35">Level {user?.level ?? 1}</p>
-              <div className="w-full max-w-[140px] h-1.5 bg-[#1b2833]/10 rounded-full mt-1.5 overflow-hidden">
-                <div
-                  className="h-full bg-[#1b2833] rounded-full"
-                  style={{ width: `${Math.max((user?.totalXP ?? 0) % 100, 2)}%` }}
-                />
-              </div>
-              <p className="text-[9px] font-medium opacity-25 mt-0.5">{user?.totalXP ?? 0} / {(user?.level ?? 1) * 100} XP</p>
+              <p className="text-[10px] font-medium uppercase tracking-widest opacity-35">
+                {user?.xpForNextLevel == null && (user?.level ?? 1) >= 25 ? "MAX LEVEL" : `Level ${user?.level ?? 1}`}
+              </p>
+              {user?.xpForNextLevel != null ? (
+                <>
+                  <div className="w-full max-w-[140px] h-1.5 bg-[#1b2833]/10 rounded-full mt-1.5 overflow-hidden">
+                    <div
+                      className="h-full bg-[#1b2833] rounded-full"
+                      style={{ width: `${Math.max(user?.progressPercent ?? 0, 2)}%` }}
+                    />
+                  </div>
+                  <p className="text-[9px] font-medium opacity-25 mt-0.5">
+                    {user?.totalXP ?? 0} / {user?.xpForNextLevel ?? 0} XP
+                  </p>
+                </>
+              ) : (
+                <p className="text-[9px] font-medium opacity-25 mt-1.5">{user?.totalXP ?? 0} XP</p>
+              )}
             </div>
             <div className="flex items-center gap-1.5 bg-[#1b2833]/[0.07] rounded-full px-3 py-1.5 shrink-0">
               <span className="w-5 h-5 rounded-full bg-[#1b2833] text-[#f3e6c0] text-[10px] font-bold flex items-center justify-center">R</span>

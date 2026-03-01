@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import jwt from "jsonwebtoken";
 import { db } from "@/lib/firebaseAdmin";
+import { calculateLevel } from "@/lib/xp";
 
 export async function GET(request: Request) {
   try {
@@ -55,6 +56,9 @@ export async function GET(request: Request) {
     }
 
     const data = userDoc.data();
+    const totalXP = data?.totalXP ?? 0;
+    const levelData = calculateLevel(totalXP);
+
     return NextResponse.json({
       success: true,
       needsOnboarding: false,
@@ -63,8 +67,11 @@ export async function GET(request: Request) {
         rupsyId: data?.rupsyId,
         nickname: data?.nickname,
         city: data?.city,
-        totalXP: data?.totalXP,
-        level: data?.level,
+        totalXP,
+        level: levelData.level,
+        xpForCurrentLevel: levelData.xpForCurrentLevel,
+        xpForNextLevel: levelData.xpForNextLevel,
+        progressPercent: levelData.progressPercent,
         avatarId: data?.avatarId ?? "default",
         totalPoints: data?.totalPoints ?? 0,
         rCoins: data?.rCoins ?? 0,

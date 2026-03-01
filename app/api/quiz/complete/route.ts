@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import jwt from "jsonwebtoken";
 import { FieldValue } from "firebase-admin/firestore";
 import { db } from "@/lib/firebaseAdmin";
+import { calculateQuizXP, calculateLevel } from "@/lib/xp";
 
 async function getWixUserId(): Promise<{ wixUserId: string } | { error: NextResponse }> {
   const cookieStore = await cookies();
@@ -98,12 +99,6 @@ export async function POST(request: Request) {
       (a: { correct?: boolean }) => a.correct === true
     ).length;
 
-    await db.collection("users").doc(wixUserId).update({
-      totalGames: FieldValue.increment(1),
-      totalCorrect: FieldValue.increment(correctCount),
-      totalPoints: FieldValue.increment(totalScore),
-    });
-
     const allSessionsSnap = await db
       .collection("quizSessions")
       .where("weekId", "==", weekId)
@@ -118,12 +113,39 @@ export async function POST(request: Request) {
     });
     const rank = betterCount + 1;
 
+    const xpBreakdown = calculateQuizXP(correctCount, rank);
+
+    const userDocSnap = await db.collection("users").doc(wixUserId).get();
+    const userData = userDocSnap.data();
+    const currentTotalXP = userData?.totalXP ?? 0;
+    const newTotalXP = currentTotalXP + xpBreakdown.totalXP;
+
+    const levelBefore = calculateLevel(currentTotalXP).level;
+    const levelAfter = calculateLevel(newTotalXP).level;
+
+    await db.collection("users").doc(wixUserId).update({
+      totalGames: FieldValue.increment(1),
+      totalCorrect: FieldValue.increment(correctCount),
+      totalPoints: FieldValue.increment(totalScore),
+      totalXP: FieldValue.increment(xpBreakdown.totalXP),
+      level: levelAfter,
+    });
+
     return NextResponse.json({
       success: true,
       totalScore,
       rank,
       totalPlayers,
       weekId,
+      xpBreakdown: {
+        participationXP: xpBreakdown.participationXP,
+        correctXP: xpBreakdown.correctXP,
+        rankXP: xpBreakdown.rankXP,
+        totalXP: xpBreakdown.totalXP,
+      },
+      levelBefore,
+      levelAfter,
+      newTotalXP,
     });
   } catch (err) {
     console.error("quiz complete error:", err);
