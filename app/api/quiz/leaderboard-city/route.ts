@@ -107,20 +107,26 @@ export async function GET(request: Request) {
         .map((doc) => {
           const d = doc.data();
           const city = normalizeCity(userIdToUser.get(d.userId as string)?.city ?? "");
-          return { ...d, city };
+          return { ...d, city } as { userId: string; totalScore: number; completedAt: unknown; city: string };
         })
         .filter((s) => normalizeCity(s.city ?? "") === userCityNorm);
 
-      const sessionsWithData = citySessions.map((doc) => ({
-        userId: doc.userId as string,
-        totalScore: doc.totalScore ?? 0,
-        completedAt: doc.completedAt?.toDate?.() ?? doc.completedAt,
-      }));
+      const sessionsWithData = citySessions.map((s): { userId: string; totalScore: number; completedAt: Date | unknown } => {
+        let completedAt: Date | unknown = s.completedAt;
+        if (s.completedAt && typeof s.completedAt === "object" && "toDate" in s.completedAt) {
+          completedAt = (s.completedAt as { toDate: () => Date }).toDate();
+        }
+        return {
+          userId: s.userId,
+          totalScore: s.totalScore ?? 0,
+          completedAt,
+        };
+      });
 
       sessionsWithData.sort((a, b) => {
         if (b.totalScore !== a.totalScore) return b.totalScore - a.totalScore;
-        const aTime = a.completedAt ? new Date(a.completedAt).getTime() : 0;
-        const bTime = b.completedAt ? new Date(b.completedAt).getTime() : 0;
+        const aTime = a.completedAt instanceof Date ? a.completedAt.getTime() : 0;
+        const bTime = b.completedAt instanceof Date ? b.completedAt.getTime() : 0;
         return aTime - bTime;
       });
 
