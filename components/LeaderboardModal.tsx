@@ -94,6 +94,8 @@ function Top3Card({
   );
 }
 
+type TabId = "slovensko" | "mesto" | "mesta";
+
 type LeaderboardEntry = {
   rank: number;
   nickname: string;
@@ -102,9 +104,23 @@ type LeaderboardEntry = {
   isCurrentUser: boolean;
 };
 
+type CitiesEntry = {
+  rank: number;
+  city: string;
+  averageScore: number;
+  playerCount: number;
+  isCurrentCity: boolean;
+};
+
 type UserRank = {
   rank: number;
   score: number;
+} | null;
+
+type CitiesUserRank = {
+  rank: number;
+  averageScore: number;
+  playerCount: number;
 } | null;
 
 type Props = {
@@ -112,12 +128,23 @@ type Props = {
   onClose: () => void;
 };
 
+const TABS: { id: TabId; label: string }[] = [
+  { id: "slovensko", label: "SLOVENSKO" },
+  { id: "mesto", label: "MESTO" },
+  { id: "mesta", label: "MESTÁ" },
+];
+
 export default function LeaderboardModal({ isOpen, onClose }: Props) {
   const { setSwipeDisabled } = useSwipeContext();
+  const [activeTab, setActiveTab] = useState<TabId>("slovensko");
   const [entries, setEntries] = useState<LeaderboardEntry[]>([]);
+  const [citiesEntries, setCitiesEntries] = useState<CitiesEntry[]>([]);
   const [userRank, setUserRank] = useState<UserRank>(null);
+  const [citiesUserRank, setCitiesUserRank] = useState<CitiesUserRank>(null);
+  const [cityName, setCityName] = useState<string>("");
   const [loading, setLoading] = useState(true);
   const currentUserRowRef = useRef<HTMLDivElement>(null);
+  const currentCityRowRef = useRef<HTMLDivElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -127,36 +154,100 @@ export default function LeaderboardModal({ isOpen, onClose }: Props) {
 
   useEffect(() => {
     if (!isOpen) return;
-    setLoading(true);
-    setEntries([]);
-    setUserRank(null);
-    fetch("/api/quiz/leaderboard", { credentials: "include" })
-      .then((res) => res.json())
-      .then((json) => {
-        if (json.success) {
-          setEntries(json.entries ?? []);
-          setUserRank(json.userRank ?? null);
-        }
-      })
-      .finally(() => setLoading(false));
+    setActiveTab("slovensko");
   }, [isOpen]);
 
   useEffect(() => {
-    if (!isOpen || loading || entries.length === 0) return;
-    const hasCurrentUser = entries.some((e) => e.isCurrentUser);
-    if (hasCurrentUser && currentUserRowRef.current && listRef.current) {
-      currentUserRowRef.current.scrollIntoView({
-        behavior: "smooth",
-        block: "center",
-      });
+    if (!isOpen) return;
+    if (activeTab === "slovensko") {
+      setLoading(true);
+      setEntries([]);
+      setUserRank(null);
+      fetch("/api/quiz/leaderboard", { credentials: "include" })
+        .then((res) => res.json())
+        .then((json) => {
+          if (json.success) {
+            setEntries(json.entries ?? []);
+            setUserRank(json.userRank ?? null);
+          }
+        })
+        .finally(() => setLoading(false));
+    } else if (activeTab === "mesto") {
+      setLoading(true);
+      setEntries([]);
+      setUserRank(null);
+      setCityName("");
+      fetch("/api/quiz/leaderboard-city?type=city", { credentials: "include" })
+        .then((res) => res.json())
+        .then((json) => {
+          if (json.success) {
+            setEntries(json.entries ?? []);
+            setUserRank(json.userRank ?? null);
+            setCityName(json.cityName ?? "");
+          }
+        })
+        .finally(() => setLoading(false));
+    } else {
+      setLoading(true);
+      setCitiesEntries([]);
+      setCitiesUserRank(null);
+      fetch("/api/quiz/leaderboard-city?type=cities", { credentials: "include" })
+        .then((res) => res.json())
+        .then((json) => {
+          if (json.success) {
+            setCitiesEntries(json.entries ?? []);
+            setCitiesUserRank(json.userRank ?? null);
+          }
+        })
+        .finally(() => setLoading(false));
     }
-  }, [isOpen, loading, entries]);
+  }, [isOpen, activeTab]);
+
+  useEffect(() => {
+    if (!isOpen || loading) return;
+    if (activeTab === "slovensko" || activeTab === "mesto") {
+      if (entries.length === 0) return;
+      const hasCurrentUser = entries.some((e) => e.isCurrentUser);
+      if (hasCurrentUser && currentUserRowRef.current && listRef.current) {
+        currentUserRowRef.current.scrollIntoView({
+          behavior: "smooth",
+          block: "center",
+        });
+      }
+    } else if (activeTab === "mesta" && citiesEntries.length > 0) {
+      const hasCurrentCity = citiesEntries.some((e) => e.isCurrentCity);
+      if (hasCurrentCity && currentCityRowRef.current && listRef.current) {
+        currentCityRowRef.current.scrollIntoView({
+          behavior: "smooth",
+          block: "center",
+        });
+      }
+    }
+  }, [isOpen, loading, activeTab, entries, citiesEntries]);
 
   if (!isOpen) return null;
 
   const currentUserEntry = entries.find((e) => e.isCurrentUser);
-  const displayRank = currentUserEntry?.rank ?? userRank?.rank ?? null;
-  const displayScore = currentUserEntry?.score ?? userRank?.score ?? null;
+  const currentCityEntry = citiesEntries.find((e) => e.isCurrentCity);
+
+  let displayRank: number | null = null;
+  let displayScore: number | null = null;
+  let rankLabel = "";
+
+  if (activeTab === "slovensko") {
+    displayRank = currentUserEntry?.rank ?? userRank?.rank ?? null;
+    displayScore = currentUserEntry?.score ?? userRank?.score ?? null;
+    rankLabel = "na Slovensku";
+  } else if (activeTab === "mesto") {
+    displayRank = currentUserEntry?.rank ?? userRank?.rank ?? null;
+    displayScore = currentUserEntry?.score ?? userRank?.score ?? null;
+    rankLabel = cityName ? `v ${cityName}` : "v meste";
+  } else {
+    displayRank = currentCityEntry?.rank ?? citiesUserRank?.rank ?? null;
+    displayScore = currentCityEntry?.averageScore ?? citiesUserRank?.averageScore ?? null;
+    rankLabel = "medzi mestami";
+  }
+
   const showStickyStats = displayRank != null && displayScore != null;
 
   function rankBadge(rank: number) {
@@ -182,9 +273,25 @@ export default function LeaderboardModal({ isOpen, onClose }: Props) {
         </div>
         {!loading && showStickyStats && (
           <p className="text-sm font-medium text-[#1b2833]/70 max-w-[480px] mx-auto mt-2">
-            Tvoje skóre: {displayScore} • #{displayRank} na Slovensku
+            Tvoje skóre: {displayScore} • #{displayRank} {rankLabel}
           </p>
         )}
+        <div className="flex gap-1 mt-3 max-w-[480px] mx-auto">
+          {TABS.map((tab) => (
+            <button
+              key={tab.id}
+              type="button"
+              onClick={() => setActiveTab(tab.id)}
+              className={`flex-1 py-2 px-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-colors ${
+                activeTab === tab.id
+                  ? "bg-[#1b2833] text-[#f3e6c0]"
+                  : "bg-[#1b2833]/10 text-[#1b2833]/60 hover:bg-[#1b2833]/15"
+              }`}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
       </div>
 
       <div
@@ -193,6 +300,44 @@ export default function LeaderboardModal({ isOpen, onClose }: Props) {
       >
         {loading ? (
           <p className="text-sm opacity-50 text-center py-8">Načítavam...</p>
+        ) : activeTab === "mesta" ? (
+          citiesEntries.length === 0 ? (
+            <p className="text-sm opacity-50 text-center py-8">Žiadne výsledky</p>
+          ) : (
+            <div className="space-y-2">
+              {citiesEntries.map((entry) => (
+                <div
+                  key={entry.rank}
+                  ref={entry.isCurrentCity ? currentCityRowRef : null}
+                  className={`flex items-center justify-between gap-3 px-4 py-3 rounded-2xl border ${
+                    entry.isCurrentCity
+                      ? "bg-[#1b2833] text-[#f3e6c0] border-[#1b2833]"
+                      : "bg-white/40 text-[#1b2833] border-[#1b2833]/[0.06]"
+                  }`}
+                >
+                  <span className="text-sm font-bold tabular-nums w-12 shrink-0">
+                    #{entry.rank}
+                  </span>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-semibold flex items-center gap-2">
+                      <span className="truncate">{entry.city}</span>
+                      {entry.isCurrentCity && (
+                        <span className="flex-shrink-0 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-[#f3e6c0]/30 text-[#f3e6c0]">
+                          TY
+                        </span>
+                      )}
+                    </p>
+                    <p className={`text-xs ${entry.isCurrentCity ? "opacity-70" : "opacity-50"}`}>
+                      {entry.playerCount} {entry.playerCount === 1 ? "hráč" : "hráčov"}
+                    </p>
+                  </div>
+                  <span className="text-sm font-bold tabular-nums">
+                    {entry.averageScore}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )
         ) : entries.length === 0 ? (
           <p className="text-sm opacity-50 text-center py-8">Žiadne výsledky</p>
         ) : (
@@ -262,7 +407,7 @@ export default function LeaderboardModal({ isOpen, onClose }: Props) {
         )}
       </div>
 
-      {!loading && userRank && !entries.some((e) => e.isCurrentUser) && (
+      {!loading && activeTab !== "mesta" && userRank && !entries.some((e) => e.isCurrentUser) && (
         <div className="flex-shrink-0 px-4 py-4 border-t border-[#1b2833]/[0.06] bg-[#1b2833] text-[#f3e6c0] max-w-[480px] mx-auto w-full">
           <p className="text-sm font-semibold text-center">
             Tvoja pozícia: #{userRank.rank} — {userRank.score} pts
