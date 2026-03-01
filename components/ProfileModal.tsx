@@ -5,15 +5,38 @@ import { AVAILABLE_AVATARS } from "@/config/avatars";
 import { useProfileModal } from "@/context/ProfileModalContext";
 import { useSwipeContext } from "@/context/SwipeContext";
 
+type BestRanking = {
+  bestCityRank: number | null;
+  bestSlovakiaRank: number | null;
+  bestCitiesRank: number | null;
+} | null;
+
 export default function ProfileModal() {
   const { isOpen, closeProfile, user, setUser } = useProfileModal();
   const [showAvatarPicker, setShowAvatarPicker] = useState(false);
+  const [bestRanking, setBestRanking] = useState<BestRanking>(null);
   const { setSwipeDisabled } = useSwipeContext();
 
   useEffect(() => {
     setSwipeDisabled(isOpen);
     return () => setSwipeDisabled(false);
   }, [isOpen, setSwipeDisabled]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    setBestRanking(null);
+    fetch("/api/quiz/best-ranking", { credentials: "include" })
+      .then((res) => res.json())
+      .then((json) => {
+        if (json.success) {
+          setBestRanking({
+            bestCityRank: json.bestCityRank ?? null,
+            bestSlovakiaRank: json.bestSlovakiaRank ?? null,
+            bestCitiesRank: json.bestCitiesRank ?? null,
+          });
+        }
+      });
+  }, [isOpen]);
 
   async function handleAvatarChange(newAvatarId: string) {
     const res = await fetch("/api/profile/update", {
@@ -99,19 +122,25 @@ export default function ProfileModal() {
         </div>
 
         <div className="py-6">
-          <p className="text-xs font-semibold uppercase tracking-widest opacity-40 mb-4">UMIESTNENIA</p>
+          <p className="text-xs font-semibold uppercase tracking-widest opacity-40 mb-4">NAJLEPŠIE UMIESTNENIA</p>
           <div className="grid grid-cols-3 gap-2">
             <div className="rounded-2xl bg-white/40 border border-[#1b2833]/[0.06] p-3 flex flex-col items-center">
               <span className="text-[9px] uppercase tracking-widest opacity-40 font-medium mb-1 text-center leading-tight">{(user?.city ?? "").toUpperCase() || "MESTO"}</span>
-              <span className="text-xl font-bold">—</span>
+              <span className="text-xl font-bold">
+                {bestRanking?.bestCityRank != null ? `#${bestRanking.bestCityRank}` : "—"}
+              </span>
             </div>
             <div className="rounded-2xl bg-white/60 border border-[#1b2833]/[0.08] p-4 flex flex-col items-center">
               <span className="text-[9px] uppercase tracking-widest opacity-40 font-medium mb-1 text-center leading-tight">SLOVENSKO</span>
-              <span className="text-2xl font-bold">—</span>
+              <span className="text-2xl font-bold">
+                {bestRanking?.bestSlovakiaRank != null ? `#${bestRanking.bestSlovakiaRank}` : "—"}
+              </span>
             </div>
             <div className="rounded-2xl bg-white/40 border border-[#1b2833]/[0.06] p-3 flex flex-col items-center">
               <span className="text-[9px] uppercase tracking-widest opacity-40 font-medium mb-1 text-center leading-tight">MESTÁ</span>
-              <span className="text-xl font-bold">—</span>
+              <span className="text-xl font-bold">
+                {bestRanking?.bestCitiesRank != null ? `#${bestRanking.bestCitiesRank}` : "—"}
+              </span>
             </div>
           </div>
           <p className="text-xs font-semibold uppercase tracking-widest opacity-40 mb-4 mt-6">ŠTATISTIKY</p>
