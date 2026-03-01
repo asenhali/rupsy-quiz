@@ -38,6 +38,23 @@ body {
   animation: leaderboard-stroke-snake 3.5s linear infinite;
 }
 
+/* XP reward modal bar shimmer */
+@keyframes xp-bar-shimmer {
+  0%,
+  100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+.xp-bar-fill-shimmer {
+  background: linear-gradient(90deg, #ffd700 0%, #fff44f 50%, #ffd700 100%);
+  background-size: 200% 100%;
+  animation: xp-bar-shimmer 1.5s ease-in-out infinite;
+}
+
 /* Hide scrollbar in AppView panels while keeping scroll functional */
 .app-shell section::-webkit-scrollbar {
   display: none;

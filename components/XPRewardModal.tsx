@@ -8,20 +8,20 @@ import { calculateLevel } from "@/lib/xp";
 import ParticleExplosion from "@/components/ParticleExplosion";
 
 const STAGE_1_FADE_IN = 500;
-const STAGE_1_HOLD = 2000;
-const STAGE_1_FADE_OUT = 500;
-const STAGE_2_LINE_DELAY = 1200;
+const STAGE_1_HOLD = 1500;
+const STAGE_1_FADE_OUT = 400;
+const STAGE_2_LINE_DELAY = 1000;
 const STAGE_2_TOTAL_DELAY = 1500;
-const STAGE_2_HOLD_AFTER_TOTAL = 2500;
+const STAGE_2_HOLD_AFTER_TOTAL = 2000;
 const STAGE_2_FADE_OUT = 500;
-const TRANSITION_BLACK = 500;
-const STAGE_3_BAR_DURATION = 2000;
+const TRANSITION_DURATION = 400;
+const STAGE_3_BAR_DURATION = 2500;
 const STAGE_3_HOLD_AFTER_BAR = 800;
 const STAGE_3_FADE_OUT = 500;
 const LEVEL_UP_FADE_BAR_DELAY = 500;
 const LEVEL_UP_TEXT_DELAY = 0;
 const LEVEL_UP_NUMBER_DELAY = 300;
-const LEVEL_UP_BUTTON_DELAY = 2000;
+const LEVEL_UP_BUTTON_DELAY = 2500;
 
 type ViewState =
   | { view: 1; phase: "in" | "hold" | "out" }
@@ -37,6 +37,7 @@ export default function XPRewardModal() {
   const [state, setState] = useState<ViewState>({ view: 1, phase: "in" });
   const [xpBarFillPercent, setXpBarFillPercent] = useState(0);
   const [displayedXP, setDisplayedXP] = useState(0);
+  const [displayedTotalXP, setDisplayedTotalXP] = useState(0);
   const [particlesActive, setParticlesActive] = useState(false);
   const [particleSpawn, setParticleSpawn] = useState<{ x: number; y: number } | null>(null);
   const rafRef = useRef<number | null>(null);
@@ -48,12 +49,38 @@ export default function XPRewardModal() {
   }, [isOpen, setSwipeDisabled]);
 
   useEffect(() => {
+    const showTotal =
+      state.view === 2 && state.phase === "in" && state.showTotal;
+    if (!xpRewardData || !showTotal) return;
+    const total = xpRewardData.xpBreakdown.totalXP;
+    const duration = 600;
+    const step = 20;
+    const steps = Math.ceil(duration / step);
+    const increment = total / steps;
+    let current = 0;
+    const id = setInterval(() => {
+      current += increment;
+      if (current >= total) {
+        setDisplayedTotalXP(total);
+        return;
+      }
+      setDisplayedTotalXP(Math.floor(current));
+    }, step);
+    const done = setTimeout(() => setDisplayedTotalXP(total), duration);
+    return () => {
+      clearInterval(id);
+      clearTimeout(done);
+    };
+  }, [xpRewardData, state]);
+
+  useEffect(() => {
     if (!isOpen || !xpRewardData) return;
 
     const oldTotalXP = xpRewardData.newTotalXP - xpRewardData.xpBreakdown.totalXP;
     setState({ view: 1, phase: "in" });
     setXpBarFillPercent(0);
     setDisplayedXP(oldTotalXP);
+    setDisplayedTotalXP(0);
     setParticleSpawn(null);
     setParticlesActive(false);
   }, [isOpen, xpRewardData]);
@@ -83,7 +110,7 @@ export default function XPRewardModal() {
     if (state.view === "transition" && state.from === 1) {
       const t = setTimeout(() => {
         setState({ view: 2, phase: "in", breakdownLine: 1, showTotal: false });
-      }, TRANSITION_BLACK);
+      }, TRANSITION_DURATION);
       return () => clearTimeout(t);
     }
 
@@ -93,20 +120,20 @@ export default function XPRewardModal() {
       if (bl < 3) {
         const t = setTimeout(
           () => setState((s) => (s.view === 2 && s.phase === "in" ? { ...s, breakdownLine: bl + 1 } : s)),
-          bl === 0 ? 400 : STAGE_2_LINE_DELAY
+          bl === 0 ? 0 : STAGE_2_LINE_DELAY
         );
         return () => clearTimeout(t);
       }
       if (!st) {
-        const t = setTimeout(
-          () => setState((s) => (s.view === 2 && s.phase === "in" ? { ...s, showTotal: true } : s)),
-          STAGE_2_TOTAL_DELAY
-        );
+        const t = setTimeout(() => {
+          setState((s) => (s.view === 2 && s.phase === "in" ? { ...s, showTotal: true } : s));
+          setDisplayedTotalXP(0);
+        }, STAGE_2_TOTAL_DELAY);
         return () => clearTimeout(t);
       }
       const t = setTimeout(
         () => setState({ view: 2, phase: "hold", breakdownLine: 3, showTotal: true }),
-        400
+        600
       );
       return () => clearTimeout(t);
     }
@@ -138,12 +165,12 @@ export default function XPRewardModal() {
                 100
             : 100
         );
-      }, TRANSITION_BLACK);
+      }, TRANSITION_DURATION);
       return () => clearTimeout(t);
     }
 
     if (state.view === 3 && state.phase === "in") {
-      const t = setTimeout(() => setState({ view: 3, phase: "bar" }), 400);
+      const t = setTimeout(() => setState({ view: 3, phase: "bar" }), 500);
       return () => clearTimeout(t);
     }
 
@@ -217,7 +244,7 @@ export default function XPRewardModal() {
       const leveledUp = xpRewardData.levelAfter > xpRewardData.levelBefore;
       const t = setTimeout(
         () => setState(leveledUp ? { view: 4, phase: "hold" } : { view: 5 }),
-        TRANSITION_BLACK
+        TRANSITION_DURATION
       );
       return () => clearTimeout(t);
     }
@@ -240,7 +267,7 @@ export default function XPRewardModal() {
   const leveledUp = levelAfter > levelBefore;
 
   const breakdownLines = [
-    "+30 XP za účasť",
+    `+${xpBreakdown.participationXP} XP za účasť`,
     `+${xpBreakdown.correctXP} XP za správne odpovede`,
     `+${xpBreakdown.rankXP} XP za #${xpRewardData.rank} umiestnenie`,
   ];
@@ -250,8 +277,15 @@ export default function XPRewardModal() {
 
   return (
     <div
-      className="fixed inset-0 z-[101] bg-[#1b2833] text-[#f3e6c0] flex flex-col items-center justify-center font-['Montserrat']"
-      style={{ position: "fixed", top: 0, left: 0, width: "100vw", height: "100vh" }}
+      className="fixed inset-0 z-[101] text-[#f3e6c0] flex flex-col items-center justify-center font-['Montserrat']"
+      style={{
+        position: "fixed",
+        top: 0,
+        left: 0,
+        width: "100vw",
+        height: "100vh",
+        background: "radial-gradient(ellipse at center, #1b2833 0%, #1f3040 100%)",
+      }}
     >
       {particlesActive && particleSpawn && (
         <>
@@ -279,15 +313,38 @@ export default function XPRewardModal() {
         {state.view === 1 && (
           <motion.div
             key="stage1"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: state.phase === "out" ? 0 : 1 }}
-            exit={{ opacity: 0 }}
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{
+              opacity: state.phase === "out" ? 0 : 1,
+              scale: state.phase === "out" ? 0.95 : 1,
+            }}
+            exit={{ opacity: 0, scale: 0.95 }}
             transition={{
-              duration: state.phase === "in" ? STAGE_1_FADE_IN / 1000 : STAGE_1_FADE_OUT / 1000,
+              duration:
+                state.phase === "in"
+                  ? STAGE_1_FADE_IN / 1000
+                  : state.phase === "out"
+                    ? STAGE_1_FADE_OUT / 1000
+                    : 0.5,
             }}
             className="absolute inset-0 flex flex-col items-center justify-center"
           >
-            <p className="text-3xl font-extrabold uppercase tracking-[0.2em]">TVOJE XP</p>
+            <div className="relative">
+              <div
+                className="absolute inset-0 -m-24 rounded-full blur-[60px]"
+                style={{
+                  background: "radial-gradient(circle, #FFD700 0%, transparent 65%)",
+                  width: "400%",
+                  height: "400%",
+                  left: "-150%",
+                  top: "-150%",
+                  opacity: 0.08,
+                }}
+              />
+              <p className="relative text-3xl font-extrabold uppercase tracking-[0.2em] text-[#FFD700]">
+                TVOJE XP
+              </p>
+            </div>
           </motion.div>
         )}
 
@@ -300,28 +357,70 @@ export default function XPRewardModal() {
             transition={{ duration: state.phase === "out" ? STAGE_2_FADE_OUT / 1000 : 0.5 }}
             className="absolute inset-0 flex flex-col items-center justify-center px-6"
           >
-            <div className="flex flex-col gap-4 items-center text-center">
-              {breakdownLines.slice(0, currentBreakdown).map((line, i) => (
-                <motion.p
-                  key={i}
-                  initial={{ opacity: 0, y: 12 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.4 }}
-                  className="text-lg font-semibold"
-                >
-                  {line}
-                </motion.p>
-              ))}
+            <div className="flex flex-col gap-5 items-center text-center">
+              {breakdownLines.slice(0, currentBreakdown).map((line, i) => {
+                const match = line.match(/^(\+\d+)(\s+XP.+)$/);
+                const numPart = match ? match[1] : line;
+                const descPart = match ? match[2] : "";
+                return (
+                  <motion.p
+                    key={i}
+                    initial={{ opacity: 0, y: 30 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5 }}
+                    className="text-[22px] font-normal text-[#f3e6c0]"
+                  >
+                    <motion.span
+                      className="font-bold text-[#FFD700]"
+                      initial={{ scale: 1 }}
+                      animate={{ scale: [1, 1.15, 1] }}
+                      transition={{ duration: 0.3 }}
+                    >
+                      {numPart}
+                    </motion.span>
+                    {descPart}
+                  </motion.p>
+                );
+              })}
               {currentShowTotal && (
-                <motion.p
+                <motion.div
                   key="total"
-                  initial={{ scale: 0.8, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  transition={{ duration: 0.5 }}
-                  className="text-2xl font-extrabold mt-2 text-[#FFD700]"
+                  className="relative mt-4"
+                  initial={{ scale: 0.5, opacity: 0 }}
+                  animate={{ scale: [0.5, 1.05, 1], opacity: 1 }}
+                  transition={{
+                    scale: {
+                      duration: 0.7,
+                      times: [0, 0.7, 1],
+                      type: "tween",
+                    },
+                    opacity: { duration: 0.4 },
+                  }}
                 >
-                  CELKOM +{xpBreakdown.totalXP} XP
-                </motion.p>
+                  <motion.div
+                    className="absolute inset-0 -m-12 rounded-full"
+                    style={{
+                      background: "radial-gradient(circle, #FFD700 0%, transparent 70%)",
+                      left: "50%",
+                      top: "50%",
+                      transform: "translate(-50%, -50%)",
+                      width: 400,
+                      height: 400,
+                    }}
+                    initial={{ opacity: 0, scale: 0.25 }}
+                    animate={{
+                      opacity: [0, 0.15, 0],
+                      scale: [0.25, 1, 1],
+                    }}
+                    transition={{ duration: 0.8 }}
+                  />
+                  <p
+                    className="relative text-[36px] font-bold text-[#FFD700] tabular-nums"
+                    style={{ lineHeight: 1.2 }}
+                  >
+                    CELKOM +{displayedTotalXP} XP
+                  </p>
+                </motion.div>
               )}
             </div>
           </motion.div>
@@ -333,27 +432,33 @@ export default function XPRewardModal() {
             initial={{ opacity: 0 }}
             animate={{ opacity: state.phase === "out" ? 0 : 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: state.phase === "out" ? STAGE_3_FADE_OUT / 1000 : 0.5 }}
+            transition={{
+              duration:
+                state.phase === "out" ? STAGE_3_FADE_OUT / 1000 : 0.5,
+            }}
             className="absolute inset-0 flex flex-col items-center justify-center px-6"
           >
             <div ref={barContainerRef} className="w-full max-w-[320px]">
-              <p className="text-sm font-bold uppercase tracking-widest opacity-70 mb-3">
+              <p className="text-sm font-bold uppercase tracking-[0.2em] text-[#f3e6c0] mb-3">
                 LEVEL {levelBefore}
               </p>
               <div
-                className="w-full rounded-full overflow-hidden border border-[#f3e6c0]/25"
-                style={{ height: 12, background: "rgba(27,40,51,0.6)" }}
+                className="w-full rounded-full overflow-hidden"
+                style={{
+                  height: 14,
+                  background: "#0a0f1a",
+                  boxShadow: "inset 0 1px 3px rgba(0,0,0,0.4)",
+                }}
               >
                 <motion.div
-                  className="h-full rounded-full"
+                  className="h-full rounded-full overflow-hidden xp-bar-fill-shimmer"
                   style={{
                     width: `${Math.min(100, Math.max(0, xpBarFillPercent))}%`,
-                    background: "linear-gradient(90deg, #FFD700 0%, #f3e6c0 100%)",
                   }}
                   transition={{ duration: 0.05 }}
                 />
               </div>
-              <p className="text-sm font-medium opacity-70 mt-2 tabular-nums">
+              <p className="text-sm font-medium text-[#f3e6c0] mt-2 tabular-nums">
                 {levelBeforeData.xpForNextLevel != null
                   ? `${displayedXP} / ${levelBeforeData.xpForNextLevel} XP`
                   : `${displayedXP} XP (MAX)`}
@@ -373,44 +478,81 @@ export default function XPRewardModal() {
           >
             <div className="relative z-10 flex flex-col items-center justify-center flex-1">
               <motion.p
-                className="text-4xl font-extrabold text-[#FFD700] uppercase tracking-wider"
-                initial={{ scale: 0.5, opacity: 0 }}
+                className="font-bold text-[#FFD700] uppercase"
+                style={{
+                  fontSize: 52,
+                  letterSpacing: "0.15em",
+                  textShadow:
+                    "0 0 30px rgba(255,215,0,0.5), 0 0 60px rgba(255,215,0,0.3)",
+                }}
+                initial={{ scale: 0.3, opacity: 0 }}
                 animate={{
-                  scale: [0.5, 1.1, 1],
+                  scale: [0.3, 1.1, 1],
                   opacity: 1,
                   textShadow: [
-                    "0 0 20px rgba(255,215,0,0.4)",
-                    "0 0 40px rgba(255,215,0,0.7)",
-                    "0 0 20px rgba(255,215,0,0.4)",
+                    "0 0 20px rgba(255,215,0,0.4), 0 0 40px rgba(255,215,0,0.2)",
+                    "0 0 50px rgba(255,215,0,0.7), 0 0 90px rgba(255,215,0,0.4)",
+                    "0 0 20px rgba(255,215,0,0.4), 0 0 40px rgba(255,215,0,0.2)",
                   ],
                 }}
                 transition={{
                   scale: {
-                    duration: 0.6,
-                    times: [0, 0.6, 1],
+                    duration: 0.65,
+                    times: [0, 0.65, 1],
                     delay: LEVEL_UP_TEXT_DELAY / 1000,
                   },
                   opacity: { duration: 0.3, delay: LEVEL_UP_TEXT_DELAY / 1000 },
-                  textShadow: { duration: 1.2, repeat: Infinity, delay: LEVEL_UP_TEXT_DELAY / 1000 },
+                  textShadow: {
+                    duration: 2,
+                    repeat: Infinity,
+                    delay: LEVEL_UP_TEXT_DELAY / 1000,
+                  },
                 }}
               >
                 LEVEL UP!
               </motion.p>
               <motion.p
-                className="font-black mt-6 text-[#f3e6c0]"
-                style={{ fontSize: "clamp(100px, 25vw, 140px)" }}
-                initial={{ scale: 0.5, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
+                className="my-4 text-[#FFD700] opacity-40"
+                style={{ fontSize: 24 }}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 0.4 }}
                 transition={{
-                  duration: 0.5,
-                  delay: (LEVEL_UP_TEXT_DELAY + LEVEL_UP_NUMBER_DELAY) / 1000,
-                  type: "spring",
-                  stiffness: 200,
-                  damping: 20,
+                  delay: (LEVEL_UP_TEXT_DELAY + LEVEL_UP_NUMBER_DELAY * 0.5) / 1000,
+                  duration: 0.2,
                 }}
               >
-                {levelAfter}
+                ✦
               </motion.p>
+              <motion.div
+                className="relative"
+                initial={{ scale: 0.5, opacity: 0 }}
+                animate={{ scale: [0.5, 1.05, 1], opacity: 1 }}
+                transition={{
+                  duration: 0.6,
+                  times: [0, 0.7, 1],
+                  delay: (LEVEL_UP_TEXT_DELAY + LEVEL_UP_NUMBER_DELAY) / 1000,
+                  type: "tween",
+                }}
+              >
+                <div
+                  className="absolute inset-0 -m-16 rounded-full blur-3xl opacity-30"
+                  style={{
+                    background:
+                      "radial-gradient(circle, #FFD700 0%, transparent 70%)",
+                    width: 300,
+                    height: 300,
+                    left: "50%",
+                    top: "50%",
+                    transform: "translate(-50%, -50%)",
+                  }}
+                />
+                <p
+                  className="relative font-bold text-[#FFD700]"
+                  style={{ fontSize: 120 }}
+                >
+                  {levelAfter}
+                </p>
+              </motion.div>
               {state.showButton && (
                 <motion.button
                   initial={{ opacity: 0 }}
@@ -418,7 +560,7 @@ export default function XPRewardModal() {
                   transition={{ duration: 0.8 }}
                   type="button"
                   onClick={closeXPReward}
-                  className="mt-12 px-12 py-4 rounded-2xl bg-[#f3e6c0] text-[#1b2833] font-bold text-sm uppercase tracking-wider"
+                  className="mt-12 px-12 py-4 rounded-2xl border border-[#f3e6c0]/40 bg-transparent text-[#f3e6c0] font-bold text-sm uppercase tracking-wider hover:bg-[#f3e6c0]/10 transition-colors"
                 >
                   Pokračovať
                 </motion.button>
@@ -438,7 +580,7 @@ export default function XPRewardModal() {
             <button
               type="button"
               onClick={closeXPReward}
-              className="px-12 py-4 rounded-2xl bg-[#f3e6c0] text-[#1b2833] font-bold text-sm uppercase tracking-wider"
+              className="px-12 py-4 rounded-2xl border border-[#f3e6c0]/40 bg-transparent text-[#f3e6c0] font-bold text-sm uppercase tracking-wider hover:bg-[#f3e6c0]/10 transition-colors"
             >
               Pokračovať
             </button>
@@ -446,7 +588,14 @@ export default function XPRewardModal() {
         )}
 
         {state.view === "transition" && (
-          <div key="transition" className="absolute inset-0 bg-[#1b2833]" />
+          <div
+            key="transition"
+            className="absolute inset-0"
+            style={{
+              background:
+                "radial-gradient(ellipse at center, #1b2833 0%, #1f3040 100%)",
+            }}
+          />
         )}
       </AnimatePresence>
     </div>
