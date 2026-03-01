@@ -104,9 +104,9 @@ export default function HomePanel() {
           const r = json.ranking;
           const prev = prevRankingRef.current;
           const dir = {
-            cityRank: prev ? (r.cityRank < prev.cityRank ? "up" : r.cityRank > prev.cityRank ? "down" : "same") : null,
-            slovakiaRank: prev ? (r.slovakiaRank < prev.slovakiaRank ? "up" : r.slovakiaRank > prev.slovakiaRank ? "down" : "same") : null,
-            citiesRank: prev ? (r.citiesRank < prev.citiesRank ? "up" : r.citiesRank > prev.citiesRank ? "down" : "same") : null,
+            cityRank: (prev ? (r.cityRank < prev.cityRank ? "up" : r.cityRank > prev.cityRank ? "down" : "same") : null) as "up" | "down" | "same" | null,
+            slovakiaRank: (prev ? (r.slovakiaRank < prev.slovakiaRank ? "up" : r.slovakiaRank > prev.slovakiaRank ? "down" : "same") : null) as "up" | "down" | "same" | null,
+            citiesRank: (prev ? (r.citiesRank < prev.citiesRank ? "up" : r.citiesRank > prev.citiesRank ? "down" : "same") : null) as "up" | "down" | "same" | null,
           };
           prevRankingRef.current = { cityRank: r.cityRank, slovakiaRank: r.slovakiaRank, citiesRank: r.citiesRank };
           setRankDirection(dir);
@@ -120,9 +120,9 @@ export default function HomePanel() {
                 const r = data.ranking;
                 const prev = prevRankingRef.current;
                 const dir = {
-                  cityRank: prev ? (r.cityRank < prev.cityRank ? "up" : r.cityRank > prev.cityRank ? "down" : "same") : null,
-                  slovakiaRank: prev ? (r.slovakiaRank < prev.slovakiaRank ? "up" : r.slovakiaRank > prev.slovakiaRank ? "down" : "same") : null,
-                  citiesRank: prev ? (r.citiesRank < prev.citiesRank ? "up" : r.citiesRank > prev.citiesRank ? "down" : "same") : null,
+                  cityRank: (prev ? (r.cityRank < prev.cityRank ? "up" : r.cityRank > prev.cityRank ? "down" : "same") : null) as "up" | "down" | "same" | null,
+                  slovakiaRank: (prev ? (r.slovakiaRank < prev.slovakiaRank ? "up" : r.slovakiaRank > prev.slovakiaRank ? "down" : "same") : null) as "up" | "down" | "same" | null,
+                  citiesRank: (prev ? (r.citiesRank < prev.citiesRank ? "up" : r.citiesRank > prev.citiesRank ? "down" : "same") : null) as "up" | "down" | "same" | null,
                 };
                 prevRankingRef.current = { cityRank: r.cityRank, slovakiaRank: r.slovakiaRank, citiesRank: r.citiesRank };
                 setRankDirection(dir);
