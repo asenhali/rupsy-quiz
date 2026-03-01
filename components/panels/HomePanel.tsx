@@ -6,8 +6,10 @@ import { motion, AnimatePresence } from "framer-motion";
 import { SLOVAK_CITIES } from "@/config/cities";
 import { useOnboarding } from "@/context/OnboardingContext";
 import { useProfileModal } from "@/context/ProfileModalContext";
+import LeaderboardModal from "@/components/LeaderboardModal";
 
 export default function HomePanel() {
+  const [showLeaderboard, setShowLeaderboard] = useState(false);
   const router = useRouter();
   const { openProfile, user, setUser, setShowQuiz, showQuiz } = useProfileModal();
   const { setIsOnboarding } = useOnboarding();
@@ -410,7 +412,7 @@ export default function HomePanel() {
           <div className="mx-5 mb-4">
             <button
               type="button"
-              onClick={() => console.log("LEADERBOARD")}
+              onClick={() => setShowLeaderboard(true)}
               className="w-full py-3 rounded-2xl bg-[#1b2833]/[0.06] border border-[#1b2833]/[0.04] text-center text-xs font-semibold uppercase tracking-widest opacity-50"
             >
               REBRÍČEK
@@ -418,6 +420,11 @@ export default function HomePanel() {
           </div>
         </div>
       )}
+
+      <LeaderboardModal
+        isOpen={showLeaderboard}
+        onClose={() => setShowLeaderboard(false)}
+      />
     </div>
   );
 }
