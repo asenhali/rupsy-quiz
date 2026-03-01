@@ -2,6 +2,7 @@
 
 import AppView from "@/components/AppView";
 import BottomNav from "@/components/BottomNav";
+import LeaderboardModal from "@/components/LeaderboardModal";
 import ProfileModal from "@/components/ProfileModal";
 import QuizPlayer from "@/components/QuizPlayer";
 import { OnboardingProvider } from "@/context/OnboardingContext";
@@ -9,11 +10,12 @@ import { ProfileModalProvider, useProfileModal } from "@/context/ProfileModalCon
 import { PANELS } from "@/config/panels";
 
 function Modals() {
-  const { showQuiz, closeQuiz } = useProfileModal();
+  const { showQuiz, closeQuiz, showLeaderboard, closeLeaderboard } = useProfileModal();
   return (
     <>
       <ProfileModal />
       <QuizPlayer isOpen={showQuiz} onClose={closeQuiz} />
+      <LeaderboardModal isOpen={showLeaderboard} onClose={closeLeaderboard} />
     </>
   );
 }

@@ -24,6 +24,9 @@ type ProfileModalContextValue = {
   showQuiz: boolean;
   setShowQuiz: (v: boolean) => void;
   closeQuiz: () => void;
+  showLeaderboard: boolean;
+  openLeaderboard: () => void;
+  closeLeaderboard: () => void;
 };
 
 const defaultValue: ProfileModalContextValue = {
@@ -35,6 +38,9 @@ const defaultValue: ProfileModalContextValue = {
   showQuiz: false,
   setShowQuiz: () => {},
   closeQuiz: () => {},
+  showLeaderboard: false,
+  openLeaderboard: () => {},
+  closeLeaderboard: () => {},
 };
 
 const ProfileModalContext = createContext<ProfileModalContextValue>(defaultValue);
@@ -43,6 +49,7 @@ export function ProfileModalProvider({ children }: { children: ReactNode }) {
   const [isOpen, setIsOpen] = useState(false);
   const [user, setUser] = useState<ProfileUser | null>(null);
   const [showQuiz, setShowQuizState] = useState(false);
+  const [showLeaderboard, setShowLeaderboard] = useState(false);
   const quizLockRef = useRef(false);
 
   const safeSetShowQuiz = useCallback((val: boolean) => {
@@ -69,6 +76,9 @@ export function ProfileModalProvider({ children }: { children: ReactNode }) {
     showQuiz,
     setShowQuiz: safeSetShowQuiz,
     closeQuiz,
+    showLeaderboard,
+    openLeaderboard: () => setShowLeaderboard(true),
+    closeLeaderboard: () => setShowLeaderboard(false),
   };
 
   return (
