@@ -193,7 +193,9 @@ export async function GET(request: Request) {
       cityEntries.sort((a, b) => {
         const avgA = a.scores.reduce((x, y) => x + y, 0) / a.scores.length;
         const avgB = b.scores.reduce((x, y) => x + y, 0) / b.scores.length;
-        return avgB - avgA;
+        if (avgB !== avgA) return avgB - avgA;
+        if (b.scores.length !== a.scores.length) return b.scores.length - a.scores.length;
+        return a.cityDisplay.localeCompare(b.cityDisplay);
       });
 
       const entries = cityEntries.map((e, i) => ({

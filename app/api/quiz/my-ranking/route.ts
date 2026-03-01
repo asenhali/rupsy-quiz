@@ -129,23 +129,37 @@ export async function GET() {
     const cityRank = cityTotal > 0 ? cityBetterCount + 1 : 0;
 
     const cityScores = new Map<string, number[]>();
+    const cityDisplayMap = new Map<string, string>();
     completedSessions.forEach((doc) => {
       const data = doc.data();
-      const city = normalizeCity(userIdToCity.get(data.userId) ?? "");
-      if (!cityScores.has(city)) cityScores.set(city, []);
-      cityScores.get(city)!.push(data.totalScore ?? 0);
+      const rawCity = userIdToCity.get(data.userId) ?? "";
+      const cityNorm = normalizeCity(rawCity);
+      if (!cityNorm) return;
+      const display = rawCity.trim() || "Mesto";
+      if (!cityDisplayMap.has(cityNorm) || display !== "Mesto") {
+        cityDisplayMap.set(cityNorm, display);
+      }
+      if (!cityScores.has(cityNorm)) cityScores.set(cityNorm, []);
+      cityScores.get(cityNorm)!.push(data.totalScore ?? 0);
     });
 
-    const cityAverages = new Map<string, number>();
-    cityScores.forEach((scores, city) => {
-      const avg = scores.reduce((a, b) => a + b, 0) / scores.length;
-      cityAverages.set(city, avg);
+    const cityEntries = [...cityScores.entries()].map(([cityNorm, scores]) => ({
+      cityNorm,
+      cityDisplay: cityDisplayMap.get(cityNorm) ?? cityNorm,
+      scores,
+    }));
+
+    cityEntries.sort((a, b) => {
+      const avgA = a.scores.reduce((x, y) => x + y, 0) / a.scores.length;
+      const avgB = b.scores.reduce((x, y) => x + y, 0) / b.scores.length;
+      if (avgB !== avgA) return avgB - avgA;
+      if (b.scores.length !== a.scores.length) return b.scores.length - a.scores.length;
+      return a.cityDisplay.localeCompare(b.cityDisplay);
     });
 
-    const userCityAvg = cityAverages.get(userCity) ?? 0;
-    const citiesWithHigherAvg = [...cityAverages.entries()].filter(([, avg]) => avg > userCityAvg);
-    const citiesRank = citiesWithHigherAvg.length + 1;
-    const citiesTotal = cityAverages.size;
+    const userCityIdx = cityEntries.findIndex((e) => e.cityNorm === userCity);
+    const citiesRank = userCityIdx >= 0 ? userCityIdx + 1 : 0;
+    const citiesTotal = cityEntries.length;
 
     return NextResponse.json({
       success: true,

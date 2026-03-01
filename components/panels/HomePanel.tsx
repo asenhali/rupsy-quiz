@@ -7,6 +7,77 @@ import { SLOVAK_CITIES } from "@/config/cities";
 import { useOnboarding } from "@/context/OnboardingContext";
 import { useProfileModal } from "@/context/ProfileModalContext";
 
+function RebricekButton({ onClick }: { onClick: () => void }) {
+  const btnRef = useRef<HTMLButtonElement>(null);
+  const [dim, setDim] = useState<{ w: number; h: number } | null>(null);
+
+  useEffect(() => {
+    const el = btnRef.current;
+    if (!el) return;
+    const update = () => setDim({ w: el.offsetWidth, h: el.offsetHeight });
+    update();
+    const ro = new ResizeObserver(update);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
+  const rx = 16;
+
+  return (
+    <div className="mx-5 mb-4 relative overflow-visible">
+      <button
+        ref={btnRef}
+        type="button"
+        onClick={onClick}
+        className="w-full py-3 rounded-2xl bg-[#1b2833] text-[#f3e6c0] text-center text-xs font-bold uppercase tracking-[0.25em] relative z-[1]"
+      >
+        REBRÍČEK
+      </button>
+      {dim && dim.w > 0 && dim.h > 0 && (
+        <svg
+          className="leaderboard-svg-glow absolute inset-0 w-full h-full pointer-events-none z-[2] overflow-visible rounded-2xl"
+          width="100%"
+          height="100%"
+        >
+          <defs>
+            <filter id="rebricek-btn-glow" x="-50%" y="-50%" width="200%" height="200%">
+              <feGaussianBlur in="SourceGraphic" stdDeviation="2" />
+            </filter>
+          </defs>
+          <rect
+            x="1"
+            y="1"
+            width={dim.w - 2}
+            height={dim.h - 2}
+            rx={rx}
+            ry={rx}
+            fill="none"
+            stroke="#f3e6c0"
+            strokeWidth="2"
+            strokeOpacity="0.5"
+          />
+          <rect
+            className="leaderboard-glow-animated"
+            x="1"
+            y="1"
+            width={dim.w - 2}
+            height={dim.h - 2}
+            rx={rx}
+            ry={rx}
+            fill="none"
+            stroke="#FFF8E7"
+            strokeWidth="3"
+            strokeOpacity="0.9"
+            pathLength="100"
+            strokeDasharray="20 80"
+            filter="url(#rebricek-btn-glow)"
+          />
+        </svg>
+      )}
+    </div>
+  );
+}
+
 export default function HomePanel() {
   const router = useRouter();
   const { openProfile, user, setUser, setShowQuiz, showQuiz, openLeaderboard } = useProfileModal();
@@ -433,15 +504,7 @@ export default function HomePanel() {
             </div>
           </section>
 
-          <div className="mx-5 mb-4">
-            <button
-              type="button"
-              onClick={openLeaderboard}
-              className="w-full py-3 rounded-2xl bg-[#1b2833]/[0.06] border border-[#1b2833]/[0.04] text-center text-xs font-semibold uppercase tracking-widest opacity-50"
-            >
-              REBRÍČEK
-            </button>
-          </div>
+          <RebricekButton onClick={openLeaderboard} />
         </div>
       )}
     </div>
