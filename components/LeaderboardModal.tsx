@@ -129,8 +129,8 @@ type Props = {
 };
 
 const TABS: { id: TabId; label: string }[] = [
-  { id: "slovensko", label: "SLOVENSKO" },
   { id: "mesto", label: "MESTO" },
+  { id: "slovensko", label: "SLOVENSKO" },
   { id: "mesta", label: "MESTÁ" },
 ];
 
@@ -305,37 +305,65 @@ export default function LeaderboardModal({ isOpen, onClose }: Props) {
             <p className="text-sm opacity-50 text-center py-8">Žiadne výsledky</p>
           ) : (
             <div className="space-y-2">
-              {citiesEntries.map((entry) => (
-                <div
-                  key={entry.rank}
-                  ref={entry.isCurrentCity ? currentCityRowRef : null}
-                  className={`flex items-center justify-between gap-3 px-4 py-3 rounded-2xl border ${
-                    entry.isCurrentCity
-                      ? "bg-[#1b2833] text-[#f3e6c0] border-[#1b2833]"
-                      : "bg-white/40 text-[#1b2833] border-[#1b2833]/[0.06]"
-                  }`}
-                >
-                  <span className="text-sm font-bold tabular-nums w-12 shrink-0">
-                    #{entry.rank}
-                  </span>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-semibold flex items-center gap-2">
-                      <span className="truncate">{entry.city}</span>
-                      {entry.isCurrentCity && (
-                        <span className="flex-shrink-0 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-[#f3e6c0]/30 text-[#f3e6c0]">
-                          TY
-                        </span>
-                      )}
-                    </p>
-                    <p className={`text-xs ${entry.isCurrentCity ? "opacity-70" : "opacity-50"}`}>
-                      {entry.playerCount} {entry.playerCount === 1 ? "hráč" : "hráčov"}
-                    </p>
+              {citiesEntries.map((entry) => {
+                const isTop10 = entry.rank >= 1 && entry.rank <= 10;
+                const isTop3 = entry.rank >= 1 && entry.rank <= 3;
+                const badge = rankBadge(entry.rank);
+                const cardClass = `flex items-center justify-between gap-3 px-4 py-3 ${
+                  entry.isCurrentCity
+                    ? "bg-[#1b2833] text-[#f3e6c0]"
+                    : "bg-white/40 text-[#1b2833]"
+                } ${isTop10 && !entry.isCurrentCity && !isTop3 ? "border-l-4 border-l-[#c9a227]/60 bg-[#f3e6c0]/30" : ""}`;
+
+                const cardContent = (
+                  <>
+                    <span className="text-sm font-bold tabular-nums w-12 flex items-center gap-1 shrink-0">
+                      {badge}
+                      #{entry.rank}
+                    </span>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-semibold flex items-center gap-2">
+                        <span className="truncate">{entry.city}</span>
+                        {entry.isCurrentCity && (
+                          <span className="flex-shrink-0 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-[#f3e6c0]/30 text-[#f3e6c0]">
+                            TY
+                          </span>
+                        )}
+                      </p>
+                      <p className={`text-xs ${entry.isCurrentCity ? "opacity-70" : "opacity-50"}`}>
+                        {entry.playerCount} {entry.playerCount === 1 ? "hráč" : "hráčov"}
+                      </p>
+                    </div>
+                    <span className="text-sm font-bold tabular-nums">
+                      {entry.averageScore}
+                    </span>
+                  </>
+                );
+
+                if (isTop3) {
+                  return (
+                    <Top3Card
+                      key={entry.rank}
+                      entry={entry}
+                      cardClass={cardClass}
+                      cardContent={cardContent}
+                      isCurrentUserRef={entry.isCurrentCity ? currentCityRowRef : EMPTY_REF}
+                    />
+                  );
+                }
+
+                return (
+                  <div
+                    key={entry.rank}
+                    ref={entry.isCurrentCity ? currentCityRowRef : null}
+                    className={`rounded-2xl border ${cardClass} ${
+                      !entry.isCurrentCity ? "border-[#1b2833]/[0.06]" : "border-[#1b2833]"
+                    }`}
+                  >
+                    {cardContent}
                   </div>
-                  <span className="text-sm font-bold tabular-nums">
-                    {entry.averageScore}
-                  </span>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )
         ) : entries.length === 0 ? (

@@ -74,6 +74,8 @@ export async function GET() {
 
     const userSessionData = userSessionSnap.docs[0].data();
     const totalScore = userSessionData.totalScore ?? 0;
+    const userCompletedAt = userSessionData.completedAt?.toDate?.() ?? userSessionData.completedAt;
+    const userCompletedTime = userCompletedAt ? new Date(userCompletedAt).getTime() : 0;
 
     const allSessionsSnap = await db
       .collection("quizSessions")
@@ -86,7 +88,13 @@ export async function GET() {
     let slovakiaBetterCount = 0;
     completedSessions.forEach((doc) => {
       const data = doc.data();
-      if ((data.totalScore ?? 0) > totalScore) slovakiaBetterCount++;
+      const theirScore = data.totalScore ?? 0;
+      const theirCompletedAt = data.completedAt?.toDate?.() ?? data.completedAt;
+      const theirTime = theirCompletedAt ? new Date(theirCompletedAt).getTime() : 0;
+      if (theirScore > totalScore) slovakiaBetterCount++;
+      else if (theirScore === totalScore && theirTime > 0 && userCompletedTime > 0 && theirTime < userCompletedTime) {
+        slovakiaBetterCount++;
+      }
     });
     const slovakiaRank = slovakiaBetterCount + 1;
 
@@ -110,7 +118,13 @@ export async function GET() {
     let cityBetterCount = 0;
     sessionsInUserCity.forEach((doc) => {
       const data = doc.data();
-      if ((data.totalScore ?? 0) > totalScore) cityBetterCount++;
+      const theirScore = data.totalScore ?? 0;
+      const theirCompletedAt = data.completedAt?.toDate?.() ?? data.completedAt;
+      const theirTime = theirCompletedAt ? new Date(theirCompletedAt).getTime() : 0;
+      if (theirScore > totalScore) cityBetterCount++;
+      else if (theirScore === totalScore && theirTime > 0 && userCompletedTime > 0 && theirTime < userCompletedTime) {
+        cityBetterCount++;
+      }
     });
     const cityRank = cityTotal > 0 ? cityBetterCount + 1 : 0;
 
