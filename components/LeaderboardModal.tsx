@@ -3,6 +3,97 @@
 import { useEffect, useRef, useState } from "react";
 import { useSwipeContext } from "@/context/SwipeContext";
 
+const EMPTY_REF = { current: null as HTMLDivElement | null };
+
+const TOP3_STROKE: Record<number, { base: string; bright: string }> = {
+  1: { base: "#FFD700", bright: "#FFF44F" },
+  2: { base: "#C0C0C0", bright: "#F0F0F0" },
+  3: { base: "#CD7F32", bright: "#DFA04E" },
+};
+
+function Top3Card({
+  entry,
+  cardClass,
+  cardContent,
+  isCurrentUserRef,
+}: {
+  entry: { rank: number };
+  cardClass: string;
+  cardContent: React.ReactNode;
+  isCurrentUserRef: React.RefObject<HTMLDivElement | null>;
+}) {
+  const cardRef = useRef<HTMLDivElement>(null);
+  const [dim, setDim] = useState<{ w: number; h: number } | null>(null);
+
+  useEffect(() => {
+    const el = cardRef.current;
+    if (!el) return;
+    const update = () => {
+      setDim({ w: el.offsetWidth, h: el.offsetHeight });
+    };
+    update();
+    const ro = new ResizeObserver(update);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
+  const rank = entry.rank as 1 | 2 | 3;
+  const stroke = TOP3_STROKE[rank];
+  const rx = 16;
+
+  return (
+    <div
+      ref={isCurrentUserRef}
+      className="relative overflow-visible"
+    >
+      <div ref={cardRef} className={`${cardClass} rounded-2xl relative z-[1]`}>
+        {cardContent}
+      </div>
+      {dim && dim.w > 0 && dim.h > 0 && (
+        <svg
+          className="absolute inset-0 w-full h-full pointer-events-none z-[2] overflow-visible"
+          width="100%"
+          height="100%"
+        >
+          <defs>
+            <filter id={`snakeGlow-${entry.rank}`} x="-50%" y="-50%" width="200%" height="200%">
+              <feGaussianBlur in="SourceGraphic" stdDeviation="2" />
+            </filter>
+          </defs>
+          <rect
+            x="1"
+            y="1"
+            width={dim.w - 2}
+            height={dim.h - 2}
+            rx={rx}
+            ry={rx}
+            fill="none"
+            stroke={stroke.base}
+            strokeWidth="2"
+            strokeOpacity="0.7"
+          />
+          <rect
+            className="leaderboard-glow-animated"
+            x="1"
+            y="1"
+            width={dim.w - 2}
+            height={dim.h - 2}
+            rx={rx}
+            ry={rx}
+            fill="none"
+            stroke={stroke.bright}
+            strokeWidth="3"
+            strokeOpacity="0.9"
+            pathLength="100"
+            strokeDasharray="20 80"
+            filter={`url(#snakeGlow-${entry.rank})`}
+          />
+        </svg>
+      )}
+    </div>
+  );
+}
+
 type LeaderboardEntry = {
   rank: number;
   nickname: string;
@@ -76,18 +167,6 @@ export default function LeaderboardModal({ isOpen, onClose }: Props) {
     return null;
   }
 
-  const top3BorderColor: Record<number, string> = {
-    1: "#FFD700",
-    2: "#C0C0C0",
-    3: "#CD7F32",
-  };
-
-  const top3StrokeColors: Record<number, { base: string; bright: string; core: string }> = {
-    1: { base: "#FFD700", bright: "#FFF44F", core: "#FFF8DC" },
-    2: { base: "#C0C0C0", bright: "#E8E8E8", core: "#F8F8FF" },
-    3: { base: "#CD7F32", bright: "#DFA04E", core: "#FFE4C4" },
-  };
-
   return (
     <div className="fixed top-0 left-0 w-screen h-screen z-[100] bg-[#f3e6c0] flex flex-col">
       <div className="flex-shrink-0 px-4 pt-10 pb-4 border-b border-[#1b2833]/[0.06]">
@@ -156,83 +235,14 @@ export default function LeaderboardModal({ isOpen, onClose }: Props) {
               );
 
               if (isTop3) {
-                const rank = entry.rank as 1 | 2 | 3;
-                const strokes = top3StrokeColors[rank];
                 return (
-                  <div
+                  <Top3Card
                     key={entry.rank}
-                    ref={entry.isCurrentUser ? currentUserRowRef : null}
-                    className="relative overflow-hidden rounded-[18px]"
-                  >
-                    <div
-                      className={`${cardClass} rounded-2xl relative z-[1] border-2`}
-                      style={{ borderColor: top3BorderColor[rank] }}
-                    >
-                      {cardContent}
-                    </div>
-                    <svg
-                      className="leaderboard-svg-glow absolute inset-[-1px] pointer-events-none z-[2] overflow-visible"
-                      viewBox="0 0 200 30"
-                      width="100%"
-                      height="100%"
-                    >
-                      <defs>
-                        <filter id={`glow-${entry.rank}`} x="-50%" y="-50%" width="200%" height="200%">
-                          <feGaussianBlur in="SourceGraphic" stdDeviation="3" result="blur" />
-                        </filter>
-                        <filter id={`glow2-${entry.rank}`} x="-50%" y="-50%" width="200%" height="200%">
-                          <feGaussianBlur in="SourceGraphic" stdDeviation="1.5" result="blur" />
-                        </filter>
-                      </defs>
-                      <rect
-                        className="leaderboard-glow-animated"
-                        x="2"
-                        y="2"
-                        width="196"
-                        height="26"
-                        rx="8"
-                        ry="8"
-                        fill="none"
-                        stroke={strokes.base}
-                        strokeWidth="8"
-                        strokeOpacity="0.15"
-                        strokeDasharray="25 75"
-                        pathLength="100"
-                        filter={`url(#glow-${entry.rank})`}
-                      />
-                      <rect
-                        className="leaderboard-glow-animated"
-                        x="2"
-                        y="2"
-                        width="196"
-                        height="26"
-                        rx="8"
-                        ry="8"
-                        fill="none"
-                        stroke={strokes.bright}
-                        strokeWidth="5"
-                        strokeOpacity="0.4"
-                        strokeDasharray="20 80"
-                        pathLength="100"
-                        filter={`url(#glow2-${entry.rank})`}
-                      />
-                      <rect
-                        className="leaderboard-glow-animated"
-                        x="2"
-                        y="2"
-                        width="196"
-                        height="26"
-                        rx="8"
-                        ry="8"
-                        fill="none"
-                        stroke={strokes.core}
-                        strokeWidth="2"
-                        strokeOpacity="0.9"
-                        strokeDasharray="15 85"
-                        pathLength="100"
-                      />
-                    </svg>
-                  </div>
+                    entry={entry}
+                    cardClass={cardClass}
+                    cardContent={cardContent}
+                    isCurrentUserRef={entry.isCurrentUser ? currentUserRowRef : EMPTY_REF}
+                  />
                 );
               }
 
