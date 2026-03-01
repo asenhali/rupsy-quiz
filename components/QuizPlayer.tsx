@@ -660,7 +660,7 @@ export default function QuizPlayer({ isOpen, onClose }: Props) {
               }}
               className="mt-10 px-10 py-4 rounded-2xl bg-[#f3e6c0] text-[#1b2833] font-bold text-sm"
             >
-              Späť na hlavnú
+              Zobraziť odmeny
             </motion.button>
             <motion.button
               initial={{ opacity: 0 }}

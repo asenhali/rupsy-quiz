@@ -10,13 +10,15 @@ const STAGE_1_FADE_IN = 500;
 const STAGE_1_HOLD = 2000;
 const STAGE_1_FADE_OUT = 500;
 const STAGE_2_LINE_DELAY = 1200;
-const STAGE_2_TOTAL_DELAY = 400;
+const STAGE_2_TOTAL_DELAY = 1500;
 const STAGE_2_HOLD_AFTER_TOTAL = 2500;
 const STAGE_2_FADE_OUT = 500;
 const TRANSITION_BLACK = 500;
 const STAGE_3_BAR_DURATION = 2000;
-const STAGE_3_HOLD_AFTER_BAR = 1000;
+const STAGE_3_HOLD_AFTER_BAR = 800;
 const STAGE_3_FADE_OUT = 500;
+const STAGE_4_EXPLOSION = 500;
+const STAGE_4_DRIP = 1000;
 const STAGE_4_HOLD = 3000;
 const STAGE_4_FADE_OUT = 500;
 
@@ -25,7 +27,7 @@ type ViewState =
   | { view: "transition"; from: number }
   | { view: 2; phase: "in" | "hold" | "out"; breakdownLine: number; showTotal: boolean }
   | { view: 3; phase: "in" | "bar" | "hold" | "out" }
-  | { view: 4; phase: "in" | "hold" | "out" }
+  | { view: 4; phase: "explosion" | "drip" | "hold"; showButton?: boolean }
   | { view: 5 };
 
 export default function XPRewardModal() {
@@ -173,7 +175,7 @@ export default function XPRewardModal() {
         if (rafRef.current) cancelAnimationFrame(rafRef.current);
         setXpBarFillPercent(endFill);
         setDisplayedXP(endXP);
-        setState({ view: 3, phase: "hold" });
+        setState(leveledUp ? { view: 4, phase: "explosion" } : { view: 3, phase: "hold" });
       }, STAGE_3_BAR_DURATION);
       return () => {
         clearTimeout(t);
@@ -192,31 +194,25 @@ export default function XPRewardModal() {
     }
 
     if (state.view === "transition" && state.from === 3) {
-      const leveledUp = xpRewardData.levelAfter > xpRewardData.levelBefore;
-      const t = setTimeout(
-        () => setState(leveledUp ? { view: 4, phase: "in" } : { view: 5 }),
-        TRANSITION_BLACK
-      );
-      return () => clearTimeout(t);
-    }
-
-    if (state.view === 4 && state.phase === "in") {
-      const t = setTimeout(() => setState({ view: 4, phase: "hold" }), 500);
-      return () => clearTimeout(t);
-    }
-
-    if (state.view === 4 && state.phase === "hold") {
-      const t = setTimeout(() => setState({ view: 4, phase: "out" }), STAGE_4_HOLD);
-      return () => clearTimeout(t);
-    }
-
-    if (state.view === 4 && state.phase === "out") {
-      const t = setTimeout(() => setState({ view: "transition", from: 4 }), STAGE_4_FADE_OUT);
-      return () => clearTimeout(t);
-    }
-
-    if (state.view === "transition" && state.from === 4) {
       const t = setTimeout(() => setState({ view: 5 }), TRANSITION_BLACK);
+      return () => clearTimeout(t);
+    }
+
+    if (state.view === 4 && state.phase === "explosion") {
+      const t = setTimeout(() => setState({ view: 4, phase: "drip" }), STAGE_4_EXPLOSION);
+      return () => clearTimeout(t);
+    }
+
+    if (state.view === 4 && state.phase === "drip") {
+      const t = setTimeout(() => setState({ view: 4, phase: "hold" }), STAGE_4_DRIP);
+      return () => clearTimeout(t);
+    }
+
+    if (state.view === 4 && state.phase === "hold" && !state.showButton) {
+      const t = setTimeout(
+        () => setState({ view: 4, phase: "hold", showButton: true }),
+        STAGE_4_HOLD
+      );
       return () => clearTimeout(t);
     }
   }, [isOpen, xpRewardData, state]);
@@ -255,7 +251,7 @@ export default function XPRewardModal() {
             }}
             className="absolute inset-0 flex flex-col items-center justify-center"
           >
-            <p className="text-3xl font-extrabold uppercase tracking-[0.2em]">KVÍZ DOKONČENÝ</p>
+            <p className="text-3xl font-extrabold uppercase tracking-[0.2em]">TVOJE XP</p>
           </motion.div>
         )}
 
@@ -268,7 +264,7 @@ export default function XPRewardModal() {
             transition={{ duration: state.phase === "out" ? STAGE_2_FADE_OUT / 1000 : 0.5 }}
             className="absolute inset-0 flex flex-col items-center justify-center px-6"
           >
-            <div className="flex flex-col gap-4">
+            <div className="flex flex-col gap-4 items-center text-center">
               {breakdownLines.slice(0, currentBreakdown).map((line, i) => (
                 <motion.p
                   key={i}
@@ -283,9 +279,9 @@ export default function XPRewardModal() {
               {currentShowTotal && (
                 <motion.p
                   key="total"
-                  initial={{ scale: 0.9, opacity: 0 }}
+                  initial={{ scale: 0.8, opacity: 0 }}
                   animate={{ scale: 1, opacity: 1 }}
-                  transition={{ type: "spring", stiffness: 200, damping: 20 }}
+                  transition={{ duration: 0.5 }}
                   className="text-2xl font-extrabold mt-2 text-[#FFD700]"
                 >
                   CELKOM +{xpBreakdown.totalXP} XP
@@ -334,25 +330,77 @@ export default function XPRewardModal() {
           <motion.div
             key="stage4"
             initial={{ opacity: 0 }}
-            animate={{ opacity: state.phase === "out" ? 0 : 1 }}
+            animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: state.phase === "out" ? STAGE_4_FADE_OUT / 1000 : 0.6 }}
-            className="absolute inset-0 flex flex-col items-center justify-center"
+            transition={{ duration: 0.5 }}
+            className="absolute inset-0 flex flex-col items-center justify-center overflow-hidden"
           >
-            <motion.p
-              className="text-4xl font-extrabold text-[#FFD700] uppercase tracking-wider"
-              animate={{
-                textShadow: [
-                  "0 0 20px rgba(255,215,0,0.4)",
-                  "0 0 40px rgba(255,215,0,0.7)",
-                  "0 0 20px rgba(255,215,0,0.4)",
-                ],
-              }}
-              transition={{ duration: 1.2, repeat: Infinity }}
-            >
-              LEVEL UP!
-            </motion.p>
-            <p className="text-7xl font-black mt-6 text-[#f3e6c0]">{levelAfter}</p>
+            {/* Base content - LEVEL UP text (revealed as gold drips away) */}
+            <div className="relative z-10 flex flex-col items-center justify-center flex-1">
+              <motion.p
+                className="text-4xl font-extrabold text-[#FFD700] uppercase tracking-wider"
+                animate={{
+                  textShadow: [
+                    "0 0 20px rgba(255,215,0,0.4)",
+                    "0 0 40px rgba(255,215,0,0.7)",
+                    "0 0 20px rgba(255,215,0,0.4)",
+                  ],
+                }}
+                transition={{ duration: 1.2, repeat: Infinity }}
+              >
+                LEVEL UP!
+              </motion.p>
+              <p
+                className="font-black mt-6 text-[#f3e6c0]"
+                style={{ fontSize: "clamp(100px, 25vw, 140px)" }}
+              >
+                {levelAfter}
+              </p>
+              {state.showButton && (
+                <motion.button
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 0.8 }}
+                  type="button"
+                  onClick={closeXPReward}
+                  className="mt-12 px-12 py-4 rounded-2xl bg-[#f3e6c0] text-[#1b2833] font-bold text-sm uppercase tracking-wider"
+                >
+                  Pokračovať
+                </motion.button>
+              )}
+            </div>
+
+            {/* Gold explosion overlay - expands from center, then drips down */}
+            {(state.phase === "explosion" || state.phase === "drip") && (
+              <motion.div
+                className="absolute inset-0 z-20 pointer-events-none w-full h-full"
+                initial={{ scale: 0.05 }}
+                animate={
+                  state.phase === "explosion"
+                    ? { scale: 1 }
+                    : { scale: 1, y: "100%" }
+                }
+                transition={
+                  state.phase === "explosion"
+                    ? {
+                        scale: {
+                          duration: STAGE_4_EXPLOSION / 1000,
+                          ease: [0.16, 1, 0.3, 1],
+                        },
+                      }
+                    : {
+                        y: {
+                          duration: STAGE_4_DRIP / 1000,
+                          ease: "easeIn",
+                        },
+                      }
+                }
+                style={{
+                  background: "linear-gradient(180deg, #FFD700 0%, #E8C547 50%, #D4A017 100%)",
+                  transformOrigin: "center center",
+                }}
+              />
+            )}
           </motion.div>
         )}
 
