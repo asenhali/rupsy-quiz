@@ -5,10 +5,9 @@ const CX = 540; // center x
 
 const CTA_OPTIONS = [
   "Porazíš ma? 😏",
-  "Toto prekoná len málo ľudí 🔥",
-  "Skús ma prekabátiť 💪",
-  "Trúfneš si? 🎯",
-  "Dokážeš viac? 👀",
+  "Zvládneš viac? 🤔",
+  "Prekonáš to? 👀",
+  "A ty koľko dáš? 🎯",
 ];
 
 function formatWeekId(weekId: string): string {
