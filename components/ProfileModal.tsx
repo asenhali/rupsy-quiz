@@ -7,9 +7,20 @@ import { useSwipeContext } from "@/context/SwipeContext";
 
 type BestRanking = {
   bestCityRank: number | null;
+  bestCityWeek: string | null;
   bestSlovakiaRank: number | null;
+  bestSlovakiaWeek: string | null;
   bestCitiesRank: number | null;
+  bestCitiesWeek: string | null;
 } | null;
+
+function formatWeekId(weekId: string): string {
+  const wMatch = weekId.match(/^\d{4}-W(\d{1,2})$/i);
+  if (wMatch) return `Týždeň ${parseInt(wMatch[1], 10)}`;
+  const dMatch = weekId.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (dMatch) return `${parseInt(dMatch[3], 10)}.${parseInt(dMatch[2], 10)}.${dMatch[1]}`;
+  return weekId;
+}
 
 export default function ProfileModal() {
   const { isOpen, closeProfile, user, setUser } = useProfileModal();
@@ -31,8 +42,11 @@ export default function ProfileModal() {
         if (json.success) {
           setBestRanking({
             bestCityRank: json.bestCityRank ?? null,
+            bestCityWeek: json.bestCityWeek ?? null,
             bestSlovakiaRank: json.bestSlovakiaRank ?? null,
+            bestSlovakiaWeek: json.bestSlovakiaWeek ?? null,
             bestCitiesRank: json.bestCitiesRank ?? null,
+            bestCitiesWeek: json.bestCitiesWeek ?? null,
           });
         }
       });
@@ -129,18 +143,27 @@ export default function ProfileModal() {
               <span className="text-xl font-bold">
                 {bestRanking?.bestCityRank != null ? `#${bestRanking.bestCityRank}` : "—"}
               </span>
+              {bestRanking?.bestCityRank != null && bestRanking.bestCityWeek && (
+                <span className="text-[10px] opacity-40 mt-0.5">{formatWeekId(bestRanking.bestCityWeek)}</span>
+              )}
             </div>
             <div className="rounded-2xl bg-white/60 border border-[#1b2833]/[0.08] p-4 flex flex-col items-center">
               <span className="text-[9px] uppercase tracking-widest opacity-40 font-medium mb-1 text-center leading-tight">SLOVENSKO</span>
               <span className="text-2xl font-bold">
                 {bestRanking?.bestSlovakiaRank != null ? `#${bestRanking.bestSlovakiaRank}` : "—"}
               </span>
+              {bestRanking?.bestSlovakiaRank != null && bestRanking.bestSlovakiaWeek && (
+                <span className="text-[10px] opacity-40 mt-0.5">{formatWeekId(bestRanking.bestSlovakiaWeek)}</span>
+              )}
             </div>
             <div className="rounded-2xl bg-white/40 border border-[#1b2833]/[0.06] p-3 flex flex-col items-center">
               <span className="text-[9px] uppercase tracking-widest opacity-40 font-medium mb-1 text-center leading-tight">MESTÁ</span>
               <span className="text-xl font-bold">
                 {bestRanking?.bestCitiesRank != null ? `#${bestRanking.bestCitiesRank}` : "—"}
               </span>
+              {bestRanking?.bestCitiesRank != null && bestRanking.bestCitiesWeek && (
+                <span className="text-[10px] opacity-40 mt-0.5">{formatWeekId(bestRanking.bestCitiesWeek)}</span>
+              )}
             </div>
           </div>
           <p className="text-xs font-semibold uppercase tracking-widest opacity-40 mb-4 mt-6">ŠTATISTIKY</p>

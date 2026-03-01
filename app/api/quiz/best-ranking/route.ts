@@ -84,16 +84,22 @@ export async function GET() {
       return NextResponse.json({
         success: true,
         bestCityRank: null,
+        bestCityWeek: null,
         bestSlovakiaRank: null,
+        bestSlovakiaWeek: null,
         bestCitiesRank: null,
+        bestCitiesWeek: null,
       });
     }
 
     const weekIds = [...new Set(completedUserSessions.map((d) => d.data().weekId as string))];
 
     let bestCityRank: number | null = null;
+    let bestCityWeek: string | null = null;
     let bestSlovakiaRank: number | null = null;
+    let bestSlovakiaWeek: string | null = null;
     let bestCitiesRank: number | null = null;
+    let bestCitiesWeek: string | null = null;
 
     const userDoc = await db.collection("users").doc(wixUserId).get();
     const userCity = userDoc.data()?.city ?? "";
@@ -131,18 +137,28 @@ export async function GET() {
         userIdToCity
       );
 
-      if (cityRank > 0) {
-        bestCityRank = bestCityRank == null ? cityRank : Math.min(bestCityRank, cityRank);
+      if (cityRank > 0 && (bestCityRank == null || cityRank < bestCityRank)) {
+        bestCityRank = cityRank;
+        bestCityWeek = weekId;
       }
-      bestSlovakiaRank = bestSlovakiaRank == null ? slovakiaRank : Math.min(bestSlovakiaRank, slovakiaRank);
-      bestCitiesRank = bestCitiesRank == null ? citiesRank : Math.min(bestCitiesRank, citiesRank);
+      if (bestSlovakiaRank == null || slovakiaRank < bestSlovakiaRank) {
+        bestSlovakiaRank = slovakiaRank;
+        bestSlovakiaWeek = weekId;
+      }
+      if (bestCitiesRank == null || citiesRank < bestCitiesRank) {
+        bestCitiesRank = citiesRank;
+        bestCitiesWeek = weekId;
+      }
     }
 
     return NextResponse.json({
       success: true,
       bestCityRank,
+      bestCityWeek,
       bestSlovakiaRank,
+      bestSlovakiaWeek,
       bestCitiesRank,
+      bestCitiesWeek,
     });
   } catch (err) {
     console.error("quiz best-ranking error:", err);
