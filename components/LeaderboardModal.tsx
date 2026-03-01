@@ -76,6 +76,12 @@ export default function LeaderboardModal({ isOpen, onClose }: Props) {
     return null;
   }
 
+  const top3Gradient: Record<number, string> = {
+    1: "conic-gradient(from 0deg, #FFD700, #FFA500, #FFD700, #FFA500)",
+    2: "conic-gradient(from 0deg, #E8E8E8, #C0C0C0, #E8E8E8, #C0C0C0)",
+    3: "conic-gradient(from 0deg, #CD7F32, #B8860B, #CD7F32, #B8860B)",
+  };
+
   return (
     <div className="fixed top-0 left-0 w-screen h-screen z-[100] bg-[#f3e6c0] flex flex-col">
       <div className="flex-shrink-0 px-4 pt-10 pb-4 border-b border-[#1b2833]/[0.06]">
@@ -91,7 +97,7 @@ export default function LeaderboardModal({ isOpen, onClose }: Props) {
         </div>
         {!loading && showStickyStats && (
           <p className="text-sm font-medium text-[#1b2833]/70 max-w-[480px] mx-auto mt-2">
-            Tvoje skóre: {displayScore} • #{displayRank} v Slovensku
+            Tvoje skóre: {displayScore} • #{displayRank} na Slovensku
           </p>
         )}
       </div>
@@ -108,17 +114,16 @@ export default function LeaderboardModal({ isOpen, onClose }: Props) {
           <div className="space-y-2">
             {entries.map((entry) => {
               const isTop10 = entry.rank >= 1 && entry.rank <= 10;
+              const isTop3 = entry.rank >= 1 && entry.rank <= 3;
               const badge = rankBadge(entry.rank);
-              return (
-                <div
-                  key={entry.rank}
-                  ref={entry.isCurrentUser ? currentUserRowRef : null}
-                  className={`flex items-center justify-between gap-3 px-4 py-3 rounded-2xl border ${
-                    entry.isCurrentUser
-                      ? "bg-[#1b2833] text-[#f3e6c0] border-[#1b2833]"
-                      : "bg-white/40 border-[#1b2833]/[0.06] text-[#1b2833]"
-                  } ${isTop10 && !entry.isCurrentUser ? "border-l-4 border-l-[#c9a227]/60 bg-[#f3e6c0]/30" : ""}`}
-                >
+              const cardClass = `flex items-center justify-between gap-3 px-4 py-3 ${
+                entry.isCurrentUser
+                  ? "bg-[#1b2833] text-[#f3e6c0]"
+                  : "bg-white/40 text-[#1b2833]"
+              } ${isTop10 && !entry.isCurrentUser && !isTop3 ? "border-l-4 border-l-[#c9a227]/60 bg-[#f3e6c0]/30" : ""}`;
+
+              const cardContent = (
+                <>
                   <span className="text-sm font-bold tabular-nums w-12 flex items-center gap-1 shrink-0">
                     {badge}
                     #{entry.rank}
@@ -141,6 +146,36 @@ export default function LeaderboardModal({ isOpen, onClose }: Props) {
                   <span className="text-sm font-bold tabular-nums">
                     {entry.score}
                   </span>
+                </>
+              );
+
+              if (isTop3) {
+                return (
+                  <div
+                    key={entry.rank}
+                    ref={entry.isCurrentUser ? currentUserRowRef : null}
+                    className="rounded-2xl p-[2px] overflow-hidden"
+                    style={{
+                      background: top3Gradient[entry.rank as 1 | 2 | 3],
+                      animation: "leaderboard-border-rotate 3.5s linear infinite",
+                    }}
+                  >
+                    <div className={`${cardClass} rounded-[14px]`}>
+                      {cardContent}
+                    </div>
+                  </div>
+                );
+              }
+
+              return (
+                <div
+                  key={entry.rank}
+                  ref={entry.isCurrentUser ? currentUserRowRef : null}
+                  className={`rounded-2xl border ${cardClass} ${
+                    !entry.isCurrentUser ? "border-[#1b2833]/[0.06]" : "border-[#1b2833]"
+                  }`}
+                >
+                  {cardContent}
                 </div>
               );
             })}

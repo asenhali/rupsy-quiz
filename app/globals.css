@@ -24,6 +24,16 @@ body {
   font-family: "Montserrat", sans-serif;
 }
 
+/* Animated border for leaderboard top 3 */
+@keyframes leaderboard-border-rotate {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 /* Hide scrollbar in AppView panels while keeping scroll functional */
 .app-shell section::-webkit-scrollbar {
   display: none;
