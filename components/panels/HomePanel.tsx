@@ -43,6 +43,11 @@ export default function HomePanel() {
   const [citySuggestions, setCitySuggestions] = useState<string[]>([]);
   const [showCitySuggestions, setShowCitySuggestions] = useState(false);
   const cityInputRef = useRef<HTMLInputElement>(null);
+  const [lastWeekRanking, setLastWeekRanking] = useState<{
+    cityRank: number | null;
+    slovakiaRank: number | null;
+    citiesRank: number | null;
+  } | null>(null);
 
   useEffect(() => {
     setIsOnboarding(needsOnboarding === true);
@@ -79,6 +84,21 @@ export default function HomePanel() {
     }
     initAuth();
   }, [router, setUser, showQuiz]);
+
+  useEffect(() => {
+    if (needsOnboarding !== false) return;
+    fetch("/api/quiz/last-week-ranking", { credentials: "include" })
+      .then((res) => res.json())
+      .then((json) => {
+        if (json.success) {
+          setLastWeekRanking({
+            cityRank: json.cityRank ?? null,
+            slovakiaRank: json.slovakiaRank ?? null,
+            citiesRank: json.citiesRank ?? null,
+          });
+        }
+      });
+  }, [needsOnboarding]);
 
   useEffect(() => {
     if (!completedQuiz) {
@@ -394,15 +414,21 @@ export default function HomePanel() {
             <div className="flex justify-between">
               <div className="flex flex-col items-center flex-1">
                 <span className="text-[9px] font-medium uppercase tracking-widest opacity-35 mb-1">{(user?.city ?? "MESTO").toUpperCase()}</span>
-                <span className="text-lg font-bold">#—</span>
+                <span className="text-lg font-bold">
+                  {lastWeekRanking?.cityRank != null ? `#${lastWeekRanking.cityRank}` : "#—"}
+                </span>
               </div>
               <div className="flex flex-col items-center flex-1 border-l border-[#1b2833]/[0.06] pl-2">
                 <span className="text-[9px] font-medium uppercase tracking-widest opacity-35 mb-1">SLOVENSKO</span>
-                <span className="text-xl font-bold">#—</span>
+                <span className="text-xl font-bold">
+                  {lastWeekRanking?.slovakiaRank != null ? `#${lastWeekRanking.slovakiaRank}` : "#—"}
+                </span>
               </div>
               <div className="flex flex-col items-center flex-1 border-l border-[#1b2833]/[0.06] pl-2">
                 <span className="text-[9px] font-medium uppercase tracking-widest opacity-35 mb-1">MESTÁ</span>
-                <span className="text-lg font-bold">#—</span>
+                <span className="text-lg font-bold">
+                  {lastWeekRanking?.citiesRank != null ? `#${lastWeekRanking.citiesRank}` : "#—"}
+                </span>
               </div>
             </div>
           </section>
