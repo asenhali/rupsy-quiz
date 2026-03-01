@@ -5,8 +5,11 @@ import BottomNav from "@/components/BottomNav";
 import LeaderboardModal from "@/components/LeaderboardModal";
 import ProfileModal from "@/components/ProfileModal";
 import QuizPlayer from "@/components/QuizPlayer";
+import XPRewardModal from "@/components/XPRewardModal";
 import { OnboardingProvider } from "@/context/OnboardingContext";
 import { ProfileModalProvider, useProfileModal } from "@/context/ProfileModalContext";
+import { SwipeProvider } from "@/context/SwipeContext";
+import { XPRewardProvider } from "@/context/XPRewardContext";
 import { PANELS } from "@/config/panels";
 
 function Modals() {
@@ -16,6 +19,7 @@ function Modals() {
       <ProfileModal />
       <QuizPlayer isOpen={showQuiz} onClose={closeQuiz} />
       <LeaderboardModal isOpen={showLeaderboard} onClose={closeLeaderboard} />
+      <XPRewardModal />
     </>
   );
 }
@@ -28,6 +32,8 @@ export default function MainLayout({
   return (
     <OnboardingProvider>
     <ProfileModalProvider>
+    <XPRewardProvider>
+    <SwipeProvider>
       <div className="app-shell flex flex-col h-dvh overflow-hidden bg-[#f3e6c0]">
         <main className="content-area flex-1 min-h-0 pb-[80px]">
           <AppView panels={PANELS} showDots={false} />
@@ -35,6 +41,8 @@ export default function MainLayout({
         <BottomNav />
       </div>
       <Modals />
+    </SwipeProvider>
+    </XPRewardProvider>
     </ProfileModalProvider>
     </OnboardingProvider>
   );

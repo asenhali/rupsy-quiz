@@ -4,7 +4,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef } from "react";
 import { motion, useMotionValue, useSpring, PanInfo } from "framer-motion";
 import { useOnboarding } from "@/context/OnboardingContext";
-import { SwipeProvider, useSwipeContext } from "@/context/SwipeContext";
+import { useSwipeContext } from "@/context/SwipeContext";
 
 export interface PanelDef {
   route: string;
@@ -111,9 +111,5 @@ function AppViewInner({ panels, showDots = false }: AppViewProps) {
 }
 
 export default function AppView(props: AppViewProps) {
-  return (
-    <SwipeProvider>
-      <AppViewInner {...props} />
-    </SwipeProvider>
-  );
+  return <AppViewInner {...props} />;
 }

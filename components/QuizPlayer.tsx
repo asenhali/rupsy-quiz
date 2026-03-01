@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useSwipeContext } from "@/context/SwipeContext";
+import { useXPReward } from "@/context/XPRewardContext";
 import { shareQuizResult } from "@/lib/shareQuizResult";
 
 type Phase = "loading" | "countdown" | "category-reveal" | "category-outro" | "question-reveal" | "question-outro" | "question-active" | "answer-feedback" | "summary";
@@ -24,6 +25,7 @@ type Props = {
 
 export default function QuizPlayer({ isOpen, onClose }: Props) {
   const { setSwipeDisabled } = useSwipeContext();
+  const { showXPReward } = useXPReward();
   const [phase, setPhase] = useState<Phase>("loading");
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [currentQuestion, setCurrentQuestion] = useState<QuestionData | null>(null);
@@ -43,6 +45,13 @@ export default function QuizPlayer({ isOpen, onClose }: Props) {
   const [displayedScore, setDisplayedScore] = useState(0);
   const [answersInteractive, setAnswersInteractive] = useState(false);
   const [shareToast, setShareToast] = useState<string | null>(null);
+  const [xpRewardData, setXpRewardData] = useState<{
+    xpBreakdown: { participationXP: number; correctXP: number; rankXP: number; totalXP: number };
+    levelBefore: number;
+    levelAfter: number;
+    newTotalXP: number;
+    rank: number;
+  } | null>(null);
 
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const questionStartTimeRef = useRef<number>(0);
@@ -70,6 +79,10 @@ export default function QuizPlayer({ isOpen, onClose }: Props) {
     setSwipeDisabled(isOpen);
     return () => setSwipeDisabled(false);
   }, [isOpen, setSwipeDisabled]);
+
+  useEffect(() => {
+    if (!isOpen) setXpRewardData(null);
+  }, [isOpen]);
 
   useEffect(() => {
     if (!isOpen) {
@@ -340,6 +353,22 @@ export default function QuizPlayer({ isOpen, onClose }: Props) {
         }
         if (completeJson.success && completeJson.weekId != null) {
           setWeekId(completeJson.weekId);
+        }
+        if (
+          completeJson.success &&
+          completeJson.xpBreakdown != null &&
+          completeJson.levelBefore != null &&
+          completeJson.levelAfter != null &&
+          completeJson.newTotalXP != null &&
+          completeJson.rank != null
+        ) {
+          setXpRewardData({
+            xpBreakdown: completeJson.xpBreakdown,
+            levelBefore: completeJson.levelBefore,
+            levelAfter: completeJson.levelAfter,
+            newTotalXP: completeJson.newTotalXP,
+            rank: completeJson.rank,
+          });
         }
       } catch {
         // ignore
@@ -618,7 +647,19 @@ export default function QuizPlayer({ isOpen, onClose }: Props) {
                 {totalPlayers != null && <p className="text-[10px] opacity-20 mt-0.5">z {totalPlayers} hráčov</p>}
               </motion.div>
             )}
-            <motion.button initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 5.5, duration: 0.6 }} type="button" onClick={onClose} className="mt-10 px-10 py-4 rounded-2xl bg-[#f3e6c0] text-[#1b2833] font-bold text-sm">
+            <motion.button
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 5.5, duration: 0.6 }}
+              type="button"
+              onClick={() => {
+                if (xpRewardData) {
+                  showXPReward(xpRewardData);
+                }
+                onClose();
+              }}
+              className="mt-10 px-10 py-4 rounded-2xl bg-[#f3e6c0] text-[#1b2833] font-bold text-sm"
+            >
               Späť na hlavnú
             </motion.button>
             <motion.button
