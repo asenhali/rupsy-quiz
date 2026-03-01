@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useSwipeContext } from "@/context/SwipeContext";
+import { shareQuizResult } from "@/lib/shareQuizResult";
 
 type Phase = "loading" | "countdown" | "category-reveal" | "category-outro" | "question-reveal" | "question-outro" | "question-active" | "answer-feedback" | "summary";
 
@@ -40,6 +41,7 @@ export default function QuizPlayer({ isOpen, onClose }: Props) {
   const [countdownNum, setCountdownNum] = useState(3);
   const [displayedScore, setDisplayedScore] = useState(0);
   const [answersInteractive, setAnswersInteractive] = useState(false);
+  const [shareToast, setShareToast] = useState<string | null>(null);
 
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const questionStartTimeRef = useRef<number>(0);
@@ -614,9 +616,34 @@ export default function QuizPlayer({ isOpen, onClose }: Props) {
             <motion.button initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 5.5, duration: 0.6 }} type="button" onClick={onClose} className="mt-10 px-10 py-4 rounded-2xl bg-[#f3e6c0] text-[#1b2833] font-bold text-sm">
               Späť na hlavnú
             </motion.button>
-            <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 6, duration: 0.6 }} className="text-xs uppercase tracking-widest opacity-25 mt-4 underline-offset-4">
+            <motion.button
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 6, duration: 0.6 }}
+              type="button"
+              onClick={() =>
+                shareQuizResult(totalScore, rank, (msg) => {
+                  setShareToast(msg);
+                  setTimeout(() => setShareToast(null), 2500);
+                })
+              }
+              className="text-xs uppercase tracking-widest opacity-25 mt-4 underline-offset-4 hover:opacity-50 transition-opacity"
+            >
               Zdieľať výsledok
-            </motion.p>
+            </motion.button>
+            <AnimatePresence>
+              {shareToast && (
+                <motion.div
+                  key="share-toast"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0 }}
+                  className="fixed bottom-24 left-1/2 -translate-x-1/2 px-4 py-2 rounded-xl bg-[#f3e6c0] text-[#1b2833] text-sm font-medium z-[10001]"
+                >
+                  {shareToast}
+                </motion.div>
+              )}
+            </AnimatePresence>
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 6.5, duration: 0.8 }} className="mt-8 text-center">
               <p className="text-xs uppercase tracking-widest opacity-40">SPRÁVNE ODPOVEDE NÁJDEŠ NA</p>
               <motion.a href="https://www.instagram.com/rupsy_sirupy" target="_blank" rel="noopener noreferrer" animate={{ scale: [1, 1.08, 1], opacity: [0.5, 0.9, 0.5] }} transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }} className="block text-base font-bold mt-2">
