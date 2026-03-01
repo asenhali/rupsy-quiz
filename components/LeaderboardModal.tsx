@@ -76,16 +76,16 @@ export default function LeaderboardModal({ isOpen, onClose }: Props) {
     return null;
   }
 
-  const top3BorderClass: Record<number, string> = {
-    1: "leaderboard-gold",
-    2: "leaderboard-silver",
-    3: "leaderboard-bronze",
-  };
-
   const top3BorderColor: Record<number, string> = {
     1: "#FFD700",
     2: "#C0C0C0",
     3: "#CD7F32",
+  };
+
+  const top3StrokeColors: Record<number, { base: string; bright: string; core: string }> = {
+    1: { base: "#FFD700", bright: "#FFF44F", core: "#FFF8DC" },
+    2: { base: "#C0C0C0", bright: "#E8E8E8", core: "#F8F8FF" },
+    3: { base: "#CD7F32", bright: "#DFA04E", core: "#FFE4C4" },
   };
 
   return (
@@ -156,18 +156,82 @@ export default function LeaderboardModal({ isOpen, onClose }: Props) {
               );
 
               if (isTop3) {
+                const rank = entry.rank as 1 | 2 | 3;
+                const strokes = top3StrokeColors[rank];
                 return (
                   <div
                     key={entry.rank}
                     ref={entry.isCurrentUser ? currentUserRowRef : null}
-                    className={top3BorderClass[entry.rank as 1 | 2 | 3]}
+                    className="relative overflow-hidden rounded-[18px]"
                   >
                     <div
                       className={`${cardClass} rounded-2xl relative z-[1] border-2`}
-                      style={{ borderColor: top3BorderColor[entry.rank as 1 | 2 | 3] }}
+                      style={{ borderColor: top3BorderColor[rank] }}
                     >
                       {cardContent}
                     </div>
+                    <svg
+                      className="leaderboard-svg-glow absolute inset-[-1px] pointer-events-none z-[2] overflow-visible"
+                      viewBox="0 0 200 30"
+                      width="100%"
+                      height="100%"
+                    >
+                      <defs>
+                        <filter id={`glow-${entry.rank}`} x="-50%" y="-50%" width="200%" height="200%">
+                          <feGaussianBlur in="SourceGraphic" stdDeviation="3" result="blur" />
+                        </filter>
+                        <filter id={`glow2-${entry.rank}`} x="-50%" y="-50%" width="200%" height="200%">
+                          <feGaussianBlur in="SourceGraphic" stdDeviation="1.5" result="blur" />
+                        </filter>
+                      </defs>
+                      <rect
+                        className="leaderboard-glow-animated"
+                        x="2"
+                        y="2"
+                        width="196"
+                        height="26"
+                        rx="8"
+                        ry="8"
+                        fill="none"
+                        stroke={strokes.base}
+                        strokeWidth="8"
+                        strokeOpacity="0.15"
+                        strokeDasharray="25 75"
+                        pathLength="100"
+                        filter={`url(#glow-${entry.rank})`}
+                      />
+                      <rect
+                        className="leaderboard-glow-animated"
+                        x="2"
+                        y="2"
+                        width="196"
+                        height="26"
+                        rx="8"
+                        ry="8"
+                        fill="none"
+                        stroke={strokes.bright}
+                        strokeWidth="5"
+                        strokeOpacity="0.4"
+                        strokeDasharray="20 80"
+                        pathLength="100"
+                        filter={`url(#glow2-${entry.rank})`}
+                      />
+                      <rect
+                        className="leaderboard-glow-animated"
+                        x="2"
+                        y="2"
+                        width="196"
+                        height="26"
+                        rx="8"
+                        ry="8"
+                        fill="none"
+                        stroke={strokes.core}
+                        strokeWidth="2"
+                        strokeOpacity="0.9"
+                        strokeDasharray="15 85"
+                        pathLength="100"
+                      />
+                    </svg>
                   </div>
                 );
               }

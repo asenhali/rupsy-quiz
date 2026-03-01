@@ -24,77 +24,18 @@ body {
   font-family: "Montserrat", sans-serif;
 }
 
-/* Animated glow orbit for leaderboard top 3 */
-@keyframes leaderboard-glow-orbit {
-  0% {
-    top: -10px;
-    left: 10%;
+/* Animated stroke for leaderboard top 3 SVG glow */
+@keyframes leaderboard-stroke-snake {
+  from {
+    stroke-dashoffset: 100;
   }
-  25% {
-    top: -10px;
-    left: 85%;
-  }
-  50% {
-    top: calc(100% - 10px);
-    left: 85%;
-  }
-  75% {
-    top: calc(100% - 10px);
-    left: 10%;
-  }
-  100% {
-    top: -10px;
-    left: 10%;
+  to {
+    stroke-dashoffset: 0;
   }
 }
 
-.leaderboard-gold::before {
-  content: "";
-  position: absolute;
-  width: 40px;
-  height: 20px;
-  top: -10px;
-  left: 10%;
-  transform: translate(-50%, -50%);
-  background: radial-gradient(ellipse, #fffde0 0%, #ffd700 40%, transparent 70%);
-  filter: blur(8px);
-  pointer-events: none;
-  animation: leaderboard-glow-orbit 4s linear infinite;
-}
-
-.leaderboard-silver::before {
-  content: "";
-  position: absolute;
-  width: 40px;
-  height: 20px;
-  top: -10px;
-  left: 10%;
-  transform: translate(-50%, -50%);
-  background: radial-gradient(ellipse, #ffffff 0%, #c0c0c0 40%, transparent 70%);
-  filter: blur(8px);
-  pointer-events: none;
-  animation: leaderboard-glow-orbit 4s linear infinite;
-}
-
-.leaderboard-bronze::before {
-  content: "";
-  position: absolute;
-  width: 40px;
-  height: 20px;
-  top: -10px;
-  left: 10%;
-  transform: translate(-50%, -50%);
-  background: radial-gradient(ellipse, #ffe4b5 0%, #cd7f32 40%, transparent 70%);
-  filter: blur(8px);
-  pointer-events: none;
-  animation: leaderboard-glow-orbit 4s linear infinite;
-}
-
-.leaderboard-gold,
-.leaderboard-silver,
-.leaderboard-bronze {
-  position: relative;
-  overflow: visible;
+.leaderboard-svg-glow rect.leaderboard-glow-animated {
+  animation: leaderboard-stroke-snake 3.5s linear infinite;
 }
 
 /* Hide scrollbar in AppView panels while keeping scroll functional */
