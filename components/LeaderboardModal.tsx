@@ -76,10 +76,10 @@ export default function LeaderboardModal({ isOpen, onClose }: Props) {
     return null;
   }
 
-  const top3StrokeColor: Record<number, string> = {
-    1: "#FFD700",
-    2: "#C0C0C0",
-    3: "#CD7F32",
+  const top3StrokeColor: Record<number, { base: string; bright: string }> = {
+    1: { base: "#FFD700", bright: "#FFF44F" },
+    2: { base: "#C0C0C0", bright: "#F0F0F0" },
+    3: { base: "#CD7F32", bright: "#DFA04E" },
   };
 
   return (
@@ -160,7 +160,7 @@ export default function LeaderboardModal({ isOpen, onClose }: Props) {
                       {cardContent}
                     </div>
                     <svg
-                      className="leaderboard-border-svg absolute inset-0 w-full h-full pointer-events-none z-[2] rounded-2xl"
+                      className="absolute inset-0 w-full h-full pointer-events-none z-[2] rounded-2xl"
                       viewBox="0 0 100 100"
                       preserveAspectRatio="none"
                     >
@@ -172,9 +172,23 @@ export default function LeaderboardModal({ isOpen, onClose }: Props) {
                         rx="14"
                         ry="14"
                         fill="none"
-                        stroke={top3StrokeColor[entry.rank as 1 | 2 | 3]}
+                        stroke={top3StrokeColor[entry.rank as 1 | 2 | 3].base}
+                        strokeWidth="2"
+                        opacity="0.6"
+                      />
+                      <rect
+                        className="leaderboard-border-snake"
+                        x="1.5"
+                        y="1.5"
+                        width="97"
+                        height="97"
+                        rx="14"
+                        ry="14"
+                        fill="none"
+                        stroke={top3StrokeColor[entry.rank as 1 | 2 | 3].bright}
                         strokeWidth="3"
                         pathLength="100"
+                        opacity="0.9"
                       />
                     </svg>
                   </div>

@@ -34,7 +34,7 @@ body {
   }
 }
 
-.leaderboard-border-svg rect {
+.leaderboard-border-snake {
   stroke-dasharray: 20 80;
   animation: leaderboard-border-snake 3s linear infinite;
 }
