@@ -76,10 +76,10 @@ export default function LeaderboardModal({ isOpen, onClose }: Props) {
     return null;
   }
 
-  const top3Gradient: Record<number, string> = {
-    1: "conic-gradient(from 0deg, #FFD700, #FFA500, #FFD700, #FFA500)",
-    2: "conic-gradient(from 0deg, #E8E8E8, #C0C0C0, #E8E8E8, #C0C0C0)",
-    3: "conic-gradient(from 0deg, #CD7F32, #B8860B, #CD7F32, #B8860B)",
+  const top3BorderClass: Record<number, string> = {
+    1: "leaderboard-gold",
+    2: "leaderboard-silver",
+    3: "leaderboard-bronze",
   };
 
   return (
@@ -154,13 +154,9 @@ export default function LeaderboardModal({ isOpen, onClose }: Props) {
                   <div
                     key={entry.rank}
                     ref={entry.isCurrentUser ? currentUserRowRef : null}
-                    className="rounded-2xl p-[2px] overflow-hidden"
-                    style={{
-                      background: top3Gradient[entry.rank as 1 | 2 | 3],
-                      animation: "leaderboard-border-rotate 3.5s linear infinite",
-                    }}
+                    className={top3BorderClass[entry.rank as 1 | 2 | 3]}
                   >
-                    <div className={`${cardClass} rounded-[14px]`}>
+                    <div className={`${cardClass} relative z-[1] rounded-[14px]`}>
                       {cardContent}
                     </div>
                   </div>

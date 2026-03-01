@@ -24,7 +24,7 @@ body {
   font-family: "Montserrat", sans-serif;
 }
 
-/* Animated border for leaderboard top 3 */
+/* Animated border for leaderboard top 3 — gradient rotates via ::before */
 @keyframes leaderboard-border-rotate {
   from {
     transform: rotate(0deg);
@@ -32,6 +32,34 @@ body {
   to {
     transform: rotate(360deg);
   }
+}
+
+.leaderboard-gold::before,
+.leaderboard-silver::before,
+.leaderboard-bronze::before {
+  content: "";
+  position: absolute;
+  inset: -50%;
+  z-index: 0;
+  background: conic-gradient(from 0deg, #ffd700, #ffa500, #ffd700, #ffa500);
+  animation: leaderboard-border-rotate 3.5s linear infinite;
+}
+
+.leaderboard-silver::before {
+  background: conic-gradient(from 0deg, #e8e8e8, #c0c0c0, #e8e8e8, #c0c0c0);
+}
+
+.leaderboard-bronze::before {
+  background: conic-gradient(from 0deg, #cd7f32, #b8860b, #cd7f32, #b8860b);
+}
+
+.leaderboard-gold,
+.leaderboard-silver,
+.leaderboard-bronze {
+  position: relative;
+  overflow: hidden;
+  border-radius: 1rem;
+  padding: 2px;
 }
 
 /* Hide scrollbar in AppView panels while keeping scroll functional */
