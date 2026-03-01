@@ -72,29 +72,53 @@ export async function shareQuizResult(
       ? `Získal som ${score} bodov v RUPSY kvíze! 🏆 #${rank} na Slovensku — rupsy.sk/kviz`
       : shareText;
 
-  const blob = await generateShareImage(score, rank);
-  const file = new File([blob], "rupsy-kviz.png", { type: "image/png" });
+  try {
+    const blob = await generateShareImage(score, rank);
+    const file = new File([blob], "rupsy-kviz.png", { type: "image/png" });
 
-  const canShare =
-    typeof navigator !== "undefined" &&
-    typeof navigator.share === "function" &&
-    typeof navigator.canShare === "function" &&
-    navigator.canShare({ files: [file], text: shareText });
-
-  if (canShare) {
-    try {
-      await navigator.share({
-        files: [file],
-        text: shareText,
-      });
-    } catch (err) {
-      if ((err as Error).name !== "AbortError") {
-        await fallbackToClipboard(clipboardText, onToast);
+    // 1. Try: navigator.share with files (image sharing)
+    if (typeof navigator !== "undefined" && typeof navigator.share === "function") {
+      let canShareFiles = false;
+      try {
+        canShareFiles =
+          typeof navigator.canShare === "function" &&
+          navigator.canShare({ files: [file], text: shareText });
+      } catch {
+        // canShare can throw on some browsers
       }
+
+      if (canShareFiles) {
+        console.log("[shareQuizResult] Attempting image share (files + text)");
+        try {
+          await navigator.share({ files: [file], text: shareText });
+          return;
+        } catch (err) {
+          if ((err as Error).name === "AbortError") return;
+          console.log("[shareQuizResult] Image share failed:", err);
+        }
+      } else {
+        console.log("[shareQuizResult] Image share not supported (canShare=false or unavailable)");
+      }
+
+      // 2. Try: navigator.share with text only (widely supported on mobile)
+      console.log("[shareQuizResult] Attempting text-only share");
+      try {
+        await navigator.share({ text: clipboardText });
+        return;
+      } catch (err) {
+        if ((err as Error).name === "AbortError") return;
+        console.log("[shareQuizResult] Text-only share failed:", err);
+      }
+    } else {
+      console.log("[shareQuizResult] navigator.share not available");
     }
-  } else {
-    await fallbackToClipboard(clipboardText, onToast);
+  } catch (err) {
+    console.log("[shareQuizResult] Share flow error:", err);
   }
+
+  // 3. Fallback: clipboard copy + toast
+  console.log("[shareQuizResult] Falling back to clipboard copy");
+  await fallbackToClipboard(clipboardText, onToast);
 }
 
 async function fallbackToClipboard(
