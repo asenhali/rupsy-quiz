@@ -76,10 +76,10 @@ export default function LeaderboardModal({ isOpen, onClose }: Props) {
     return null;
   }
 
-  const top3BorderClass: Record<number, string> = {
-    1: "leaderboard-gold",
-    2: "leaderboard-silver",
-    3: "leaderboard-bronze",
+  const top3StrokeColor: Record<number, string> = {
+    1: "#FFD700",
+    2: "#C0C0C0",
+    3: "#CD7F32",
   };
 
   return (
@@ -154,11 +154,29 @@ export default function LeaderboardModal({ isOpen, onClose }: Props) {
                   <div
                     key={entry.rank}
                     ref={entry.isCurrentUser ? currentUserRowRef : null}
-                    className={top3BorderClass[entry.rank as 1 | 2 | 3]}
+                    className="relative"
                   >
-                    <div className={`${cardClass} relative z-[1] rounded-[14px]`}>
+                    <div className={`${cardClass} rounded-2xl relative z-[1]`}>
                       {cardContent}
                     </div>
+                    <svg
+                      className="leaderboard-border-svg absolute inset-0 w-full h-full pointer-events-none z-[2] rounded-2xl"
+                      viewBox="0 0 100 100"
+                      preserveAspectRatio="none"
+                    >
+                      <rect
+                        x="1.5"
+                        y="1.5"
+                        width="97"
+                        height="97"
+                        rx="14"
+                        ry="14"
+                        fill="none"
+                        stroke={top3StrokeColor[entry.rank as 1 | 2 | 3]}
+                        strokeWidth="3"
+                        pathLength="100"
+                      />
+                    </svg>
                   </div>
                 );
               }
