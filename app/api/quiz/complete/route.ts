@@ -123,6 +123,7 @@ export async function POST(request: Request) {
       totalScore,
       rank,
       totalPlayers,
+      weekId,
     });
   } catch (err) {
     console.error("quiz complete error:", err);

@@ -38,6 +38,7 @@ export default function QuizPlayer({ isOpen, onClose }: Props) {
   const [ranking, setRanking] = useState<string | null>(null);
   const [rank, setRank] = useState<number | null>(null);
   const [totalPlayers, setTotalPlayers] = useState<number | null>(null);
+  const [weekId, setWeekId] = useState<string | null>(null);
   const [countdownNum, setCountdownNum] = useState(3);
   const [displayedScore, setDisplayedScore] = useState(0);
   const [answersInteractive, setAnswersInteractive] = useState(false);
@@ -119,6 +120,7 @@ export default function QuizPlayer({ isOpen, onClose }: Props) {
     setRanking(null);
     setRank(null);
     setTotalPlayers(null);
+    setWeekId(null);
     setDisplayedScore(0);
     setAnswersInteractive(false);
     completeCalledRef.current = false;
@@ -335,6 +337,9 @@ export default function QuizPlayer({ isOpen, onClose }: Props) {
         }
         if (completeJson.success && completeJson.totalPlayers != null) {
           setTotalPlayers(completeJson.totalPlayers);
+        }
+        if (completeJson.success && completeJson.weekId != null) {
+          setWeekId(completeJson.weekId);
         }
       } catch {
         // ignore
@@ -622,10 +627,16 @@ export default function QuizPlayer({ isOpen, onClose }: Props) {
               transition={{ delay: 6, duration: 0.6 }}
               type="button"
               onClick={() =>
-                shareQuizResult(totalScore, rank, (msg) => {
-                  setShareToast(msg);
-                  setTimeout(() => setShareToast(null), 2500);
-                })
+                shareQuizResult(
+                  totalScore,
+                  rank,
+                  (msg) => {
+                    setShareToast(msg);
+                    setTimeout(() => setShareToast(null), 2500);
+                  },
+                  totalPlayers ?? undefined,
+                  weekId ?? undefined
+                )
               }
               className="text-xs uppercase tracking-widest opacity-25 mt-4 underline-offset-4 hover:opacity-50 transition-opacity"
             >

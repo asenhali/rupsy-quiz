@@ -1,6 +1,28 @@
 const CARD_WIDTH = 1080;
 const CARD_HEIGHT = 1920; // Instagram Story 9:16
 const CREAM = "#f3e6c0";
+const CX = 540; // center x
+
+const CTA_OPTIONS = [
+  "Porazíš ma? 😏",
+  "Toto prekoná len málo ľudí 🔥",
+  "Skús ma prekabátiť 💪",
+  "Trúfneš si? 🎯",
+  "Dokážeš viac? 👀",
+];
+
+function formatWeekId(weekId: string): string {
+  const wMatch = weekId.match(/^\d{4}-W(\d{1,2})$/i);
+  if (wMatch) {
+    const year = weekId.slice(0, 4);
+    return `Týždeň ${parseInt(wMatch[1], 10)} / ${year}`;
+  }
+  const dMatch = weekId.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (dMatch) {
+    return `Týždeň ${dMatch[3]}.${dMatch[2]}.${dMatch[1]}`;
+  }
+  return weekId;
+}
 
 /** Draw text with letter-spacing (canvas has no native letter-spacing) */
 function drawTextWithSpacing(
@@ -27,12 +49,13 @@ function drawShareCard(
   ctx: CanvasRenderingContext2D,
   score: number,
   rank: number | null,
-  totalPlayers?: number
+  totalPlayers?: number,
+  weekId?: string
 ): void {
   const w = CARD_WIDTH;
   const h = CARD_HEIGHT;
 
-  // 1. Background gradient: #0a0f1a top → #1b2833 middle → #0a0f1a bottom
+  // Background gradient: #0a0f1a top → #1b2833 center → #0a0f1a bottom
   const gradient = ctx.createLinearGradient(0, 0, 0, h);
   gradient.addColorStop(0, "#0a0f1a");
   gradient.addColorStop(0.5, "#1b2833");
@@ -40,131 +63,78 @@ function drawShareCard(
   ctx.fillStyle = gradient;
   ctx.fillRect(0, 0, w, h);
 
-  // Radial glow in center (gold, 5–8% opacity)
-  const glow = ctx.createRadialGradient(w / 2, 960, 0, w / 2, 960, 600);
-  glow.addColorStop(0, "rgba(255, 215, 0, 0.07)");
-  glow.addColorStop(0.5, "rgba(255, 215, 0, 0.05)");
+  // One subtle radial glow: center (540, 750), radius ~400, gold 6%
+  const glow = ctx.createRadialGradient(CX, 750, 0, CX, 750, 400);
+  glow.addColorStop(0, "rgba(255, 215, 0, 0.06)");
   glow.addColorStop(1, "rgba(255, 215, 0, 0)");
   ctx.fillStyle = glow;
   ctx.fillRect(0, 0, w, h);
 
-  // Decorative horizontal lines (cream 10% opacity)
-  ctx.strokeStyle = "rgba(243, 230, 192, 0.1)";
-  ctx.lineWidth = 1;
-  const lineYs = [400, 550, 950, 1050, 1350, 1750];
-  for (const ly of lineYs) {
-    const lineW = w * 0.4;
-    ctx.beginPath();
-    ctx.moveTo((w - lineW) / 2, ly);
-    ctx.lineTo((w + lineW) / 2, ly);
-    ctx.stroke();
-  }
-
   ctx.textBaseline = "middle";
+  ctx.textAlign = "center";
 
-  // 2. Top section (y ~250)
+  // y=320: RUPSY — bold 72px, cream, wide letter-spacing
   ctx.fillStyle = CREAM;
-  ctx.font = "bold 96px sans-serif";
-  drawTextWithSpacing(ctx, "RUPSY", w / 2, 220, 12);
-  ctx.globalAlpha = 0.6;
-  ctx.font = "bold 36px sans-serif";
-  drawTextWithSpacing(ctx, "TÝŽDENNÝ KVÍZ", w / 2, 290, 6);
+  ctx.font = "bold 72px sans-serif";
+  drawTextWithSpacing(ctx, "RUPSY", CX, 320, 10);
+
+  // y=400: TÝŽDENNÝ KVÍZ — bold 32px, cream 50%
+  ctx.globalAlpha = 0.5;
+  ctx.font = "bold 32px sans-serif";
+  drawTextWithSpacing(ctx, "TÝŽDENNÝ KVÍZ", CX, 400, 4);
   ctx.globalAlpha = 1;
 
-  // 3. Center — score section
-  const scoreY = 750;
-  const dividerW = w * 0.4;
-
-  ctx.strokeStyle = "rgba(243, 230, 192, 0.15)";
-  ctx.lineWidth = 1;
-  ctx.beginPath();
-  ctx.moveTo((w - dividerW) / 2, scoreY - 120);
-  ctx.lineTo((w + dividerW) / 2, scoreY - 120);
-  ctx.stroke();
-  ctx.beginPath();
-  ctx.moveTo((w - dividerW) / 2, scoreY + 120);
-  ctx.lineTo((w + dividerW) / 2, scoreY + 120);
-  ctx.stroke();
-
+  // y=720: score — bold 220px, cream (hero)
   ctx.fillStyle = CREAM;
   ctx.font = "bold 220px sans-serif";
-  ctx.textAlign = "center";
-  ctx.fillText(String(score), w / 2, scoreY - 20);
-  ctx.font = "bold 32px sans-serif";
-  drawTextWithSpacing(ctx, "BODOV", w / 2, scoreY + 90, 4);
+  ctx.fillText(String(score), CX, 720);
 
-  // 4. Rank section (y ~1150)
+  // y=820: BODOV — bold 36px, cream 50%
+  ctx.globalAlpha = 0.5;
+  ctx.font = "bold 36px sans-serif";
+  drawTextWithSpacing(ctx, "BODOV", CX, 820, 4);
+  ctx.globalAlpha = 1;
+
+  // y=1020: #X na Slovensku — bold 44px, cream
+  // y=1080: z Y hráčov — 28px, cream 40%
   if (rank != null) {
-    const badgeY = 1150;
-    const badgeW = 420;
-    const badgeH = 100;
-    ctx.strokeStyle = "rgba(243, 230, 192, 0.2)";
-    ctx.lineWidth = 1;
-    ctx.fillStyle = "rgba(243, 230, 192, 0.03)";
-    roundRect(ctx, (w - badgeW) / 2, badgeY - badgeH / 2, badgeW, badgeH, 16);
-    ctx.fill();
-    ctx.stroke();
-
     ctx.fillStyle = CREAM;
-    ctx.font = "bold 42px sans-serif";
-    ctx.textAlign = "center";
-    ctx.fillText(`#${rank} na Slovensku`, w / 2, badgeY - 8);
-
+    ctx.font = "bold 44px sans-serif";
+    ctx.fillText(`#${rank} na Slovensku`, CX, 1020);
     if (totalPlayers != null) {
       ctx.globalAlpha = 0.4;
-      ctx.font = "bold 24px sans-serif";
-      ctx.fillText(`z ${totalPlayers} hráčov`, w / 2, badgeY + 38);
+      ctx.font = "28px sans-serif";
+      ctx.fillText(`z ${totalPlayers} hráčov`, CX, 1080);
       ctx.globalAlpha = 1;
     }
   }
 
-  // 5. Bottom (y ~1550)
-  const bottomY = 1550;
-  ctx.fillStyle = CREAM;
-  ctx.font = "bold 44px sans-serif";
-  ctx.fillText("rupsy.sk/kviz", w / 2, bottomY);
-  ctx.globalAlpha = 0.5;
-  ctx.font = "bold 26px sans-serif";
-  ctx.fillText("Zahraj si aj ty", w / 2, bottomY + 56);
-  ctx.globalAlpha = 1;
-
-  // 6. Subtle noise overlay (random dots, 3–5% opacity)
-  ctx.fillStyle = "rgba(255, 255, 255, 0.04)";
-  const dotCount = 1200;
-  for (let i = 0; i < dotCount; i++) {
-    const dx = Math.random() * w;
-    const dy = Math.random() * h;
-    ctx.beginPath();
-    ctx.arc(dx, dy, 1, 0, Math.PI * 2);
-    ctx.fill();
+  // y=1220: week — Týždeň 9 / 2026
+  if (weekId) {
+    ctx.globalAlpha = 0.35;
+    ctx.font = "28px sans-serif";
+    ctx.fillText(formatWeekId(weekId), CX, 1220);
+    ctx.globalAlpha = 1;
   }
-}
 
-function roundRect(
-  ctx: CanvasRenderingContext2D,
-  x: number,
-  y: number,
-  w: number,
-  h: number,
-  r: number
-): void {
-  ctx.beginPath();
-  ctx.moveTo(x + r, y);
-  ctx.lineTo(x + w - r, y);
-  ctx.quadraticCurveTo(x + w, y, x + w, y + r);
-  ctx.lineTo(x + w, y + h - r);
-  ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
-  ctx.lineTo(x + r, y + h);
-  ctx.quadraticCurveTo(x, y + h, x, y + h - r);
-  ctx.lineTo(x, y + r);
-  ctx.quadraticCurveTo(x, y, x + r, y);
-  ctx.closePath();
+  // y=1480: random CTA — bold 38px, cream
+  const ctaIndex = Math.floor(Math.random() * CTA_OPTIONS.length);
+  ctx.fillStyle = CREAM;
+  ctx.font = "bold 38px sans-serif";
+  ctx.fillText(CTA_OPTIONS[ctaIndex], CX, 1480);
+
+  // y=1680: rupsy.sk/kviz — bold 36px, cream 70%
+  ctx.globalAlpha = 0.7;
+  ctx.font = "bold 36px sans-serif";
+  ctx.fillText("rupsy.sk/kviz", CX, 1680);
+  ctx.globalAlpha = 1;
 }
 
 export function generateShareImage(
   score: number,
   rank: number | null,
-  totalPlayers?: number
+  totalPlayers?: number,
+  weekId?: string
 ): Promise<Blob> {
   return new Promise((resolve, reject) => {
     const canvas = document.createElement("canvas");
@@ -175,7 +145,7 @@ export function generateShareImage(
       reject(new Error("Canvas 2d unavailable"));
       return;
     }
-    drawShareCard(ctx, score, rank, totalPlayers);
+    drawShareCard(ctx, score, rank, totalPlayers, weekId);
     canvas.toBlob(
       (blob) => {
         if (blob) resolve(blob);
@@ -191,7 +161,8 @@ export async function shareQuizResult(
   score: number,
   rank: number | null,
   onToast?: (message: string) => void,
-  totalPlayers?: number
+  totalPlayers?: number,
+  weekId?: string
 ): Promise<void> {
   const shareText = `Získal som ${score} bodov v RUPSY kvíze! 🏆 rupsy.sk/kviz`;
   const clipboardText =
@@ -200,7 +171,7 @@ export async function shareQuizResult(
       : shareText;
 
   try {
-    const blob = await generateShareImage(score, rank, totalPlayers);
+    const blob = await generateShareImage(score, rank, totalPlayers, weekId);
     const file = new File([blob], "rupsy-kviz.png", { type: "image/png" });
 
     // 1. Try: navigator.share with files (image sharing)
