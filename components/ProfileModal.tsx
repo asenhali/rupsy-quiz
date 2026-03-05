@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useProfileModal } from "@/context/ProfileModalContext";
 import { useSwipeContext } from "@/context/SwipeContext";
+import Avatar from "@/components/Avatar";
 
 type BestRanking = {
   bestCityRank: number | null;
@@ -52,8 +53,7 @@ export default function ProfileModal() {
 
   if (!isOpen) return null;
 
-  const avatarId = user?.equippedAvatar ?? user?.avatarId ?? "default";
-  const avatarSrc = `/avatars/${avatarId}.png`;
+  const characterId = user?.equippedAvatar ?? user?.avatarId ?? "default";
 
   return (
     <div className="fixed top-0 left-0 w-screen h-screen z-[100] bg-[#f3e6c0] overflow-y-auto touch-auto">
@@ -70,13 +70,10 @@ export default function ProfileModal() {
         </div>
 
         <div className="py-6 flex flex-col items-center">
-          <img
-            src={avatarSrc}
+          <Avatar
+            characterId={characterId}
+            sizePx={96}
             alt=""
-            className="w-24 h-24 rounded-full object-cover border-2 border-[#1b2833]/10"
-            onError={(e) => {
-              (e.target as HTMLImageElement).src = "/avatars/default.png";
-            }}
           />
         </div>
 

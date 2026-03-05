@@ -12,10 +12,7 @@ import {
   type CosmeticItem,
   type CosmeticType,
 } from "@/lib/cosmetics";
-
-const avatarMap: Record<string, string> = {
-  default: "/avatars/default.png",
-};
+import { getCharacterSrc } from "@/lib/characters";
 
 const TAB_LABELS: Record<CosmeticType, string> = {
   nameColor: "FARBA MENA",
@@ -115,11 +112,12 @@ export default function VybavaPanel() {
     if (item.type === "avatar") {
       return (
         <img
-          src={avatarMap[item.value] || `/avatars/${item.value}.png`}
+          src={getCharacterSrc(item.value)}
           alt=""
-          className="w-full aspect-square rounded-full mb-1 object-cover border-2 border-[#1b2833]/10 min-h-[40px]"
+          className="w-full aspect-square rounded-full mb-1 object-cover min-h-[40px]"
+          style={{ border: "2px solid #C0C0C0", boxSizing: "border-box" }}
           onError={(e) => {
-            (e.target as HTMLImageElement).src = "/avatars/default.png";
+            (e.target as HTMLImageElement).src = getCharacterSrc("default");
           }}
         />
       );
@@ -204,23 +202,23 @@ export default function VybavaPanel() {
                     }}
                   >
                     <img
-                      src={avatarMap[displayAvatarId] || `/avatars/${displayAvatarId}.png`}
+                      src={getCharacterSrc(displayAvatarId)}
                       alt="avatar"
                       className="w-full h-full rounded-full object-cover"
                       onError={(e) => {
                         (e.target as HTMLImageElement).src =
-                          "/avatars/default.png";
+                          getCharacterSrc("default");
                       }}
                     />
                   </div>
                 ) : (
                   <img
-                    src={avatarMap[displayAvatarId] || `/avatars/${displayAvatarId}.png`}
+                    src={getCharacterSrc(displayAvatarId)}
                     alt="avatar"
                     className="w-[130px] h-[130px] rounded-full object-cover"
                     onError={(e) => {
                       (e.target as HTMLImageElement).src =
-                        "/avatars/default.png";
+                        getCharacterSrc("default");
                     }}
                     style={
                       avatarFrameItem
@@ -228,7 +226,7 @@ export default function VybavaPanel() {
                             border: `3px solid ${avatarFrameItem.value}`,
                             boxSizing: "border-box",
                           }
-                        : { border: "2px solid rgba(243,230,192,0.3)" }
+                        : { border: "3px solid #C0C0C0", boxSizing: "border-box" }
                     }
                   />
                 )}

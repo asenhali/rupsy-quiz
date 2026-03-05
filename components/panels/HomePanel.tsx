@@ -7,6 +7,7 @@ import { SLOVAK_CITIES } from "@/config/cities";
 import { useOnboarding } from "@/context/OnboardingContext";
 import { useProfileModal } from "@/context/ProfileModalContext";
 import { hasBeenWelcomed } from "@/components/WelcomeModal";
+import Avatar from "@/components/Avatar";
 
 function RebricekButton({ onClick }: { onClick: () => void }) {
   const btnRef = useRef<HTMLButtonElement>(null);
@@ -107,9 +108,6 @@ export default function HomePanel() {
     citiesRank: number;
   } | null>(null);
 
-  const avatarMap: Record<string, string> = {
-    default: "/avatars/default.png",
-  };
   const [nickname, setNickname] = useState("");
   const [city, setCity] = useState("");
   const [citySuggestions, setCitySuggestions] = useState<string[]>([]);
@@ -348,10 +346,10 @@ export default function HomePanel() {
               onClick={openProfile}
               className="border-0 bg-transparent p-0 cursor-pointer flex-shrink-0"
             >
-              <img
-                src={avatarMap[user?.avatarId ?? ""] || avatarMap.default}
+              <Avatar
+                characterId={user?.equippedAvatar ?? user?.avatarId ?? "default"}
+                sizePx={64}
                 alt="avatar"
-                className="w-16 h-16 rounded-full object-cover border-2 border-[#1b2833]/10"
               />
             </button>
             <div className="flex-1 min-w-0 flex flex-col justify-center">

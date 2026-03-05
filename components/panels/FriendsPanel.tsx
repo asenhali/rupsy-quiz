@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import Avatar from "@/components/Avatar";
 
 type FriendItem = {
   wixUserId: string;
@@ -17,6 +18,7 @@ type RequestUser = {
   nickname?: string;
   city?: string;
   level?: number;
+  avatarId?: string;
 };
 
 type RequestItem = {
@@ -247,7 +249,11 @@ export default function FriendsPanel() {
                     key={r.requestId}
                     className="flex items-center gap-3 p-4 rounded-2xl bg-white/40 border border-[#1b2833]/[0.06]"
                   >
-                    <div className="w-10 h-10 rounded-full bg-[#1b2833]/15 shrink-0" />
+                    <Avatar
+                      characterId={r.user?.avatarId ?? "default"}
+                      sizePx={40}
+                      alt=""
+                    />
                     <div className="flex-1 min-w-0">
                       <p className="font-medium truncate">
                         {r.user?.nickname ?? r.user?.rupsyId ?? "—"}
@@ -289,7 +295,11 @@ export default function FriendsPanel() {
                     key={r.requestId}
                     className="flex items-center gap-3 p-4 rounded-2xl bg-white/40 border border-[#1b2833]/[0.06]"
                   >
-                    <div className="w-10 h-10 rounded-full bg-[#1b2833]/15 shrink-0" />
+                    <Avatar
+                      characterId={r.user?.avatarId ?? "default"}
+                      sizePx={40}
+                      alt=""
+                    />
                     <div className="flex-1 min-w-0">
                       <p className="font-medium truncate">
                         {r.user?.nickname ?? r.user?.rupsyId ?? "—"}
@@ -341,13 +351,10 @@ export default function FriendsPanel() {
                     key={friend.wixUserId}
                     className="flex items-center gap-3 p-3 rounded-2xl bg-white/40 border border-[#1b2833]/[0.06]"
                   >
-                    <img
-                      src={`/avatars/${friend.avatarId || "default"}.png`}
+                    <Avatar
+                      characterId={friend.avatarId || "default"}
+                      sizePx={40}
                       alt=""
-                      className="w-10 h-10 rounded-full object-cover shrink-0"
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).src = "/avatars/default.png";
-                      }}
                     />
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-semibold truncate">{friend.nickname ?? friend.rupsyId ?? "—"}</p>

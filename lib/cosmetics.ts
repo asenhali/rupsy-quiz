@@ -129,7 +129,7 @@ export const COSMETIC_ITEMS: CosmeticItem[] = [
     220,
     "linear-gradient(135deg, #0077B6, #00B4D8, #90E0EF)"
   ),
-  // AVATARS (postavička)
+  // AVATARS (postavička) — value = character id, image at /characters/{value}.png
   item("av_default", "RUPSY Logo", "avatar", "bezne", 0, "default", {
     purchasable: false,
   }),

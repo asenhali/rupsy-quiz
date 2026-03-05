@@ -84,7 +84,7 @@ export async function GET() {
 
     const userMap = new Map<
       string,
-      { rupsyId?: string; nickname?: string; city?: string; level?: number }
+      { rupsyId?: string; nickname?: string; city?: string; level?: number; avatarId?: string }
     >();
     userIdsToFetch.forEach((id, i) => {
       const doc = userDocs[i];
@@ -94,6 +94,7 @@ export async function GET() {
         nickname: data?.nickname,
         city: data?.city,
         level: data?.level,
+        avatarId: data?.equippedAvatar ?? data?.avatarId ?? "default",
       });
     });
 
