@@ -2,26 +2,29 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { ShoppingCart, Backpack, Home, Users, Settings } from "lucide-react";
 import { useOnboarding } from "@/context/OnboardingContext";
+import { useWelcomeModal } from "@/context/WelcomeModalContext";
 
 const ITEMS = [
-  { href: "/settings", icon: "/icons/nav-settings.svg", isCenter: false },
-  { href: "/placeholder-left", icon: "/icons/nav-placeholder-left.svg", isCenter: false },
-  { href: "/", icon: "/icons/nav-home.svg", isCenter: true },
-  { href: "/friends", icon: "/icons/nav-friends.svg", isCenter: false },
-  { href: "/placeholder-right", icon: "/icons/nav-placeholder-right.svg", isCenter: false },
+  { href: "/shop", label: "Obchod", Icon: ShoppingCart },
+  { href: "/vybava", label: "Výbava", Icon: Backpack },
+  { href: "/", label: "Domov", Icon: Home },
+  { href: "/friends", label: "Priatelia", Icon: Users },
+  { href: "/settings", label: "Nastavenia", Icon: Settings },
 ] as const;
 
 export default function BottomNav() {
   const pathname = usePathname();
   const { isOnboarding } = useOnboarding();
+  const { showWelcomeModal } = useWelcomeModal();
 
-  if (isOnboarding) return null;
+  if (isOnboarding || showWelcomeModal) return null;
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 bg-[#f3e6c0]/80 backdrop-blur-xl border-t border-[#1b2833]/[0.04] pb-[env(safe-area-inset-bottom)]">
       <div className="flex items-center justify-around h-14 max-w-[480px] mx-auto px-4">
-        {ITEMS.map(({ href, icon }) => {
+        {ITEMS.map(({ href, label, Icon }) => {
           const active =
             href === "/"
               ? pathname === "/"
@@ -33,15 +36,12 @@ export default function BottomNav() {
               href={href}
               prefetch
               className="flex flex-col items-center justify-center py-2 px-3"
-              aria-label={href}
+              aria-label={label}
             >
               <div className="flex flex-col items-center justify-center gap-0.5">
-                <img
-                  src={icon}
-                  alt=""
+                <Icon
                   className={`w-6 h-6 ${active ? "opacity-90" : "opacity-25"}`}
-                  width={24}
-                  height={24}
+                  strokeWidth={1.5}
                 />
                 <div
                   className={`w-1 h-1 rounded-full ${

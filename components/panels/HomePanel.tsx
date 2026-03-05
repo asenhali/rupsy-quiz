@@ -6,7 +6,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { SLOVAK_CITIES } from "@/config/cities";
 import { useOnboarding } from "@/context/OnboardingContext";
 import { useProfileModal } from "@/context/ProfileModalContext";
-import WelcomeModal, { hasBeenWelcomed } from "@/components/WelcomeModal";
+import { useWelcomeModal } from "@/context/WelcomeModalContext";
+import { hasBeenWelcomed } from "@/components/WelcomeModal";
 
 function RebricekButton({ onClick }: { onClick: () => void }) {
   const btnRef = useRef<HTMLButtonElement>(null);
@@ -83,6 +84,7 @@ export default function HomePanel() {
   const router = useRouter();
   const { openProfile, user, setUser, setShowQuiz, showQuiz, openLeaderboard } = useProfileModal();
   const { setIsOnboarding } = useOnboarding();
+  const { setShowWelcomeModal } = useWelcomeModal();
   const [needsOnboarding, setNeedsOnboarding] = useState<boolean | null>(null);
   const [completedQuiz, setCompletedQuiz] = useState<{ totalScore: number } | null>(null);
   const [ranking, setRanking] = useState<{
@@ -115,7 +117,6 @@ export default function HomePanel() {
   const [citySuggestions, setCitySuggestions] = useState<string[]>([]);
   const [showCitySuggestions, setShowCitySuggestions] = useState(false);
   const cityInputRef = useRef<HTMLInputElement>(null);
-  const [showWelcomeModal, setShowWelcomeModal] = useState(false);
   const [lastWeekRanking, setLastWeekRanking] = useState<{
     cityRank: number | null;
     slovakiaRank: number | null;
@@ -522,11 +523,6 @@ export default function HomePanel() {
           <RebricekButton onClick={openLeaderboard} />
         </div>
       )}
-
-      <WelcomeModal
-        isOpen={showWelcomeModal}
-        onClose={() => setShowWelcomeModal(false)}
-      />
     </div>
   );
 }
