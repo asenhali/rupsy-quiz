@@ -359,7 +359,7 @@ export default function XPRewardModal() {
                 }}
               />
               <p className="relative text-3xl font-extrabold uppercase tracking-[0.2em] text-[#FFD700]">
-                TVOJE XP
+                ZÍSKANÉ ODMENY
               </p>
             </div>
           </motion.div>
@@ -499,38 +499,18 @@ export default function XPRewardModal() {
                 style={{
                   fontSize: 52,
                   letterSpacing: "0.15em",
-                  textShadow:
-                    "0 0 30px rgba(255,215,0,0.5), 0 0 60px rgba(255,215,0,0.3)",
+                  textShadow: "0 0 30px rgba(255,215,0,0.5), 0 0 60px rgba(255,215,0,0.3)",
+                  willChange: "transform",
                 }}
                 initial={{ scale: 0.3, opacity: 0 }}
                 animate={
                   levelUpTextEntranceDone
-                    ? {
-                        scale: [1, 1.08, 1],
-                        opacity: 1,
-                        textShadow: [
-                          "0 0 30px rgba(255,215,0,0.5), 0 0 60px rgba(255,215,0,0.3)",
-                          "0 0 45px rgba(255,215,0,0.7), 0 0 85px rgba(255,215,0,0.45)",
-                          "0 0 30px rgba(255,215,0,0.5), 0 0 60px rgba(255,215,0,0.3)",
-                        ],
-                      }
-                    : {
-                        scale: [0.3, 1.1, 1],
-                        opacity: 1,
-                        textShadow:
-                          "0 0 30px rgba(255,215,0,0.5), 0 0 60px rgba(255,215,0,0.3)",
-                      }
+                    ? { scale: [1, 1.08, 1], opacity: 1 }
+                    : { scale: [0.3, 1.1, 1], opacity: 1 }
                 }
                 transition={
                   levelUpTextEntranceDone
-                    ? {
-                        scale: { duration: 2, repeat: Infinity, ease: "easeInOut" },
-                        textShadow: {
-                          duration: 2,
-                          repeat: Infinity,
-                          ease: "easeInOut",
-                        },
-                      }
+                    ? { scale: { duration: 2, repeat: Infinity, ease: "easeInOut" } }
                     : {
                         scale: {
                           duration: 0.65,
@@ -558,6 +538,7 @@ export default function XPRewardModal() {
               </motion.p>
               <motion.div
                 className="relative"
+                style={{ willChange: "transform" }}
                 initial={{ scale: 0.5, opacity: 0 }}
                 animate={
                   levelNumberEntranceDone
