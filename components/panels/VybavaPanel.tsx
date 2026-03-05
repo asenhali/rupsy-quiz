@@ -93,16 +93,16 @@ export default function VybavaPanel() {
         >
           <span
             className="font-bold"
-            style={{ fontSize: "38px" }}
             style={
               item.value.startsWith("linear-gradient")
                 ? {
+                    fontSize: "38px",
                     background: item.value,
                     WebkitBackgroundClip: "text",
                     WebkitTextFillColor: "transparent",
                     backgroundClip: "text",
                   }
-                : { color: item.value }
+                : { fontSize: "38px", color: item.value }
             }
           >
             Aa
