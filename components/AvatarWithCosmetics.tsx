@@ -3,22 +3,33 @@
 import { getCharacterSrc } from "@/lib/characters";
 import { getCosmeticById, DEFAULT_ITEM_IDS } from "@/lib/cosmetics";
 
-const SIZE = 44;
-const FRAME_WIDTH = 2.5;
-const INNER_SIZE = SIZE - FRAME_WIDTH * 2 - 6; /* 6px total for pozadie ring */
 const DEFAULT_BG = "#D3D3D3";
 const DEFAULT_FRAME = "#C0C0C0";
 
 type Props = {
-  equippedAvatar: string;
-  equippedAvatarBackground: string | null;
-  equippedAvatarFrame: string | null;
+  characterId: string;
+  sizePx: number;
+  equippedAvatarBackground?: string | null;
+  equippedAvatarFrame?: string | null;
+  alt?: string;
+  className?: string;
 };
 
-export default function LeaderboardAvatar({
-  equippedAvatar,
+/** Proportional border and inner size; leaves ~7% for pozadie ring */
+function getDimensions(sizePx: number) {
+  const borderWidth = sizePx >= 96 ? 3 : sizePx >= 64 ? 2.5 : 2;
+  const innerTotal = Math.floor(sizePx * 0.86);
+  const innerSize = innerTotal - borderWidth * 2;
+  return { borderWidth, innerSize: Math.max(innerSize, 20) };
+}
+
+export default function AvatarWithCosmetics({
+  characterId,
+  sizePx,
   equippedAvatarBackground,
   equippedAvatarFrame,
+  alt = "",
+  className = "",
 }: Props) {
   const bgItem = equippedAvatarBackground
     ? getCosmeticById(equippedAvatarBackground)
@@ -31,14 +42,14 @@ export default function LeaderboardAvatar({
   const isRainbowFrame = frameItem?.value === "rainbow";
   const frameStyle = frameItem?.value ?? DEFAULT_FRAME;
 
-  const innerWithFrame = INNER_SIZE + FRAME_WIDTH * 2;
+  const { borderWidth, innerSize } = getDimensions(sizePx);
 
   return (
     <div
-      className="rounded-full overflow-hidden flex-shrink-0 flex items-center justify-center"
+      className={`rounded-full overflow-hidden flex-shrink-0 flex items-center justify-center ${className}`}
       style={{
-        width: SIZE,
-        height: SIZE,
+        width: sizePx,
+        height: sizePx,
         background: bgStyle,
       }}
     >
@@ -46,18 +57,18 @@ export default function LeaderboardAvatar({
         <div
           className="rounded-full flex items-center justify-center"
           style={{
-            width: innerWithFrame,
-            height: innerWithFrame,
-            padding: `${FRAME_WIDTH}px`,
+            width: innerSize + borderWidth * 2,
+            height: innerSize + borderWidth * 2,
+            padding: `${borderWidth}px`,
             background:
               "linear-gradient(90deg, #FF0000, #FF8800, #FFFF00, #00FF00, #0088FF, #8800FF)",
           }}
         >
           <img
-            src={getCharacterSrc(equippedAvatar)}
-            alt=""
+            src={getCharacterSrc(characterId)}
+            alt={alt}
             className="rounded-full object-cover"
-            style={{ width: INNER_SIZE, height: INNER_SIZE }}
+            style={{ width: innerSize, height: innerSize }}
             onError={(e) => {
               (e.target as HTMLImageElement).src = getCharacterSrc("rupsik");
             }}
@@ -65,13 +76,13 @@ export default function LeaderboardAvatar({
         </div>
       ) : (
         <img
-          src={getCharacterSrc(equippedAvatar)}
-          alt=""
+          src={getCharacterSrc(characterId)}
+          alt={alt}
           className="rounded-full object-cover"
           style={{
-            width: INNER_SIZE,
-            height: INNER_SIZE,
-            border: `${FRAME_WIDTH}px solid ${frameStyle}`,
+            width: innerSize,
+            height: innerSize,
+            border: `${borderWidth}px solid ${frameStyle}`,
             boxSizing: "border-box",
           }}
           onError={(e) => {

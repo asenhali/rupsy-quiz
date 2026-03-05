@@ -92,7 +92,8 @@ export default function VybavaPanel() {
           className="w-full aspect-square rounded-md mb-1 flex items-center justify-center bg-white min-h-[40px]"
         >
           <span
-            className="text-[20px] font-bold"
+            className="font-bold"
+            style={{ fontSize: "38px" }}
             style={
               item.value.startsWith("linear-gradient")
                 ? {
