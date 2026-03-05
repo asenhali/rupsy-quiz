@@ -8,6 +8,14 @@ import {
   type CosmeticType,
 } from "@/lib/cosmetics";
 
+// TODO: Remove — testing only: allow equipping all characters
+const TEST_CHARACTER_IDS = [
+  "ch_rupsik", "ch_medved", "ch_jelen", "ch_lyska", "ch_jezko", "ch_rys",
+  "ch_vlk", "ch_zajac", "ch_diviak", "ch_jazvec", "ch_bazant", "ch_srnka",
+  "ch_jastrab", "ch_vevericka", "ch_kamzik", "ch_svist", "ch_sova", "ch_kuna",
+  "ch_orol",
+];
+
 export async function POST(request: Request) {
   try {
     const authHeader = request.headers.get("authorization");
@@ -112,7 +120,10 @@ export async function POST(request: Request) {
         );
       }
       const isDefault = DEFAULT_ITEM_IDS[type] === itemId;
-      if (!isDefault && !ownedItems.includes(itemId)) {
+      const ownsItem =
+        ownedItems.includes(itemId) ||
+        (type === "avatar" && TEST_CHARACTER_IDS.includes(itemId));
+      if (!isDefault && !ownsItem) {
         return NextResponse.json(
           { success: false, message: "You do not own this item" },
           { status: 403 }
