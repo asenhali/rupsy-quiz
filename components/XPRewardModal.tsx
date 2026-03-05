@@ -7,6 +7,10 @@ import { useXPReward } from "@/context/XPRewardContext";
 import { calculateLevel } from "@/lib/xp";
 import ParticleExplosion from "@/components/ParticleExplosion";
 
+const COINS_STATIC_PAUSE = 1000;
+const COINS_COUNT_DURATION = 1500;
+const COINS_HOLD_AFTER = 1500;
+const COINS_BUTTON_DELAY = 3000;
 const STAGE_1_FADE_IN = 500;
 const STAGE_1_HOLD = 1500;
 const STAGE_1_FADE_OUT = 400;
@@ -23,6 +27,7 @@ const LEVEL_UP_NUMBER_DELAY = 300;
 const LEVEL_UP_BUTTON_DELAY = 2500;
 
 type ViewState =
+  | { view: 0; phase: "in" | "hold" | "out"; showCoinButton?: boolean }
   | { view: 1; phase: "in" | "hold" | "out" }
   | { view: "transition"; from: number }
   | { view: 2; phase: "in" | "hold" | "out"; breakdownLine: number; showTotal: boolean }
@@ -33,10 +38,11 @@ type ViewState =
 export default function XPRewardModal() {
   const { xpRewardData, closeXPReward, isOpen } = useXPReward();
   const { setSwipeDisabled } = useSwipeContext();
-  const [state, setState] = useState<ViewState>({ view: 1, phase: "in" });
+  const [state, setState] = useState<ViewState>({ view: 0, phase: "in" });
   const [xpBarFillPercent, setXpBarFillPercent] = useState(0);
   const [displayedXP, setDisplayedXP] = useState(0);
   const [displayedTotalXP, setDisplayedTotalXP] = useState(0);
+  const [displayedCoins, setDisplayedCoins] = useState(0);
   const [particlesActive, setParticlesActive] = useState(false);
   const [particleSpawn, setParticleSpawn] = useState<{ x: number; y: number } | null>(null);
   const [levelUpTextEntranceDone, setLevelUpTextEntranceDone] = useState(false);
@@ -88,13 +94,46 @@ export default function XPRewardModal() {
   }, [xpRewardData, state]);
 
   useEffect(() => {
+    const isCoinsView = state.view === 0 && state.phase === "in";
+    if (!xpRewardData || !isCoinsView) return;
+    const prev = xpRewardData.previousRCoins ?? 0;
+    const next = xpRewardData.newRCoins ?? prev;
+    if (prev >= next) return;
+    let intervalId: ReturnType<typeof setInterval> | null = null;
+    let doneId: ReturnType<typeof setTimeout> | null = null;
+    const startId = setTimeout(() => {
+      const duration = COINS_COUNT_DURATION;
+      const step = 30;
+      const steps = Math.ceil(duration / step);
+      const increment = (next - prev) / steps;
+      let current = prev;
+      intervalId = setInterval(() => {
+        current += increment;
+        if (current >= next) {
+          setDisplayedCoins(next);
+          return;
+        }
+        setDisplayedCoins(Math.floor(current));
+      }, step);
+      doneId = setTimeout(() => setDisplayedCoins(next), duration);
+    }, COINS_STATIC_PAUSE);
+    return () => {
+      clearTimeout(startId);
+      if (intervalId) clearInterval(intervalId);
+      if (doneId) clearTimeout(doneId);
+    };
+  }, [xpRewardData, state]);
+
+  useEffect(() => {
     if (!isOpen || !xpRewardData) return;
 
     const oldTotalXP = xpRewardData.newTotalXP - xpRewardData.xpBreakdown.totalXP;
-    setState({ view: 1, phase: "in" });
+    const hasCoins = !!xpRewardData?.coinBreakdown && xpRewardData.previousRCoins != null && xpRewardData.newRCoins != null;
+    setState(hasCoins ? { view: 0, phase: "in" } : { view: 1, phase: "in" });
     setXpBarFillPercent(0);
     setDisplayedXP(oldTotalXP);
     setDisplayedTotalXP(0);
+    setDisplayedCoins(xpRewardData.previousRCoins ?? xpRewardData.newRCoins ?? 0);
     setParticleSpawn(null);
     setParticlesActive(false);
     setLevelUpTextEntranceDone(false);
@@ -108,6 +147,14 @@ export default function XPRewardModal() {
     const oldTotalXP = xpRewardData.newTotalXP - xpRewardData.xpBreakdown.totalXP;
     const levelBeforeData = calculateLevel(oldTotalXP);
     const levelAfterData = calculateLevel(xpRewardData.newTotalXP);
+
+    if (state.view === 0 && state.phase === "in" && !state.showCoinButton) {
+      const t = setTimeout(
+        () => setState((s) => (s.view === 0 && s.phase === "in" ? { ...s, showCoinButton: true } : s)),
+        COINS_BUTTON_DELAY
+      );
+      return () => clearTimeout(t);
+    }
 
     if (state.view === 1 && state.phase === "in") {
       const t = setTimeout(() => setState({ view: 1, phase: "hold" }), STAGE_1_FADE_IN);
@@ -124,6 +171,13 @@ export default function XPRewardModal() {
       return () => clearTimeout(t);
     }
 
+    if (state.view === "transition" && state.from === 0) {
+      const t = setTimeout(() => {
+        setState({ view: 1, phase: "in" });
+      }, TRANSITION_DURATION);
+      return () => clearTimeout(t);
+    }
+
     if (state.view === "transition" && state.from === 1) {
       const t = setTimeout(() => {
         setState({ view: 2, phase: "in", breakdownLine: 1, showTotal: false });
@@ -134,6 +188,7 @@ export default function XPRewardModal() {
     if (state.view === 2 && state.phase === "in") {
       const bl = state.breakdownLine;
       const st = state.showTotal;
+
       if (bl < 3) {
         const t = setTimeout(
           () => setState((s) => (s.view === 2 && s.phase === "in" ? { ...s, breakdownLine: bl + 1 } : s)),
@@ -291,6 +346,8 @@ export default function XPRewardModal() {
   const currentBreakdown = state.view === 2 ? (state.breakdownLine ?? 0) : 0;
   const currentShowTotal = state.view === 2 ? (state.showTotal ?? false) : false;
 
+  const earnedCoins = (xpRewardData?.newRCoins ?? 0) - (xpRewardData?.previousRCoins ?? 0);
+
   return (
     <div
       className="fixed inset-0 z-[101] text-[#f3e6c0] flex flex-col items-center justify-center font-['Montserrat']"
@@ -327,6 +384,51 @@ export default function XPRewardModal() {
         </>
       )}
       <AnimatePresence mode="wait">
+        {state.view === 0 && (
+          <motion.div
+            key="stage0"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.4 }}
+            className="absolute inset-0 flex flex-col items-center justify-center px-6"
+          >
+            <span className="text-[60px] mb-3" style={{ color: "#FFD700" }}>🪙</span>
+            <p className="text-base font-bold uppercase tracking-[0.2em] mb-4" style={{ color: "#FFD700" }}>
+              RUPSY COINS
+            </p>
+            <p
+              className="text-[48px] font-bold tabular-nums mb-2"
+              style={{ color: "#f3e6c0" }}
+            >
+              {displayedCoins}
+            </p>
+            {earnedCoins > 0 && (
+              <motion.p
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: COINS_STATIC_PAUSE / 1000, duration: 0.5 }}
+                className="text-lg font-bold"
+                style={{ color: "#FFD700" }}
+              >
+                +{earnedCoins}
+              </motion.p>
+            )}
+            {state.showCoinButton && (
+              <motion.button
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.5 }}
+                type="button"
+                onClick={() => setState({ view: "transition", from: 0 })}
+                className="mt-12 px-12 py-4 rounded-2xl bg-[#f3e6c0] text-[#1b2833] font-bold text-sm uppercase tracking-wider"
+              >
+                Pokračovať
+              </motion.button>
+            )}
+          </motion.div>
+        )}
+
         {state.view === 1 && (
           <motion.div
             key="stage1"

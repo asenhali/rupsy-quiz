@@ -47,6 +47,9 @@ export default function QuizPlayer({ isOpen, onClose }: Props) {
   const [shareToast, setShareToast] = useState<string | null>(null);
   const [xpRewardData, setXpRewardData] = useState<{
     xpBreakdown: { participationXP: number; correctXP: number; rankXP: number; totalXP: number };
+    coinBreakdown?: { participationCoins: number; correctCoins: number; rankCoins: number; totalCoins: number };
+    previousRCoins?: number;
+    newRCoins?: number;
     levelBefore: number;
     levelAfter: number;
     newTotalXP: number;
@@ -364,6 +367,9 @@ export default function QuizPlayer({ isOpen, onClose }: Props) {
         ) {
           setXpRewardData({
             xpBreakdown: completeJson.xpBreakdown,
+            coinBreakdown: completeJson.coinBreakdown,
+            previousRCoins: completeJson.previousRCoins,
+            newRCoins: completeJson.newRCoins,
             levelBefore: completeJson.levelBefore,
             levelAfter: completeJson.levelAfter,
             newTotalXP: completeJson.newTotalXP,

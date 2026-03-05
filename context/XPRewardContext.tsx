@@ -4,6 +4,9 @@ import { createContext, useCallback, useContext, useState, type ReactNode } from
 
 export type XPRewardData = {
   xpBreakdown: { participationXP: number; correctXP: number; rankXP: number; totalXP: number };
+  coinBreakdown?: { participationCoins: number; correctCoins: number; rankCoins: number; totalCoins: number };
+  previousRCoins?: number;
+  newRCoins?: number;
   levelBefore: number;
   levelAfter: number;
   newTotalXP: number;

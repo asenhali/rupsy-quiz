@@ -4,6 +4,7 @@ import jwt from "jsonwebtoken";
 import { FieldValue } from "firebase-admin/firestore";
 import { db } from "@/lib/firebaseAdmin";
 import { calculateQuizXP, calculateLevel } from "@/lib/xp";
+import { calculateQuizCoins } from "@/lib/coins";
 
 async function getWixUserId(): Promise<{ wixUserId: string } | { error: NextResponse }> {
   const cookieStore = await cookies();
@@ -114,11 +115,14 @@ export async function POST(request: Request) {
     const rank = betterCount + 1;
 
     const xpBreakdown = calculateQuizXP(correctCount, rank);
+    const coinBreakdown = calculateQuizCoins(correctCount, rank);
 
     const userDocSnap = await db.collection("users").doc(wixUserId).get();
     const userData = userDocSnap.data();
     const currentTotalXP = userData?.totalXP ?? 0;
     const newTotalXP = currentTotalXP + xpBreakdown.totalXP;
+    const currentRCoins = userData?.rCoins ?? 0;
+    const newRCoins = currentRCoins + coinBreakdown.totalCoins;
 
     const levelBefore = calculateLevel(currentTotalXP).level;
     const levelAfter = calculateLevel(newTotalXP).level;
@@ -128,6 +132,7 @@ export async function POST(request: Request) {
       totalCorrect: FieldValue.increment(correctCount),
       totalPoints: FieldValue.increment(totalScore),
       totalXP: FieldValue.increment(xpBreakdown.totalXP),
+      rCoins: FieldValue.increment(coinBreakdown.totalCoins),
       level: levelAfter,
     });
 
@@ -143,6 +148,14 @@ export async function POST(request: Request) {
         rankXP: xpBreakdown.rankXP,
         totalXP: xpBreakdown.totalXP,
       },
+      coinBreakdown: {
+        participationCoins: coinBreakdown.participationCoins,
+        correctCoins: coinBreakdown.correctCoins,
+        rankCoins: coinBreakdown.rankCoins,
+        totalCoins: coinBreakdown.totalCoins,
+      },
+      previousRCoins: currentRCoins,
+      newRCoins,
       levelBefore,
       levelAfter,
       newTotalXP,

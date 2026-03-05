@@ -112,7 +112,7 @@ export async function POST(request: Request) {
       avatarId: "default",
       totalXP: 0,
       totalPoints: 0,
-      rCoins: 0,
+      rCoins: 25,
       level: 1,
       totalGames: 0,
       totalCorrect: 0,
