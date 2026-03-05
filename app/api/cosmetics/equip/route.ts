@@ -65,6 +65,7 @@ export async function POST(request: Request) {
 
     const validTypes: CosmeticType[] = [
       "nameColor",
+      "avatar",
       "avatarFrame",
       "avatarBackground",
     ];
@@ -99,6 +100,8 @@ export async function POST(request: Request) {
     const data = userDoc.data();
     const ownedItems: string[] = data?.ownedItems ?? [];
 
+    let valueToStore: string | null = itemId;
+
     if (itemId !== null) {
       const item = getCosmeticById(itemId);
       if (!item || item.type !== type) {
@@ -113,16 +116,22 @@ export async function POST(request: Request) {
           { status: 403 }
         );
       }
+      if (type === "avatar") {
+        valueToStore = item.value;
+      }
+    } else if (type === "avatar") {
+      valueToStore = "default";
     }
 
     const fieldMap = {
       nameColor: "equippedNameColor",
+      avatar: "equippedAvatar",
       avatarFrame: "equippedAvatarFrame",
       avatarBackground: "equippedAvatarBackground",
     } as const;
 
     const field = fieldMap[type];
-    await userRef.update({ [field]: itemId });
+    await userRef.update({ [field]: valueToStore });
 
     return NextResponse.json({
       success: true,

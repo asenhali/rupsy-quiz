@@ -78,6 +78,7 @@ export async function GET(request: Request) {
         totalGames: data?.totalGames ?? 0,
         totalCorrect: data?.totalCorrect ?? 0,
         equippedNameColor: data?.equippedNameColor ?? null,
+        equippedAvatar: data?.equippedAvatar ?? data?.avatarId ?? "default",
         equippedAvatarFrame: data?.equippedAvatarFrame ?? null,
         equippedAvatarBackground: data?.equippedAvatarBackground ?? null,
         ownedItems: data?.ownedItems ?? [],

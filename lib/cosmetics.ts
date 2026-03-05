@@ -1,4 +1,8 @@
-export type CosmeticType = "nameColor" | "avatarFrame" | "avatarBackground";
+export type CosmeticType =
+  | "nameColor"
+  | "avatar"
+  | "avatarFrame"
+  | "avatarBackground";
 export type CosmeticTier =
   | "bezne"
   | "neobvykle"
@@ -108,6 +112,10 @@ export const COSMETIC_ITEMS: CosmeticItem[] = [
     220,
     "linear-gradient(135deg, #0077B6, #00B4D8, #90E0EF)"
   ),
+  // AVATARS (postavička)
+  item("av_default", "Predvolený", "avatar", "bezne", 0, "default"),
+  item("av_1", "Alternatíva 1", "avatar", "bezne", 20, "1"),
+  item("av_2", "Alternatíva 2", "avatar", "neobvykle", 50, "2"),
   // AVATAR FRAMES
   item("af_silver", "Strieborný", "avatarFrame", "neobvykle", 90, "#C0C0C0", {
     style: "solid",
@@ -129,4 +137,11 @@ export function getCosmeticById(id: string): CosmeticItem | undefined {
 
 export function getCosmeticsByType(type: CosmeticType): CosmeticItem[] {
   return COSMETIC_ITEMS.filter((i) => i.type === type);
+}
+
+export function getAvatarItemIdByValue(avatarValue: string): string | null {
+  const item = COSMETIC_ITEMS.find(
+    (i) => i.type === "avatar" && i.value === avatarValue
+  );
+  return item?.id ?? null;
 }

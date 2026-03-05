@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { AVAILABLE_AVATARS } from "@/config/avatars";
 import { useProfileModal } from "@/context/ProfileModalContext";
 import { useSwipeContext } from "@/context/SwipeContext";
 
@@ -23,8 +22,7 @@ function formatWeekId(weekId: string): string {
 }
 
 export default function ProfileModal() {
-  const { isOpen, closeProfile, user, setUser } = useProfileModal();
-  const [showAvatarPicker, setShowAvatarPicker] = useState(false);
+  const { isOpen, closeProfile, user } = useProfileModal();
   const [bestRanking, setBestRanking] = useState<BestRanking>(null);
   const { setSwipeDisabled } = useSwipeContext();
 
@@ -52,23 +50,9 @@ export default function ProfileModal() {
       });
   }, [isOpen]);
 
-  async function handleAvatarChange(newAvatarId: string) {
-    const res = await fetch("/api/profile/update", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-      body: JSON.stringify({ avatarId: newAvatarId }),
-    });
-    const json = await res.json();
-    if (json.success) {
-      setUser((prev) => (prev ? { ...prev, avatarId: newAvatarId } : null));
-    }
-    setShowAvatarPicker(false);
-  }
-
   if (!isOpen) return null;
 
-  const avatarId = user?.avatarId ?? "default";
+  const avatarId = user?.equippedAvatar ?? user?.avatarId ?? "default";
   const avatarSrc = `/avatars/${avatarId}.png`;
 
   return (
@@ -94,40 +78,7 @@ export default function ProfileModal() {
               (e.target as HTMLImageElement).src = "/avatars/default.png";
             }}
           />
-          <button
-            type="button"
-            onClick={() => setShowAvatarPicker((v) => !v)}
-            className="text-xs font-medium uppercase tracking-widest opacity-40 mt-3 bg-transparent border-0 underline text-[#1b2833] cursor-pointer"
-          >
-            Zmeniť avatar
-          </button>
         </div>
-
-        {showAvatarPicker && (
-          <div className="grid grid-cols-4 gap-3 py-4">
-            {AVAILABLE_AVATARS.map(({ id }) => (
-              <button
-                key={id}
-                type="button"
-                onClick={() => handleAvatarChange(id)}
-                className="p-0 border-0 bg-transparent cursor-pointer rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-[#1b2833]"
-              >
-                <img
-                  src={`/avatars/${id}.png`}
-                  alt=""
-                  width={64}
-                  height={64}
-                  className={`w-16 h-16 rounded-full object-cover ${
-                    avatarId === id ? "ring-2 ring-[#1b2833] ring-offset-2" : ""
-                  }`}
-                  onError={(e) => {
-                    (e.target as HTMLImageElement).src = "/avatars/default.png";
-                  }}
-                />
-              </button>
-            ))}
-          </div>
-        )}
 
         <div className="py-4 flex flex-col items-center text-center">
           <p className="text-2xl font-bold tracking-tight">{user?.nickname ?? ""}</p>

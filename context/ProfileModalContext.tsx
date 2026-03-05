@@ -17,6 +17,7 @@ export type ProfileUser = {
   totalCorrect?: number;
   avatarId?: string;
   equippedNameColor?: string | null;
+  equippedAvatar?: string;
   equippedAvatarFrame?: string | null;
   equippedAvatarBackground?: string | null;
   ownedItems?: string[];
