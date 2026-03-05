@@ -182,21 +182,26 @@ export default function VybavaPanel() {
                   />
                 )}
               </div>
-              <p
-                className="text-[28px] font-bold leading-tight"
-                style={
-                  nameColorStyle.startsWith("linear-gradient")
-                    ? {
-                        background: nameColorStyle,
-                        WebkitBackgroundClip: "text",
-                        WebkitTextFillColor: "transparent",
-                        backgroundClip: "text",
-                      }
-                    : { color: nameColorStyle }
-                }
+              <div
+                className="rounded-full px-5 py-2"
+                style={{ backgroundColor: "rgba(255,255,255,0.9)" }}
               >
-                {user?.nickname ?? "Prezývka"}
-              </p>
+                <p
+                  className="text-[28px] font-bold leading-tight"
+                  style={
+                    nameColorStyle.startsWith("linear-gradient")
+                      ? {
+                          background: nameColorStyle,
+                          WebkitBackgroundClip: "text",
+                          WebkitTextFillColor: "transparent",
+                          backgroundClip: "text",
+                        }
+                      : { color: nameColorStyle }
+                  }
+                >
+                  {user?.nickname ?? "Prezývka"}
+                </p>
+              </div>
             </div>
           </section>
 
