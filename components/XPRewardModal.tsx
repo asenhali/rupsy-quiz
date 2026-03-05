@@ -54,13 +54,14 @@ export default function XPRewardModal() {
 
   useEffect(() => {
     const el = pokracovatButtonRef.current;
-    if (!el || state.view !== 4 || !state.showButton) return;
+    const showButton = state.view === 4 ? state.showButton : undefined;
+    if (!el || state.view !== 4 || !showButton) return;
     const update = () => setButtonDim({ w: el.offsetWidth, h: el.offsetHeight });
     update();
     const ro = new ResizeObserver(update);
     ro.observe(el);
     return () => ro.disconnect();
-  }, [state.view, state.showButton]);
+  }, [state.view, state.view === 4 ? state.showButton : undefined]);
 
   useEffect(() => {
     const showTotal =
