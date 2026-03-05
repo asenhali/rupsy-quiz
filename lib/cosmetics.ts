@@ -50,7 +50,11 @@ function item(
   tier: CosmeticTier,
   price: number,
   value: string,
-  opts?: { animated?: boolean; style?: "solid" | "animated" }
+  opts?: {
+    animated?: boolean;
+    style?: "solid" | "animated";
+    purchasable?: boolean;
+  }
 ): CosmeticItem {
   return {
     id,
@@ -61,13 +65,23 @@ function item(
     price,
     value,
     preview: value,
-    purchasable: tier !== "exkluzivne",
+    purchasable: opts?.purchasable ?? tier !== "exkluzivne",
     ...opts,
   };
 }
 
+export const DEFAULT_ITEM_IDS: Record<CosmeticType, string> = {
+  nameColor: "nc_default",
+  avatar: "av_default",
+  avatarBackground: "ab_default",
+  avatarFrame: "af_default",
+};
+
 export const COSMETIC_ITEMS: CosmeticItem[] = [
   // NAME COLORS
+  item("nc_default", "Predvolená", "nameColor", "bezne", 0, "#1b2833", {
+    purchasable: false,
+  }),
   item("nc_white", "Biela", "nameColor", "bezne", 30, "#FFFFFF"),
   item("nc_red", "Červená", "nameColor", "bezne", 40, "#FF4444"),
   item("nc_blue", "Modrá", "nameColor", "bezne", 35, "#4488FF"),
@@ -93,6 +107,9 @@ export const COSMETIC_ITEMS: CosmeticItem[] = [
     { animated: true }
   ),
   // AVATAR BACKGROUNDS
+  item("ab_default", "Predvolené", "avatarBackground", "bezne", 0, "#D3D3D3", {
+    purchasable: false,
+  }),
   item("ab_cream", "Krémová", "avatarBackground", "bezne", 30, "#f3e6c0"),
   item("ab_sky", "Nebeská", "avatarBackground", "bezne", 35, "#87CEEB"),
   item("ab_pink", "Ružová", "avatarBackground", "neobvykle", 75, "#FF69B4"),
@@ -113,10 +130,16 @@ export const COSMETIC_ITEMS: CosmeticItem[] = [
     "linear-gradient(135deg, #0077B6, #00B4D8, #90E0EF)"
   ),
   // AVATARS (postavička)
-  item("av_default", "Predvolený", "avatar", "bezne", 0, "default"),
+  item("av_default", "RUPSY Logo", "avatar", "bezne", 0, "default", {
+    purchasable: false,
+  }),
   item("av_1", "Alternatíva 1", "avatar", "bezne", 20, "1"),
   item("av_2", "Alternatíva 2", "avatar", "neobvykle", 50, "2"),
   // AVATAR FRAMES
+  item("af_default", "Predvolený", "avatarFrame", "bezne", 0, "#C0C0C0", {
+    style: "solid",
+    purchasable: false,
+  }),
   item("af_silver", "Strieborný", "avatarFrame", "neobvykle", 90, "#C0C0C0", {
     style: "solid",
   }),

@@ -7,6 +7,7 @@ import {
   getCosmeticById,
   getCosmeticsByType,
   getAvatarItemIdByValue,
+  DEFAULT_ITEM_IDS,
   TIER_BORDER_COLORS,
   type CosmeticItem,
   type CosmeticType,
@@ -71,55 +72,105 @@ export default function VybavaPanel() {
   };
 
   const getOwnedByType = (type: CosmeticType): CosmeticItem[] => {
-    const items = getCosmeticsByType(type).filter((i) =>
-      ownedItems.includes(i.id) || (type === "avatar" && i.id === "av_default")
+    const defaultId = DEFAULT_ITEM_IDS[type];
+    return getCosmeticsByType(type).filter(
+      (i) => ownedItems.includes(i.id) || i.id === defaultId
     );
-    return items;
   };
 
-  const getEquipped = (type: CosmeticType): string | null => {
-    if (type === "nameColor") return equippedNameColor;
+  const getEquipped = (type: CosmeticType): string => {
+    if (type === "nameColor")
+      return equippedNameColor ?? DEFAULT_ITEM_IDS.nameColor;
     if (type === "avatar")
-      return getAvatarItemIdByValue(equippedAvatar) ?? "av_default";
-    if (type === "avatarFrame") return equippedAvatarFrame;
-    return equippedAvatarBackground;
+      return getAvatarItemIdByValue(equippedAvatar) ?? DEFAULT_ITEM_IDS.avatar;
+    if (type === "avatarFrame")
+      return equippedAvatarFrame ?? DEFAULT_ITEM_IDS.avatarFrame;
+    return equippedAvatarBackground ?? DEFAULT_ITEM_IDS.avatarBackground;
   };
 
-  const getPreviewStyle = (item: CosmeticItem): React.CSSProperties => {
-    if (item.type === "avatar") {
-      return {};
+  function ItemPreview({ item }: { item: CosmeticItem }) {
+    if (item.type === "nameColor") {
+      return (
+        <div
+          className="w-full aspect-square rounded-md mb-1 flex items-center justify-center bg-white min-h-[40px]"
+        >
+          <span
+            className="text-[20px] font-bold"
+            style={
+              item.value.startsWith("linear-gradient")
+                ? {
+                    background: item.value,
+                    WebkitBackgroundClip: "text",
+                    WebkitTextFillColor: "transparent",
+                    backgroundClip: "text",
+                  }
+                : { color: item.value }
+            }
+          >
+            Aa
+          </span>
+        </div>
+      );
     }
-    if (item.type === "nameColor" || item.type === "avatarBackground") {
-      return { background: item.value };
+    if (item.type === "avatar") {
+      return (
+        <img
+          src={avatarMap[item.value] || `/avatars/${item.value}.png`}
+          alt=""
+          className="w-full aspect-square rounded-full mb-1 object-cover border-2 border-[#1b2833]/10 min-h-[40px]"
+          onError={(e) => {
+            (e.target as HTMLImageElement).src = "/avatars/default.png";
+          }}
+        />
+      );
+    }
+    if (item.type === "avatarBackground") {
+      return (
+        <div
+          className="w-full aspect-square rounded-xl mb-1 min-h-[40px] border border-[#1b2833]/10"
+          style={{ background: item.value }}
+        />
+      );
     }
     if (item.type === "avatarFrame") {
-      if (item.value === "rainbow") {
-        return {
-          background:
-            "linear-gradient(90deg, #FF0000, #FF8800, #FFFF00, #00FF00, #0088FF, #8800FF)",
-        };
-      }
-      return {
-        border: `3px solid ${item.value}`,
-        boxSizing: "border-box" as const,
-      };
+      const isRainbow = item.value === "rainbow";
+      return (
+        <div className="w-full aspect-square rounded-full mb-1 flex items-center justify-center min-h-[40px]">
+          {isRainbow ? (
+            <div
+              className="w-full h-full rounded-full p-[3px]"
+              style={{
+                background:
+                  "linear-gradient(90deg, #FF0000, #FF8800, #FFFF00, #00FF00, #0088FF, #8800FF)",
+              }}
+            >
+              <div className="w-full h-full rounded-full bg-[#f3e6c0]/80" />
+            </div>
+          ) : (
+            <div
+              className="w-full h-full rounded-full border-[3px] border-solid bg-[#f3e6c0]/50"
+              style={{ borderColor: item.value }}
+            />
+          )}
+        </div>
+      );
     }
-    return {};
-  };
+    return null;
+  }
 
-  const nameColorItem = equippedNameColor
-    ? getCosmeticById(equippedNameColor)
-    : null;
+  const nameColorItem = getCosmeticById(
+    equippedNameColor ?? DEFAULT_ITEM_IDS.nameColor
+  );
   const nameColorStyle = nameColorItem?.value ?? "#1b2833";
 
-  const avatarBgItem = equippedAvatarBackground
-    ? getCosmeticById(equippedAvatarBackground)
-    : null;
-  const avatarBgStyle = avatarBgItem?.value ?? "#1b2833";
+  const avatarBgItem = getCosmeticById(
+    equippedAvatarBackground ?? DEFAULT_ITEM_IDS.avatarBackground
+  );
+  const avatarBgStyle = avatarBgItem?.value ?? "#D3D3D3";
 
-  const avatarFrameItem = equippedAvatarFrame
-    ? getCosmeticById(equippedAvatarFrame)
-    : null;
+  const avatarFrameItem = getCosmeticById(
+    equippedAvatarFrame ?? DEFAULT_ITEM_IDS.avatarFrame
+  );
 
   const displayAvatarId = equippedAvatar;
 
@@ -227,31 +278,6 @@ export default function VybavaPanel() {
 
           {/* Items grid */}
           <div className="grid grid-cols-4 gap-2 overflow-y-auto">
-            {activeTab !== "avatar" && (
-              <button
-                type="button"
-                disabled={equipping}
-                onClick={() => handleEquip(activeTab, null)}
-                className={`relative rounded-lg p-2 bg-white/60 border-2 text-left hover:bg-white/80 transition-colors disabled:opacity-60 ${
-                  getEquipped(activeTab) === null
-                    ? "ring-2 ring-[#1b2833] ring-offset-1"
-                    : ""
-                }`}
-                style={{ borderColor: "#808080" }}
-              >
-                {getEquipped(activeTab) === null && (
-                  <span className="absolute top-1 right-1 text-[8px] font-bold uppercase tracking-wider text-[#1b2833]/70">
-                    Nasadené
-                  </span>
-                )}
-                <div
-                  className="w-full aspect-square rounded-md mb-1 border border-[#1b2833]/20 bg-[#1b2833]/5"
-                />
-                <p className="text-[10px] font-semibold leading-tight truncate">
-                  Predvolené
-                </p>
-              </button>
-            )}
             {getOwnedByType(activeTab).map((item) => {
               const isEquipped = getEquipped(activeTab) === item.id;
               const borderColor = TIER_BORDER_COLORS[item.tier];
@@ -261,7 +287,10 @@ export default function VybavaPanel() {
                   type="button"
                   disabled={equipping}
                   onClick={() =>
-                    handleEquip(activeTab, isEquipped ? null : item.id)
+                    handleEquip(
+                      activeTab,
+                      isEquipped ? DEFAULT_ITEM_IDS[activeTab] : item.id
+                    )
                   }
                   className="relative rounded-lg p-2 bg-white/60 border-2 text-left hover:bg-white/80 transition-colors disabled:opacity-60"
                   style={{ borderColor }}
@@ -271,22 +300,7 @@ export default function VybavaPanel() {
                       Nasadené
                     </span>
                   )}
-                  {item.type === "avatar" ? (
-                    <img
-                      src={avatarMap[item.value] || `/avatars/${item.value}.png`}
-                      alt=""
-                      className="w-full aspect-square rounded-md mb-1 object-cover border border-[#1b2833]/10"
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).src =
-                          "/avatars/default.png";
-                      }}
-                    />
-                  ) : (
-                    <div
-                      className="w-full aspect-square rounded-md mb-1 border border-[#1b2833]/10"
-                      style={getPreviewStyle(item)}
-                    />
-                  )}
+                  <ItemPreview item={item} />
                   <p className="text-[10px] font-semibold leading-tight truncate">
                     {item.name}
                   </p>

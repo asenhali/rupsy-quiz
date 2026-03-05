@@ -4,6 +4,7 @@ import jwt from "jsonwebtoken";
 import { db } from "@/lib/firebaseAdmin";
 import {
   getCosmeticById,
+  DEFAULT_ITEM_IDS,
   type CosmeticType,
 } from "@/lib/cosmetics";
 
@@ -110,7 +111,8 @@ export async function POST(request: Request) {
           { status: 400 }
         );
       }
-      if (!ownedItems.includes(itemId)) {
+      const isDefault = DEFAULT_ITEM_IDS[type] === itemId;
+      if (!isDefault && !ownedItems.includes(itemId)) {
         return NextResponse.json(
           { success: false, message: "You do not own this item" },
           { status: 403 }
@@ -118,6 +120,8 @@ export async function POST(request: Request) {
       }
       if (type === "avatar") {
         valueToStore = item.value;
+      } else if (isDefault) {
+        valueToStore = null;
       }
     } else if (type === "avatar") {
       valueToStore = "default";
