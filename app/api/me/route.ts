@@ -4,6 +4,29 @@ import jwt from "jsonwebtoken";
 import { db } from "@/lib/firebaseAdmin";
 import { calculateLevel } from "@/lib/xp";
 
+// TODO: Remove — testing only: grant all characters for Výbava preview
+const TEST_CHARACTER_IDS = [
+  "ch_rupsik",
+  "ch_medved",
+  "ch_jelen",
+  "ch_lyska",
+  "ch_jezko",
+  "ch_rys",
+  "ch_vlk",
+  "ch_zajac",
+  "ch_diviak",
+  "ch_jazvec",
+  "ch_bazant",
+  "ch_srnka",
+  "ch_jastrab",
+  "ch_vevericka",
+  "ch_kamzik",
+  "ch_svist",
+  "ch_sova",
+  "ch_kuna",
+  "ch_orol",
+];
+
 export async function GET(request: Request) {
   try {
     const authHeader = request.headers.get("authorization");
@@ -81,7 +104,12 @@ export async function GET(request: Request) {
         equippedAvatar: data?.equippedAvatar ?? data?.avatarId ?? "rupsik",
         equippedAvatarFrame: data?.equippedAvatarFrame ?? null,
         equippedAvatarBackground: data?.equippedAvatarBackground ?? null,
-        ownedItems: data?.ownedItems ?? [],
+        ownedItems: [
+          ...(data?.ownedItems ?? []),
+          ...TEST_CHARACTER_IDS.filter(
+            (id) => !(data?.ownedItems ?? []).includes(id)
+          ),
+        ],
       },
     });
   } catch (err) {

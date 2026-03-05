@@ -72,7 +72,7 @@ function item(
 
 export const DEFAULT_ITEM_IDS: Record<CosmeticType, string> = {
   nameColor: "nc_default",
-  avatar: "av_default",
+  avatar: "ch_rupsik",
   avatarBackground: "ab_default",
   avatarFrame: "af_default",
 };
@@ -129,13 +129,28 @@ export const COSMETIC_ITEMS: CosmeticItem[] = [
     220,
     "linear-gradient(135deg, #0077B6, #00B4D8, #90E0EF)"
   ),
-  // AVATARS (postavička) — value = character id, image at /characters/{value}.png
-  item("av_default", "Rupsík", "avatar", "bezne", 0, "rupsik", {
+  // AVATARS (postavička) — value = character id for /characters/{value}.png
+  item("ch_rupsik", "Rupsík", "avatar", "bezne", 0, "rupsik", {
     purchasable: false,
   }),
-  item("av_rupsy_logo", "RUPSY Logo", "avatar", "bezne", 25, "default"),
-  item("av_1", "Alternatíva 1", "avatar", "bezne", 20, "1"),
-  item("av_2", "Alternatíva 2", "avatar", "neobvykle", 50, "2"),
+  item("ch_medved", "Ľubo", "avatar", "bezne", 35, "medved"),
+  item("ch_jelen", "Tomáš", "avatar", "bezne", 40, "jelen"),
+  item("ch_lyska", "Zuzka", "avatar", "bezne", 35, "lyska"),
+  item("ch_jezko", "Teo", "avatar", "bezne", 30, "jezko"),
+  item("ch_rys", "Šimon", "avatar", "bezne", 45, "rys"),
+  item("ch_vlk", "Matej", "avatar", "bezne", 40, "vlk"),
+  item("ch_zajac", "Amélia", "avatar", "bezne", 30, "zajac"),
+  item("ch_diviak", "Dušan", "avatar", "bezne", 35, "diviak"),
+  item("ch_jazvec", "Michal", "avatar", "bezne", 40, "jazvec"),
+  item("ch_bazant", "Viktória", "avatar", "bezne", 30, "bazant"),
+  item("ch_srnka", "Kamila", "avatar", "bezne", 35, "srnka"),
+  item("ch_jastrab", "Lukáš", "avatar", "bezne", 45, "jastrab"),
+  item("ch_vevericka", "Nina", "avatar", "bezne", 35, "vevericka"),
+  item("ch_kamzik", "Adam", "avatar", "bezne", 45, "kamzik"),
+  item("ch_svist", "Jožko", "avatar", "bezne", 30, "svist"),
+  item("ch_sova", "Mirka", "avatar", "bezne", 40, "sova"),
+  item("ch_kuna", "Michaela", "avatar", "bezne", 35, "kuna"),
+  item("ch_orol", "Rišo", "avatar", "bezne", 50, "orol-skalny"),
   // AVATAR FRAMES
   item("af_default", "Predvolený", "avatarFrame", "bezne", 0, "#C0C0C0", {
     style: "solid",

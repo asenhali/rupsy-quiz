@@ -117,10 +117,10 @@ export async function POST(request: Request) {
       totalGames: 0,
       totalCorrect: 0,
       equippedNameColor: null,
-      equippedAvatar: "default",
+      equippedAvatar: "rupsik",
       equippedAvatarFrame: null,
       equippedAvatarBackground: null,
-      ownedItems: ["nc_white", "ab_cream", "av_default"],
+      ownedItems: ["nc_white", "ab_cream", "ch_rupsik"],
       createdAt: FieldValue.serverTimestamp(),
     });
 
