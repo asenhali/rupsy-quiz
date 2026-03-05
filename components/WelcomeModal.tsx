@@ -40,7 +40,7 @@ export default function WelcomeModal({ isOpen, onClose }: Props) {
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={{ duration: 0.3, ease: "easeOut" }}
-      className="fixed inset-0 z-[110] flex items-center justify-center px-6"
+      className="fixed inset-0 z-[200] flex items-center justify-center px-6"
       style={{
         background: "rgba(0,0,0,0.5)",
       }}

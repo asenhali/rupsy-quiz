@@ -6,7 +6,6 @@ import { motion, AnimatePresence } from "framer-motion";
 import { SLOVAK_CITIES } from "@/config/cities";
 import { useOnboarding } from "@/context/OnboardingContext";
 import { useProfileModal } from "@/context/ProfileModalContext";
-import { useWelcomeModal } from "@/context/WelcomeModalContext";
 import { hasBeenWelcomed } from "@/components/WelcomeModal";
 
 function RebricekButton({ onClick }: { onClick: () => void }) {
@@ -83,8 +82,7 @@ function RebricekButton({ onClick }: { onClick: () => void }) {
 export default function HomePanel() {
   const router = useRouter();
   const { openProfile, user, setUser, setShowQuiz, showQuiz, openLeaderboard } = useProfileModal();
-  const { setIsOnboarding } = useOnboarding();
-  const { setShowWelcomeModal } = useWelcomeModal();
+  const { setIsOnboarding, setShowWelcomePopup } = useOnboarding();
   const [needsOnboarding, setNeedsOnboarding] = useState<boolean | null>(null);
   const [completedQuiz, setCompletedQuiz] = useState<{ totalScore: number } | null>(null);
   const [ranking, setRanking] = useState<{
@@ -266,7 +264,8 @@ export default function HomePanel() {
                   setNeedsOnboarding(meJson.needsOnboarding ?? false);
                   setUser(meJson.user ?? null);
                   if (!hasBeenWelcomed()) {
-                    setShowWelcomeModal(true);
+                    console.log("WELCOME POPUP TRIGGERED");
+                    setShowWelcomePopup(true);
                   }
                 } else {
                   console.error(response);
