@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useProfileModal } from "@/context/ProfileModalContext";
 import {
@@ -77,7 +77,7 @@ export default function VybavaPanel() {
     return equippedAvatarBackground;
   };
 
-  const getPreviewStyle = (item: CosmeticItem) => {
+  const getPreviewStyle = (item: CosmeticItem): React.CSSProperties => {
     if (item.type === "nameColor" || item.type === "avatarBackground") {
       return { background: item.value };
     }
@@ -90,7 +90,7 @@ export default function VybavaPanel() {
       }
       return {
         border: `3px solid ${item.value}`,
-        boxSizing: "border-box",
+        boxSizing: "border-box" as const,
       };
     }
     return {};
