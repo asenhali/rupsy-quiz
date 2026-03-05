@@ -16,6 +16,10 @@ export type ProfileUser = {
   totalGames?: number;
   totalCorrect?: number;
   avatarId?: string;
+  equippedNameColor?: string | null;
+  equippedAvatarFrame?: string | null;
+  equippedAvatarBackground?: string | null;
+  ownedItems?: string[];
 };
 
 type ProfileModalContextValue = {

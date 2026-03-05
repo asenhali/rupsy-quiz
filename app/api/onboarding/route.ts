@@ -116,6 +116,10 @@ export async function POST(request: Request) {
       level: 1,
       totalGames: 0,
       totalCorrect: 0,
+      equippedNameColor: null,
+      equippedAvatarFrame: null,
+      equippedAvatarBackground: null,
+      ownedItems: ["nc_white", "ab_cream"],
       createdAt: FieldValue.serverTimestamp(),
     });
 

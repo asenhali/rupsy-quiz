@@ -77,6 +77,10 @@ export async function GET(request: Request) {
         rCoins: data?.rCoins ?? 0,
         totalGames: data?.totalGames ?? 0,
         totalCorrect: data?.totalCorrect ?? 0,
+        equippedNameColor: data?.equippedNameColor ?? null,
+        equippedAvatarFrame: data?.equippedAvatarFrame ?? null,
+        equippedAvatarBackground: data?.equippedAvatarBackground ?? null,
+        ownedItems: data?.ownedItems ?? [],
       },
     });
   } catch (err) {
