@@ -141,12 +141,12 @@ export default function VybavaPanel() {
           <section className="rounded-2xl bg-[#1b2833] p-8 mb-6 shadow-[0_8px_30px_rgba(27,40,51,0.15)]">
             <div className="flex flex-col items-center gap-5">
               <div
-                className="relative flex items-center justify-center w-[120px] h-[120px] rounded-full overflow-hidden"
+                className="relative flex items-center justify-center w-[150px] h-[150px] rounded-full overflow-hidden"
                 style={{ background: avatarBgStyle }}
               >
                 {avatarFrameItem?.value === "rainbow" ? (
                   <div
-                    className="w-[100px] h-[100px] rounded-full p-[3px]"
+                    className="w-[130px] h-[130px] rounded-full p-[3px]"
                     style={{
                       background:
                         "linear-gradient(90deg, #FF0000, #FF8800, #FFFF00, #00FF00, #0088FF, #8800FF)",
@@ -166,7 +166,7 @@ export default function VybavaPanel() {
                   <img
                     src={avatarMap[displayAvatarId] || `/avatars/${displayAvatarId}.png`}
                     alt="avatar"
-                    className="w-[100px] h-[100px] rounded-full object-cover"
+                    className="w-[130px] h-[130px] rounded-full object-cover"
                     onError={(e) => {
                       (e.target as HTMLImageElement).src =
                         "/avatars/default.png";
@@ -187,7 +187,7 @@ export default function VybavaPanel() {
                 style={{ backgroundColor: "rgba(255,255,255,0.9)" }}
               >
                 <p
-                  className="text-[28px] font-bold leading-tight"
+                  className="text-[19px] font-bold leading-tight"
                   style={
                     nameColorStyle.startsWith("linear-gradient")
                       ? {
