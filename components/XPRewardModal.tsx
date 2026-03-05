@@ -7,7 +7,7 @@ import { useXPReward } from "@/context/XPRewardContext";
 import { calculateLevel } from "@/lib/xp";
 import ParticleExplosion from "@/components/ParticleExplosion";
 
-const COINS_STATIC_PAUSE = 1000;
+const COINS_STATIC_PAUSE = 2000;
 const COINS_COUNT_DURATION = 1500;
 const COINS_HOLD_AFTER = 1500;
 const COINS_BUTTON_DELAY = 3000;
@@ -51,6 +51,7 @@ export default function XPRewardModal() {
   const barContainerRef = useRef<HTMLDivElement | null>(null);
   const pokracovatButtonRef = useRef<HTMLButtonElement | null>(null);
   const [buttonDim, setButtonDim] = useState<{ w: number; h: number } | null>(null);
+  const coinCountStartedRef = useRef(false);
 
   useEffect(() => {
     setSwipeDisabled(isOpen);
@@ -95,10 +96,11 @@ export default function XPRewardModal() {
 
   useEffect(() => {
     const isCoinsView = state.view === 0 && state.phase === "in";
-    if (!xpRewardData || !isCoinsView) return;
+    if (!xpRewardData || !isCoinsView || coinCountStartedRef.current) return;
     const prev = xpRewardData.previousRCoins ?? 0;
     const next = xpRewardData.newRCoins ?? prev;
     if (prev >= next) return;
+    coinCountStartedRef.current = true;
     let intervalId: ReturnType<typeof setInterval> | null = null;
     let doneId: ReturnType<typeof setTimeout> | null = null;
     const startId = setTimeout(() => {
@@ -134,6 +136,7 @@ export default function XPRewardModal() {
     setDisplayedXP(oldTotalXP);
     setDisplayedTotalXP(0);
     setDisplayedCoins(xpRewardData.previousRCoins ?? xpRewardData.newRCoins ?? 0);
+    coinCountStartedRef.current = false;
     setParticleSpawn(null);
     setParticlesActive(false);
     setLevelUpTextEntranceDone(false);
@@ -393,22 +396,29 @@ export default function XPRewardModal() {
             transition={{ duration: 0.4 }}
             className="absolute inset-0 flex flex-col items-center justify-center px-6"
           >
-            <span className="text-[60px] mb-3" style={{ color: "#FFD700" }}>🪙</span>
-            <p className="text-base font-bold uppercase tracking-[0.2em] mb-4" style={{ color: "#FFD700" }}>
-              RUPSY COINS
+            <p className="text-base font-bold uppercase tracking-[0.2em] mb-6" style={{ color: "#FFD700" }}>
+              ZÍSKANÉ RUPSY COINY
             </p>
-            <p
-              className="text-[48px] font-bold tabular-nums mb-2"
-              style={{ color: "#f3e6c0" }}
-            >
-              {displayedCoins}
-            </p>
+            <div className="flex items-center justify-center gap-2 mb-2">
+              <span
+                className="w-14 h-14 rounded-full flex items-center justify-center flex-shrink-0 text-xl font-bold"
+                style={{ background: "#1b2833", color: "#f3e6c0", border: "2px solid #f3e6c0" }}
+              >
+                R
+              </span>
+              <p
+                className="text-[48px] font-bold tabular-nums"
+                style={{ color: "#f3e6c0" }}
+              >
+                {displayedCoins}
+              </p>
+            </div>
             {earnedCoins > 0 && (
               <motion.p
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: COINS_STATIC_PAUSE / 1000, duration: 0.5 }}
-                className="text-lg font-bold"
+                className="text-lg font-bold mb-8"
                 style={{ color: "#FFD700" }}
               >
                 +{earnedCoins}
@@ -417,11 +427,18 @@ export default function XPRewardModal() {
             {state.showCoinButton && (
               <motion.button
                 initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 0.5 }}
+                animate={{
+                  opacity: 1,
+                  scale: [1, 1.05, 1],
+                }}
+                transition={{
+                  opacity: { duration: 0.5 },
+                  scale: { duration: 2.5, repeat: Infinity, ease: "easeInOut" },
+                }}
+                style={{ willChange: "transform" }}
                 type="button"
                 onClick={() => setState({ view: "transition", from: 0 })}
-                className="mt-12 px-12 py-4 rounded-2xl bg-[#f3e6c0] text-[#1b2833] font-bold text-sm uppercase tracking-wider"
+                className="mt-8 px-12 py-4 rounded-2xl bg-[#f3e6c0] text-[#1b2833] font-bold text-sm uppercase tracking-wider"
               >
                 Pokračovať
               </motion.button>
@@ -461,7 +478,7 @@ export default function XPRewardModal() {
                 }}
               />
               <p className="relative text-3xl font-extrabold uppercase tracking-[0.2em] text-[#FFD700]">
-                ZÍSKANÉ ODMENY
+                ZÍSKANÉ XP
               </p>
             </div>
           </motion.div>

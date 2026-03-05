@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { SLOVAK_CITIES } from "@/config/cities";
 import { useOnboarding } from "@/context/OnboardingContext";
 import { useProfileModal } from "@/context/ProfileModalContext";
+import WelcomeModal, { hasBeenWelcomed } from "@/components/WelcomeModal";
 
 function RebricekButton({ onClick }: { onClick: () => void }) {
   const btnRef = useRef<HTMLButtonElement>(null);
@@ -114,6 +115,7 @@ export default function HomePanel() {
   const [citySuggestions, setCitySuggestions] = useState<string[]>([]);
   const [showCitySuggestions, setShowCitySuggestions] = useState(false);
   const cityInputRef = useRef<HTMLInputElement>(null);
+  const [showWelcomeModal, setShowWelcomeModal] = useState(false);
   const [lastWeekRanking, setLastWeekRanking] = useState<{
     cityRank: number | null;
     slovakiaRank: number | null;
@@ -262,6 +264,9 @@ export default function HomePanel() {
                   const meJson = await meRes.json();
                   setNeedsOnboarding(meJson.needsOnboarding ?? false);
                   setUser(meJson.user ?? null);
+                  if (!hasBeenWelcomed()) {
+                    setShowWelcomeModal(true);
+                  }
                 } else {
                   console.error(response);
                 }
@@ -517,6 +522,11 @@ export default function HomePanel() {
           <RebricekButton onClick={openLeaderboard} />
         </div>
       )}
+
+      <WelcomeModal
+        isOpen={showWelcomeModal}
+        onClose={() => setShowWelcomeModal(false)}
+      />
     </div>
   );
 }
