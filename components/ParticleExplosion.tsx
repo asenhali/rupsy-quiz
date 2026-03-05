@@ -4,20 +4,22 @@ import { useCallback, useEffect, useRef } from "react";
 
 const GOLD_PALETTE = ["#FFD700", "#FFA500", "#FFEC8B", "#FFD900", "#FFF8DC", "#FFFFFF"];
 const GRAVITY = 0.15;
-const MAX_PARTICLES = 200;
-const MIN_PARTICLES = 150;
+const MAX_PARTICLES = 80;
+const MIN_PARTICLES = 60;
 const MAX_LIFETIME = 80;
 const MIN_LIFETIME = 40;
-const SPARK_LIFETIME_MAX = 40;
-const SPARK_LIFETIME_MIN = 20;
-const SPARK_RATIO = 0.3;
-const MAX_DURATION_MS = 2000;
+const SPARK_COUNT_MIN = 15;
+const SPARK_COUNT_MAX = 20;
+const MAX_DURATION_MS = 1500;
 const AFTERGLOW_DELAY_MS = 500;
 const AFTERGLOW_DURATION_MS = 800;
 const AFTERGLOW_START_R = 50;
 const AFTERGLOW_END_R = 300;
 const AFTERGLOW_OPACITY_START = 0.4;
 const AFTERGLOW_OPACITY_END = 0;
+
+const SPARK_LIFETIME_MAX = 40;
+const SPARK_LIFETIME_MIN = 20;
 
 type Particle = {
   x: number;
@@ -29,7 +31,7 @@ type Particle = {
   opacity: number;
   life: number;
   maxLife: number;
-  isRect: boolean;
+  isSpark: boolean;
 };
 
 function createParticle(spawnX: number, spawnY: number, isSpark: boolean): Particle {
@@ -39,7 +41,7 @@ function createParticle(spawnX: number, spawnY: number, isSpark: boolean): Parti
     : 8 + Math.random() * 17;
   const vx = Math.cos(angle) * speed;
   const vy = Math.sin(angle) * speed;
-  const size = isSpark ? 2 + Math.random() : 3 + Math.random() * 5;
+  const size = isSpark ? 1 + Math.random() : 3 + Math.random() * 5;
   const maxLife = isSpark
     ? SPARK_LIFETIME_MIN + Math.random() * (SPARK_LIFETIME_MAX - SPARK_LIFETIME_MIN)
     : MIN_LIFETIME + Math.random() * (MAX_LIFETIME - MIN_LIFETIME);
@@ -54,7 +56,7 @@ function createParticle(spawnX: number, spawnY: number, isSpark: boolean): Parti
     opacity: 1,
     life: maxLife,
     maxLife,
-    isRect: Math.random() > 0.5,
+    isSpark,
   };
 }
 
@@ -80,6 +82,9 @@ export default function ParticleExplosion({
       cancelAnimationFrame(rafRef.current);
       rafRef.current = null;
     }
+    if (canvasRef.current) {
+      canvasRef.current.style.display = "none";
+    }
     onComplete();
   }, [onComplete]);
 
@@ -87,26 +92,29 @@ export default function ParticleExplosion({
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    const ctx = canvas.getContext("2d");
+    const ctx = canvas.getContext("2d", { alpha: true });
     if (!ctx) return;
 
-    const resize = () => {
-      const dpr = window.devicePixelRatio || 1;
-      const w = window.innerWidth;
-      const h = window.innerHeight;
-      canvas.width = w * dpr;
-      canvas.height = h * dpr;
-      canvas.style.width = `${w}px`;
-      canvas.style.height = `${h}px`;
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    };
-    resize();
-    window.addEventListener("resize", resize);
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const size = 400;
+    const half = size / 2;
+    const left = spawnX - half;
+    const top = spawnY - half;
+
+    canvas.width = size * dpr;
+    canvas.height = size * dpr;
+    canvas.style.width = `${size}px`;
+    canvas.style.height = `${size}px`;
+    canvas.style.left = `${left}px`;
+    canvas.style.top = `${top}px`;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
     const particleCount =
       MIN_PARTICLES + Math.floor(Math.random() * (MAX_PARTICLES - MIN_PARTICLES + 1));
-    const sparkCount = Math.floor(particleCount * SPARK_RATIO);
-    const normalCount = particleCount - sparkCount;
+    const sparkCount =
+      SPARK_COUNT_MIN +
+      Math.floor(Math.random() * (SPARK_COUNT_MAX - SPARK_COUNT_MIN + 1));
+    const normalCount = Math.max(0, particleCount - sparkCount);
 
     for (let i = 0; i < sparkCount; i++) {
       particlesRef.current.push(createParticle(spawnX, spawnY, true));
@@ -126,9 +134,7 @@ export default function ParticleExplosion({
         return;
       }
 
-      const w = window.innerWidth;
-      const h = window.innerHeight;
-      ctx.clearRect(0, 0, w, h);
+      ctx.clearRect(0, 0, size, size);
 
       const afterglowStart = AFTERGLOW_DELAY_MS;
       const afterglowEnd = afterglowStart + AFTERGLOW_DURATION_MS;
@@ -139,18 +145,18 @@ export default function ParticleExplosion({
           AFTERGLOW_OPACITY_START +
           (AFTERGLOW_OPACITY_END - AFTERGLOW_OPACITY_START) * t;
         const gradient = ctx.createRadialGradient(
-          spawnX,
-          spawnY,
+          half,
+          half,
           0,
-          spawnX,
-          spawnY,
+          half,
+          half,
           r
         );
         gradient.addColorStop(0, `rgba(255, 215, 0, ${opacity})`);
         gradient.addColorStop(0.5, `rgba(255, 215, 0, ${opacity * 0.5})`);
         gradient.addColorStop(1, "rgba(255, 215, 0, 0)");
         ctx.fillStyle = gradient;
-        ctx.fillRect(0, 0, w, h);
+        ctx.fillRect(0, 0, size, size);
       }
 
       const alive: Particle[] = [];
@@ -164,13 +170,18 @@ export default function ParticleExplosion({
         const lifeRatio = p.life / p.maxLife;
         p.opacity = lifeRatio;
 
+        const localX = p.x - left;
+        const localY = p.y - top;
+        if (localX < -10 || localX > size + 10 || localY < -10 || localY > size + 10) continue;
+
         ctx.globalAlpha = p.opacity;
         ctx.fillStyle = p.color;
-        if (p.isRect) {
-          ctx.fillRect(p.x - p.size / 2, p.y - p.size / 2, p.size, p.size);
+        if (p.isSpark) {
+          const s = Math.max(1, Math.min(2, p.size));
+          ctx.fillRect(localX - s / 2, localY - s / 2, s, s);
         } else {
           ctx.beginPath();
-          ctx.arc(p.x, p.y, p.size / 2, 0, Math.PI * 2);
+          ctx.arc(localX, localY, p.size / 2, 0, Math.PI * 2);
           ctx.fill();
         }
         ctx.globalAlpha = 1;
@@ -190,23 +201,22 @@ export default function ParticleExplosion({
     rafRef.current = requestAnimationFrame(animate);
 
     return () => {
-      window.removeEventListener("resize", resize);
       if (rafRef.current) {
         cancelAnimationFrame(rafRef.current);
+        rafRef.current = null;
       }
+      canvas.style.display = "none";
     };
   }, [spawnX, spawnY, complete]);
 
   return (
     <canvas
       ref={canvasRef}
-      className="fixed inset-0 z-[102] pointer-events-none"
+      className="fixed z-[102] pointer-events-none"
       style={{
         position: "fixed",
-        top: 0,
-        left: 0,
-        width: "100vw",
-        height: "100vh",
+        width: 400,
+        height: 400,
         background: "transparent",
       }}
     />

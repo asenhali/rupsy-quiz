@@ -18,7 +18,6 @@ const TRANSITION_DURATION = 400;
 const STAGE_3_BAR_DURATION = 2500;
 const STAGE_3_HOLD_AFTER_BAR = 800;
 const STAGE_3_FADE_OUT = 500;
-const LEVEL_UP_FADE_BAR_DELAY = 500;
 const LEVEL_UP_TEXT_DELAY = 0;
 const LEVEL_UP_NUMBER_DELAY = 300;
 const LEVEL_UP_BUTTON_DELAY = 2500;
@@ -244,8 +243,7 @@ export default function XPRewardModal() {
     }
 
     if (state.view === 3 && state.phase === "particles") {
-      const t = setTimeout(() => setState({ view: 3, phase: "out" }), LEVEL_UP_FADE_BAR_DELAY);
-      return () => clearTimeout(t);
+      return;
     }
 
     if (state.view === 3 && state.phase === "hold") {
@@ -323,6 +321,7 @@ export default function XPRewardModal() {
             onComplete={() => {
               setParticlesActive(false);
               setParticleSpawn(null);
+              setState({ view: 3, phase: "out" });
             }}
           />
         </>
