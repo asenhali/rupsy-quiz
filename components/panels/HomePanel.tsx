@@ -7,7 +7,9 @@ import { SLOVAK_CITIES } from "@/config/cities";
 import { useOnboarding } from "@/context/OnboardingContext";
 import { useProfileModal } from "@/context/ProfileModalContext";
 import { hasBeenWelcomed } from "@/components/WelcomeModal";
-import AvatarWithCosmetics from "@/components/AvatarWithCosmetics";
+import PlayerAvatar from "@/components/PlayerAvatar";
+import { getCharacterSrc } from "@/lib/characters";
+import { resolveAvatarCosmetics } from "@/lib/cosmetics";
 
 function RebricekButton({ onClick }: { onClick: () => void }) {
   const btnRef = useRef<HTMLButtonElement>(null);
@@ -346,11 +348,15 @@ export default function HomePanel() {
               onClick={openProfile}
               className="border-0 bg-transparent p-0 cursor-pointer flex-shrink-0"
             >
-              <AvatarWithCosmetics
-                characterId={user?.equippedAvatar ?? user?.avatarId ?? "rupsik"}
-                sizePx={64}
-                equippedAvatarBackground={user?.equippedAvatarBackground ?? null}
-                equippedAvatarFrame={user?.equippedAvatarFrame ?? null}
+              <PlayerAvatar
+                size={64}
+                characterSrc={getCharacterSrc(
+                  user?.equippedAvatar ?? user?.avatarId ?? "rupsik"
+                )}
+                {...resolveAvatarCosmetics(
+                  user?.equippedAvatarBackground ?? null,
+                  user?.equippedAvatarFrame ?? null
+                )}
                 alt="avatar"
               />
             </button>

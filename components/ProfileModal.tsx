@@ -3,7 +3,9 @@
 import { useEffect, useState } from "react";
 import { useProfileModal } from "@/context/ProfileModalContext";
 import { useSwipeContext } from "@/context/SwipeContext";
-import Avatar from "@/components/Avatar";
+import PlayerAvatar from "@/components/PlayerAvatar";
+import { getCharacterSrc } from "@/lib/characters";
+import { resolveAvatarCosmetics } from "@/lib/cosmetics";
 
 type BestRanking = {
   bestCityRank: number | null;
@@ -54,6 +56,10 @@ export default function ProfileModal() {
   if (!isOpen) return null;
 
   const characterId = user?.equippedAvatar ?? user?.avatarId ?? "rupsik";
+  const cosmetics = resolveAvatarCosmetics(
+    user?.equippedAvatarBackground ?? null,
+    user?.equippedAvatarFrame ?? null
+  );
 
   return (
     <div className="fixed top-0 left-0 w-screen h-screen z-[100] bg-[#f3e6c0] overflow-y-auto touch-auto">
@@ -70,9 +76,10 @@ export default function ProfileModal() {
         </div>
 
         <div className="py-6 flex flex-col items-center">
-          <Avatar
-            characterId={characterId}
-            sizePx={96}
+          <PlayerAvatar
+            size={96}
+            characterSrc={getCharacterSrc(characterId)}
+            {...cosmetics}
             alt=""
           />
         </div>

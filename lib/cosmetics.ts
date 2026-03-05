@@ -169,3 +169,38 @@ export function getAvatarItemIdByValue(avatarValue: string): string | null {
   );
   return item?.id ?? null;
 }
+
+const RAINBOW_GRADIENT =
+  "linear-gradient(90deg, #FF0000, #FF8800, #FFFF00, #00FF00, #0088FF, #8800FF)";
+
+export type ResolvedAvatarCosmetics = {
+  background: string;
+  frame: string;
+  frameStyle: "solid" | "animated";
+};
+
+export function resolveAvatarCosmetics(
+  avatarBackgroundId: string | null,
+  avatarFrameId: string | null
+): ResolvedAvatarCosmetics {
+  const bgItem = avatarBackgroundId
+    ? getCosmeticById(avatarBackgroundId)
+    : getCosmeticById(DEFAULT_ITEM_IDS.avatarBackground);
+  const frameItem = avatarFrameId
+    ? getCosmeticById(avatarFrameId)
+    : getCosmeticById(DEFAULT_ITEM_IDS.avatarFrame);
+
+  const background = bgItem?.value ?? "#D3D3D3";
+  const frameValue = frameItem?.value ?? "#C0C0C0";
+  const frameStyle = frameItem?.style ?? "solid";
+  const frame =
+    frameValue === "rainbow" ? RAINBOW_GRADIENT : frameValue;
+
+  return {
+    background,
+    frame: frame as string,
+    frameStyle: (frameStyle === "animated" ? "animated" : "solid") as
+      | "solid"
+      | "animated",
+  };
+}

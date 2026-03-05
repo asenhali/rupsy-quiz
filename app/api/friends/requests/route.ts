@@ -84,7 +84,15 @@ export async function GET() {
 
     const userMap = new Map<
       string,
-      { rupsyId?: string; nickname?: string; city?: string; level?: number; avatarId?: string }
+      {
+        rupsyId?: string;
+        nickname?: string;
+        city?: string;
+        level?: number;
+        avatarId?: string;
+        avatarBackgroundId?: string | null;
+        avatarFrameId?: string | null;
+      }
     >();
     userIdsToFetch.forEach((id, i) => {
       const doc = userDocs[i];
@@ -95,6 +103,8 @@ export async function GET() {
         city: data?.city,
         level: data?.level,
         avatarId: data?.equippedAvatar ?? data?.avatarId ?? "rupsik",
+        avatarBackgroundId: data?.equippedAvatarBackground ?? null,
+        avatarFrameId: data?.equippedAvatarFrame ?? null,
       });
     });
 

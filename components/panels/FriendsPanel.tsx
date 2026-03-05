@@ -2,13 +2,17 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import Avatar from "@/components/Avatar";
+import PlayerAvatar from "@/components/PlayerAvatar";
+import { getCharacterSrc } from "@/lib/characters";
+import { resolveAvatarCosmetics } from "@/lib/cosmetics";
 
 type FriendItem = {
   wixUserId: string;
   rupsyId: string;
   nickname: string;
   avatarId: string;
+  avatarBackgroundId?: string | null;
+  avatarFrameId?: string | null;
   city: string;
   level: number;
 };
@@ -19,6 +23,8 @@ type RequestUser = {
   city?: string;
   level?: number;
   avatarId?: string;
+  avatarBackgroundId?: string | null;
+  avatarFrameId?: string | null;
 };
 
 type RequestItem = {
@@ -249,9 +255,13 @@ export default function FriendsPanel() {
                     key={r.requestId}
                     className="flex items-center gap-3 p-4 rounded-2xl bg-white/40 border border-[#1b2833]/[0.06]"
                   >
-                    <Avatar
-                      characterId={r.user?.avatarId ?? "rupsik"}
-                      sizePx={40}
+                    <PlayerAvatar
+                      size={40}
+                      characterSrc={getCharacterSrc(r.user?.avatarId ?? "rupsik")}
+                      {...resolveAvatarCosmetics(
+                        r.user?.avatarBackgroundId ?? null,
+                        r.user?.avatarFrameId ?? null
+                      )}
                       alt=""
                     />
                     <div className="flex-1 min-w-0">
@@ -295,9 +305,13 @@ export default function FriendsPanel() {
                     key={r.requestId}
                     className="flex items-center gap-3 p-4 rounded-2xl bg-white/40 border border-[#1b2833]/[0.06]"
                   >
-                    <Avatar
-                      characterId={r.user?.avatarId ?? "rupsik"}
-                      sizePx={40}
+                    <PlayerAvatar
+                      size={40}
+                      characterSrc={getCharacterSrc(r.user?.avatarId ?? "rupsik")}
+                      {...resolveAvatarCosmetics(
+                        r.user?.avatarBackgroundId ?? null,
+                        r.user?.avatarFrameId ?? null
+                      )}
                       alt=""
                     />
                     <div className="flex-1 min-w-0">
@@ -351,9 +365,13 @@ export default function FriendsPanel() {
                     key={friend.wixUserId}
                     className="flex items-center gap-3 p-3 rounded-2xl bg-white/40 border border-[#1b2833]/[0.06]"
                   >
-                    <Avatar
-                      characterId={friend.avatarId || "rupsik"}
-                      sizePx={40}
+                    <PlayerAvatar
+                      size={40}
+                      characterSrc={getCharacterSrc(friend.avatarId || "rupsik")}
+                      {...resolveAvatarCosmetics(
+                        friend.avatarBackgroundId ?? null,
+                        friend.avatarFrameId ?? null
+                      )}
                       alt=""
                     />
                     <div className="flex-1 min-w-0">

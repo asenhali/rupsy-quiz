@@ -9,10 +9,12 @@ import {
   getAvatarItemIdByValue,
   DEFAULT_ITEM_IDS,
   TIER_BORDER_COLORS,
+  resolveAvatarCosmetics,
   type CosmeticItem,
   type CosmeticType,
 } from "@/lib/cosmetics";
 import { getCharacterSrc } from "@/lib/characters";
+import PlayerAvatar from "@/components/PlayerAvatar";
 
 const TAB_LABELS: Record<CosmeticType, string> = {
   nameColor: "FARBA MENA",
@@ -112,15 +114,12 @@ export default function VybavaPanel() {
     }
     if (item.type === "avatar") {
       return (
-        <img
-          src={getCharacterSrc(item.value)}
-          alt=""
-          className="w-full aspect-square rounded-full mb-1 object-cover min-h-[40px]"
-          style={{ border: "2px solid #C0C0C0", boxSizing: "border-box" }}
-          onError={(e) => {
-            (e.target as HTMLImageElement).src = getCharacterSrc("rupsik");
-          }}
-        />
+        <div className="w-full aspect-square mb-1 min-h-[40px] flex items-center justify-center">
+          <PlayerAvatar
+            size={48}
+            characterSrc={getCharacterSrc(item.value)}
+          />
+        </div>
       );
     }
     if (item.type === "avatarBackground") {
@@ -161,16 +160,6 @@ export default function VybavaPanel() {
     equippedNameColor ?? DEFAULT_ITEM_IDS.nameColor
   );
   const nameColorStyle = nameColorItem?.value ?? "#1b2833";
-
-  const avatarBgItem = getCosmeticById(
-    equippedAvatarBackground ?? DEFAULT_ITEM_IDS.avatarBackground
-  );
-  const avatarBgStyle = avatarBgItem?.value ?? "#D3D3D3";
-
-  const avatarFrameItem = getCosmeticById(
-    equippedAvatarFrame ?? DEFAULT_ITEM_IDS.avatarFrame
-  );
-
   const displayAvatarId = equippedAvatar;
 
   if (loading) {
@@ -190,48 +179,15 @@ export default function VybavaPanel() {
           {/* Preview card */}
           <section className="rounded-2xl bg-[#1b2833] p-8 mb-6 shadow-[0_8px_30px_rgba(27,40,51,0.15)]">
             <div className="flex flex-col items-center gap-5">
-              <div
-                className="relative flex items-center justify-center w-[150px] h-[150px] rounded-full overflow-hidden"
-                style={{ background: avatarBgStyle }}
-              >
-                {avatarFrameItem?.value === "rainbow" ? (
-                  <div
-                    className="w-[130px] h-[130px] rounded-full p-[3px]"
-                    style={{
-                      background:
-                        "linear-gradient(90deg, #FF0000, #FF8800, #FFFF00, #00FF00, #0088FF, #8800FF)",
-                    }}
-                  >
-                    <img
-                      src={getCharacterSrc(displayAvatarId)}
-                      alt="avatar"
-                      className="w-full h-full rounded-full object-cover"
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).src =
-                          getCharacterSrc("rupsik");
-                      }}
-                    />
-                  </div>
-                ) : (
-                  <img
-                    src={getCharacterSrc(displayAvatarId)}
-                    alt="avatar"
-                    className="w-[130px] h-[130px] rounded-full object-cover"
-                    onError={(e) => {
-                      (e.target as HTMLImageElement).src =
-                        getCharacterSrc("rupsik");
-                    }}
-                    style={
-                      avatarFrameItem
-                        ? {
-                            border: `3px solid ${avatarFrameItem.value}`,
-                            boxSizing: "border-box",
-                          }
-                        : { border: "3px solid #C0C0C0", boxSizing: "border-box" }
-                    }
-                  />
+              <PlayerAvatar
+                size={150}
+                characterSrc={getCharacterSrc(displayAvatarId)}
+                {...resolveAvatarCosmetics(
+                  equippedAvatarBackground ?? null,
+                  equippedAvatarFrame ?? null
                 )}
-              </div>
+                alt="avatar"
+              />
               <div
                 className="rounded-full px-5 py-2"
                 style={{ backgroundColor: "rgba(255,255,255,0.9)" }}

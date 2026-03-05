@@ -2,7 +2,9 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useSwipeContext } from "@/context/SwipeContext";
-import LeaderboardAvatar from "@/components/LeaderboardAvatar";
+import PlayerAvatar from "@/components/PlayerAvatar";
+import { getCharacterSrc } from "@/lib/characters";
+import { resolveAvatarCosmetics } from "@/lib/cosmetics";
 
 const EMPTY_REF = { current: null as HTMLDivElement | null };
 
@@ -390,10 +392,15 @@ export default function LeaderboardModal({ isOpen, onClose }: Props) {
                     {badge}
                     #{entry.rank}
                   </span>
-                  <LeaderboardAvatar
-                    equippedAvatar={entry.equippedAvatar ?? "rupsik"}
-                    equippedAvatarBackground={entry.equippedAvatarBackground ?? null}
-                    equippedAvatarFrame={entry.equippedAvatarFrame ?? null}
+                  <PlayerAvatar
+                    size={44}
+                    characterSrc={getCharacterSrc(
+                      entry.equippedAvatar ?? "rupsik"
+                    )}
+                    {...resolveAvatarCosmetics(
+                      entry.equippedAvatarBackground ?? null,
+                      entry.equippedAvatarFrame ?? null
+                    )}
                   />
                   <div className="flex-1 min-w-0">
                     <p className="font-semibold flex items-center gap-2">
