@@ -40,13 +40,27 @@ export default function XPRewardModal() {
   const [displayedTotalXP, setDisplayedTotalXP] = useState(0);
   const [particlesActive, setParticlesActive] = useState(false);
   const [particleSpawn, setParticleSpawn] = useState<{ x: number; y: number } | null>(null);
+  const [levelUpTextEntranceDone, setLevelUpTextEntranceDone] = useState(false);
+  const [levelNumberEntranceDone, setLevelNumberEntranceDone] = useState(false);
   const rafRef = useRef<number | null>(null);
   const barContainerRef = useRef<HTMLDivElement | null>(null);
+  const pokracovatButtonRef = useRef<HTMLButtonElement | null>(null);
+  const [buttonDim, setButtonDim] = useState<{ w: number; h: number } | null>(null);
 
   useEffect(() => {
     setSwipeDisabled(isOpen);
     return () => setSwipeDisabled(false);
   }, [isOpen, setSwipeDisabled]);
+
+  useEffect(() => {
+    const el = pokracovatButtonRef.current;
+    if (!el || state.view !== 4 || !state.showButton) return;
+    const update = () => setButtonDim({ w: el.offsetWidth, h: el.offsetHeight });
+    update();
+    const ro = new ResizeObserver(update);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [state.view, state.showButton]);
 
   useEffect(() => {
     const showTotal =
@@ -83,6 +97,9 @@ export default function XPRewardModal() {
     setDisplayedTotalXP(0);
     setParticleSpawn(null);
     setParticlesActive(false);
+    setLevelUpTextEntranceDone(false);
+    setLevelNumberEntranceDone(false);
+    setButtonDim(null);
   }, [isOpen, xpRewardData]);
 
   useEffect(() => {
@@ -486,28 +503,44 @@ export default function XPRewardModal() {
                     "0 0 30px rgba(255,215,0,0.5), 0 0 60px rgba(255,215,0,0.3)",
                 }}
                 initial={{ scale: 0.3, opacity: 0 }}
-                animate={{
-                  scale: [0.3, 1.1, 1],
-                  opacity: 1,
-                  textShadow: [
-                    "0 0 20px rgba(255,215,0,0.4), 0 0 40px rgba(255,215,0,0.2)",
-                    "0 0 50px rgba(255,215,0,0.7), 0 0 90px rgba(255,215,0,0.4)",
-                    "0 0 20px rgba(255,215,0,0.4), 0 0 40px rgba(255,215,0,0.2)",
-                  ],
-                }}
-                transition={{
-                  scale: {
-                    duration: 0.65,
-                    times: [0, 0.65, 1],
-                    delay: LEVEL_UP_TEXT_DELAY / 1000,
-                  },
-                  opacity: { duration: 0.3, delay: LEVEL_UP_TEXT_DELAY / 1000 },
-                  textShadow: {
-                    duration: 2,
-                    repeat: Infinity,
-                    delay: LEVEL_UP_TEXT_DELAY / 1000,
-                  },
-                }}
+                animate={
+                  levelUpTextEntranceDone
+                    ? {
+                        scale: [1, 1.08, 1],
+                        opacity: 1,
+                        textShadow: [
+                          "0 0 30px rgba(255,215,0,0.5), 0 0 60px rgba(255,215,0,0.3)",
+                          "0 0 45px rgba(255,215,0,0.7), 0 0 85px rgba(255,215,0,0.45)",
+                          "0 0 30px rgba(255,215,0,0.5), 0 0 60px rgba(255,215,0,0.3)",
+                        ],
+                      }
+                    : {
+                        scale: [0.3, 1.1, 1],
+                        opacity: 1,
+                        textShadow:
+                          "0 0 30px rgba(255,215,0,0.5), 0 0 60px rgba(255,215,0,0.3)",
+                      }
+                }
+                transition={
+                  levelUpTextEntranceDone
+                    ? {
+                        scale: { duration: 2, repeat: Infinity, ease: "easeInOut" },
+                        textShadow: {
+                          duration: 2,
+                          repeat: Infinity,
+                          ease: "easeInOut",
+                        },
+                      }
+                    : {
+                        scale: {
+                          duration: 0.65,
+                          times: [0, 0.65, 1],
+                          delay: LEVEL_UP_TEXT_DELAY / 1000,
+                        },
+                        opacity: { duration: 0.3, delay: LEVEL_UP_TEXT_DELAY / 1000 },
+                      }
+                }
+                onAnimationComplete={() => setLevelUpTextEntranceDone(true)}
               >
                 LEVEL UP!
               </motion.p>
@@ -526,13 +559,25 @@ export default function XPRewardModal() {
               <motion.div
                 className="relative"
                 initial={{ scale: 0.5, opacity: 0 }}
-                animate={{ scale: [0.5, 1.05, 1], opacity: 1 }}
-                transition={{
-                  duration: 0.6,
-                  times: [0, 0.7, 1],
-                  delay: (LEVEL_UP_TEXT_DELAY + LEVEL_UP_NUMBER_DELAY) / 1000,
-                  type: "tween",
-                }}
+                animate={
+                  levelNumberEntranceDone
+                    ? { scale: [1, 1.05, 1], opacity: 1 }
+                    : { scale: [0.5, 1.05, 1], opacity: 1 }
+                }
+                transition={
+                  levelNumberEntranceDone
+                    ? {
+                        scale: { duration: 2.5, repeat: Infinity, ease: "easeInOut" },
+                        opacity: { duration: 0 },
+                      }
+                    : {
+                        duration: 0.6,
+                        times: [0, 0.7, 1],
+                        delay: (LEVEL_UP_TEXT_DELAY + LEVEL_UP_NUMBER_DELAY) / 1000,
+                        type: "tween",
+                      }
+                }
+                onAnimationComplete={() => setLevelNumberEntranceDone(true)}
               >
                 <div
                   className="absolute inset-0 -m-16 rounded-full blur-3xl opacity-30"
@@ -554,16 +599,56 @@ export default function XPRewardModal() {
                 </p>
               </motion.div>
               {state.showButton && (
-                <motion.button
+                <motion.div
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ duration: 0.8 }}
-                  type="button"
-                  onClick={closeXPReward}
-                  className="mt-12 px-12 py-4 rounded-2xl border border-[#f3e6c0]/40 bg-transparent text-[#f3e6c0] font-bold text-sm uppercase tracking-wider hover:bg-[#f3e6c0]/10 transition-colors"
+                  className="mt-12 relative"
                 >
-                  Pokračovať
-                </motion.button>
+                  <button
+                    ref={pokracovatButtonRef}
+                    type="button"
+                    onClick={closeXPReward}
+                    className="relative z-[1] px-12 py-4 rounded-2xl bg-transparent text-[#f3e6c0] font-bold text-sm uppercase tracking-wider hover:bg-[#f3e6c0]/10 transition-colors"
+                  >
+                    Pokračovať
+                  </button>
+                  {buttonDim && buttonDim.w > 0 && buttonDim.h > 0 && (
+                    <svg
+                      className="xp-reward-btn-snake absolute inset-0 w-full h-full pointer-events-none z-[2] overflow-visible"
+                      width="100%"
+                      height="100%"
+                    >
+                      <rect
+                        x="1"
+                        y="1"
+                        width={buttonDim.w - 2}
+                        height={buttonDim.h - 2}
+                        rx={16}
+                        ry={16}
+                        fill="none"
+                        stroke="#f3e6c0"
+                        strokeWidth="1.5"
+                        strokeOpacity="0.3"
+                      />
+                      <rect
+                        className="xp-reward-btn-snake-animated"
+                        x="1"
+                        y="1"
+                        width={buttonDim.w - 2}
+                        height={buttonDim.h - 2}
+                        rx={16}
+                        ry={16}
+                        fill="none"
+                        stroke="#FFF8E7"
+                        strokeWidth="2"
+                        strokeOpacity="0.6"
+                        pathLength="100"
+                        strokeDasharray="20 80"
+                      />
+                    </svg>
+                  )}
+                </motion.div>
               )}
             </div>
           </motion.div>

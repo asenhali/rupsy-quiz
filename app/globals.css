@@ -38,6 +38,11 @@ body {
   animation: leaderboard-stroke-snake 3.5s linear infinite;
 }
 
+/* Level-up modal button snake (slower, subtle) */
+.xp-reward-btn-snake rect.xp-reward-btn-snake-animated {
+  animation: leaderboard-stroke-snake 4s linear infinite;
+}
+
 /* XP reward modal bar shimmer */
 @keyframes xp-bar-shimmer {
   0%,
