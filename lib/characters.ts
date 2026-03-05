@@ -3,5 +3,5 @@
  * Use this helper for consistent src across the app.
  */
 export function getCharacterSrc(characterId: string): string {
-  return `/characters/${characterId || "default"}.png`;
+  return `/characters/${characterId || "rupsik"}.png`;
 }

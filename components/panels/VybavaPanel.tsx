@@ -44,7 +44,7 @@ export default function VybavaPanel() {
 
   const ownedItems = user?.ownedItems ?? [];
   const equippedNameColor = user?.equippedNameColor ?? null;
-  const equippedAvatar = user?.equippedAvatar ?? user?.avatarId ?? "default";
+  const equippedAvatar = user?.equippedAvatar ?? user?.avatarId ?? "rupsik";
   const equippedAvatarFrame = user?.equippedAvatarFrame ?? null;
   const equippedAvatarBackground = user?.equippedAvatarBackground ?? null;
 
@@ -117,7 +117,7 @@ export default function VybavaPanel() {
           className="w-full aspect-square rounded-full mb-1 object-cover min-h-[40px]"
           style={{ border: "2px solid #C0C0C0", boxSizing: "border-box" }}
           onError={(e) => {
-            (e.target as HTMLImageElement).src = getCharacterSrc("default");
+            (e.target as HTMLImageElement).src = getCharacterSrc("rupsik");
           }}
         />
       );
@@ -207,7 +207,7 @@ export default function VybavaPanel() {
                       className="w-full h-full rounded-full object-cover"
                       onError={(e) => {
                         (e.target as HTMLImageElement).src =
-                          getCharacterSrc("default");
+                          getCharacterSrc("rupsik");
                       }}
                     />
                   </div>
@@ -218,7 +218,7 @@ export default function VybavaPanel() {
                     className="w-[130px] h-[130px] rounded-full object-cover"
                     onError={(e) => {
                       (e.target as HTMLImageElement).src =
-                        getCharacterSrc("default");
+                        getCharacterSrc("rupsik");
                     }}
                     style={
                       avatarFrameItem

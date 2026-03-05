@@ -347,7 +347,7 @@ export default function HomePanel() {
               className="border-0 bg-transparent p-0 cursor-pointer flex-shrink-0"
             >
               <Avatar
-                characterId={user?.equippedAvatar ?? user?.avatarId ?? "default"}
+                characterId={user?.equippedAvatar ?? user?.avatarId ?? "rupsik"}
                 sizePx={64}
                 alt="avatar"
               />

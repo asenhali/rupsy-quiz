@@ -109,7 +109,7 @@ export async function POST(request: Request) {
       rupsyId,
       nickname,
       city,
-      avatarId: "default",
+      avatarId: "rupsik",
       totalXP: 0,
       totalPoints: 0,
       rCoins: 25,

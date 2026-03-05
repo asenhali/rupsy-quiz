@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useSwipeContext } from "@/context/SwipeContext";
+import LeaderboardAvatar from "@/components/LeaderboardAvatar";
 
 const EMPTY_REF = { current: null as HTMLDivElement | null };
 
@@ -102,6 +103,9 @@ type LeaderboardEntry = {
   city: string;
   score: number;
   isCurrentUser: boolean;
+  equippedAvatar?: string;
+  equippedAvatarBackground?: string | null;
+  equippedAvatarFrame?: string | null;
 };
 
 type CitiesEntry = {
@@ -386,6 +390,11 @@ export default function LeaderboardModal({ isOpen, onClose }: Props) {
                     {badge}
                     #{entry.rank}
                   </span>
+                  <LeaderboardAvatar
+                    equippedAvatar={entry.equippedAvatar ?? "rupsik"}
+                    equippedAvatarBackground={entry.equippedAvatarBackground ?? null}
+                    equippedAvatarFrame={entry.equippedAvatarFrame ?? null}
+                  />
                   <div className="flex-1 min-w-0">
                     <p className="font-semibold flex items-center gap-2">
                       <span className="truncate">{entry.nickname}</span>

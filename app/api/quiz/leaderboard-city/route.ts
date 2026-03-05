@@ -94,12 +94,21 @@ export async function GET(request: Request) {
       const userDocs = await Promise.all(
         userIds.map((id) => db.collection("users").doc(id).get())
       );
-      const userIdToUser = new Map<string, { nickname?: string; city?: string }>();
+      const userIdToUser = new Map<string, {
+        nickname?: string;
+        city?: string;
+        equippedAvatar?: string;
+        equippedAvatarBackground?: string | null;
+        equippedAvatarFrame?: string | null;
+      }>();
       userIds.forEach((id, i) => {
         const data = userDocs[i]?.data();
         userIdToUser.set(id, {
           nickname: data?.nickname,
           city: data?.city,
+          equippedAvatar: data?.equippedAvatar ?? data?.avatarId ?? "rupsik",
+          equippedAvatarBackground: data?.equippedAvatarBackground ?? null,
+          equippedAvatarFrame: data?.equippedAvatarFrame ?? null,
         });
       });
 
@@ -139,6 +148,9 @@ export async function GET(request: Request) {
           city: u.city ?? userCityDisplay,
           score: s.totalScore,
           isCurrentUser: s.userId === wixUserId,
+          equippedAvatar: u.equippedAvatar ?? "rupsik",
+          equippedAvatarBackground: u.equippedAvatarBackground ?? null,
+          equippedAvatarFrame: u.equippedAvatarFrame ?? null,
         };
       });
 

@@ -250,7 +250,7 @@ export default function FriendsPanel() {
                     className="flex items-center gap-3 p-4 rounded-2xl bg-white/40 border border-[#1b2833]/[0.06]"
                   >
                     <Avatar
-                      characterId={r.user?.avatarId ?? "default"}
+                      characterId={r.user?.avatarId ?? "rupsik"}
                       sizePx={40}
                       alt=""
                     />
@@ -296,7 +296,7 @@ export default function FriendsPanel() {
                     className="flex items-center gap-3 p-4 rounded-2xl bg-white/40 border border-[#1b2833]/[0.06]"
                   >
                     <Avatar
-                      characterId={r.user?.avatarId ?? "default"}
+                      characterId={r.user?.avatarId ?? "rupsik"}
                       sizePx={40}
                       alt=""
                     />
@@ -352,7 +352,7 @@ export default function FriendsPanel() {
                     className="flex items-center gap-3 p-3 rounded-2xl bg-white/40 border border-[#1b2833]/[0.06]"
                   >
                     <Avatar
-                      characterId={friend.avatarId || "default"}
+                      characterId={friend.avatarId || "rupsik"}
                       sizePx={40}
                       alt=""
                     />

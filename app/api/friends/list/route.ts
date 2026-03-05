@@ -90,7 +90,7 @@ export async function GET() {
           wixUserId,
           rupsyId: data.rupsyId,
           nickname: data.nickname,
-          avatarId: data.equippedAvatar ?? data.avatarId ?? "default",
+          avatarId: data.equippedAvatar ?? data.avatarId ?? "rupsik",
           city: data.city,
           level: data.level,
         };

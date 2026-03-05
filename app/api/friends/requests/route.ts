@@ -94,7 +94,7 @@ export async function GET() {
         nickname: data?.nickname,
         city: data?.city,
         level: data?.level,
-        avatarId: data?.equippedAvatar ?? data?.avatarId ?? "default",
+        avatarId: data?.equippedAvatar ?? data?.avatarId ?? "rupsik",
       });
     });
 

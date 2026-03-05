@@ -130,9 +130,10 @@ export const COSMETIC_ITEMS: CosmeticItem[] = [
     "linear-gradient(135deg, #0077B6, #00B4D8, #90E0EF)"
   ),
   // AVATARS (postavička) — value = character id, image at /characters/{value}.png
-  item("av_default", "RUPSY Logo", "avatar", "bezne", 0, "default", {
+  item("av_default", "Rupsík", "avatar", "bezne", 0, "rupsik", {
     purchasable: false,
   }),
+  item("av_rupsy_logo", "RUPSY Logo", "avatar", "bezne", 25, "default"),
   item("av_1", "Alternatíva 1", "avatar", "bezne", 20, "1"),
   item("av_2", "Alternatíva 2", "avatar", "neobvykle", 50, "2"),
   // AVATAR FRAMES

@@ -39,7 +39,7 @@ export default function Avatar({
         boxSizing: "border-box",
       }}
       onError={(e) => {
-        (e.target as HTMLImageElement).src = getCharacterSrc("default");
+        (e.target as HTMLImageElement).src = getCharacterSrc("rupsik");
       }}
     />
   );

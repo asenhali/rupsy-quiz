@@ -53,7 +53,7 @@ export default function ProfileModal() {
 
   if (!isOpen) return null;
 
-  const characterId = user?.equippedAvatar ?? user?.avatarId ?? "default";
+  const characterId = user?.equippedAvatar ?? user?.avatarId ?? "rupsik";
 
   return (
     <div className="fixed top-0 left-0 w-screen h-screen z-[100] bg-[#f3e6c0] overflow-y-auto touch-auto">

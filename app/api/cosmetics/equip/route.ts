@@ -124,7 +124,7 @@ export async function POST(request: Request) {
         valueToStore = null;
       }
     } else if (type === "avatar") {
-      valueToStore = "default";
+      valueToStore = "rupsik";
     }
 
     const fieldMap = {
