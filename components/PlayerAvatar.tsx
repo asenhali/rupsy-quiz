@@ -28,7 +28,7 @@ export default function PlayerAvatar({
 }: Props) {
   const borderWidth = getBorderWidth(size);
   const innerSize = size - borderWidth * 2;
-  const charSize = Math.ceil(innerSize * 1.02);
+  const charSize = Math.floor(innerSize * 0.96);
 
   const frameVisual = frameStyle === "animated" ? RAINBOW_GRADIENT : frame;
 
