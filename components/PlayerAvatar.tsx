@@ -28,7 +28,7 @@ export default function PlayerAvatar({
 }: Props) {
   const borderWidth = getBorderWidth(size);
   const innerSize = size - borderWidth * 2;
-  const charSize = Math.floor(innerSize * 0.85);
+  const charSize = Math.ceil(innerSize * 1.12);
 
   const frameVisual = frameStyle === "animated" ? RAINBOW_GRADIENT : frame;
 
@@ -68,6 +68,7 @@ export default function PlayerAvatar({
           style={{
             width: charSize,
             height: charSize,
+            objectPosition: "center 35%",
           }}
           onError={(e) => {
             (e.target as HTMLImageElement).src = "/characters/rupsik.png";
