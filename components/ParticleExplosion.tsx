@@ -3,23 +3,19 @@
 import { useCallback, useEffect, useRef } from "react";
 
 const GOLD_PALETTE = ["#FFD700", "#FFA500", "#FFEC8B", "#FFD900", "#FFF8DC", "#FFFFFF"];
+const BURST3_PALETTE = ["#FFD700", "#FFF8DC", "#FFFFFF", "#FFFACD", "#FFEC8B", "#FFFFFF"];
 const GRAVITY = 0.15;
-const MAX_PARTICLES = 80;
-const MIN_PARTICLES = 60;
-const MAX_LIFETIME = 80;
-const MIN_LIFETIME = 40;
-const SPARK_COUNT_MIN = 15;
-const SPARK_COUNT_MAX = 20;
-const MAX_DURATION_MS = 1500;
-const AFTERGLOW_DELAY_MS = 500;
-const AFTERGLOW_DURATION_MS = 800;
+const PARTICLES_PER_BURST = 50;
+const BURST_1_AT_MS = 0;
+const BURST_2_AT_MS = 600;
+const BURST_3_AT_MS = 1200;
+const MAX_DURATION_MS = 2600;
+const AFTERGLOW_DELAY_MS = 400;
+const AFTERGLOW_DURATION_MS = 600;
 const AFTERGLOW_START_R = 50;
-const AFTERGLOW_END_R = 300;
-const AFTERGLOW_OPACITY_START = 0.4;
+const AFTERGLOW_END_R = 280;
+const AFTERGLOW_OPACITY_START = 0.35;
 const AFTERGLOW_OPACITY_END = 0;
-
-const SPARK_LIFETIME_MAX = 40;
-const SPARK_LIFETIME_MIN = 20;
 
 type Particle = {
   x: number;
@@ -31,21 +27,24 @@ type Particle = {
   opacity: number;
   life: number;
   maxLife: number;
-  isSpark: boolean;
 };
 
-function createParticle(spawnX: number, spawnY: number, isSpark: boolean): Particle {
-  const angle = Math.random() * Math.PI * 2;
-  const speed = isSpark
-    ? 12 + Math.random() * 18
-    : 8 + Math.random() * 17;
+function createParticle(
+  spawnX: number,
+  spawnY: number,
+  burstIndex: 0 | 1 | 2
+): Particle {
+  const baseAngle = Math.random() * Math.PI * 2;
+  const angleOffset = burstIndex === 1 ? (Math.random() - 0.5) * 0.4 : 0;
+  const angle = baseAngle + angleOffset;
+  const baseSpeed = burstIndex === 0 ? 8 + Math.random() * 14 : burstIndex === 1 ? 9 + Math.random() * 16 : 12 + Math.random() * 18;
+  const speed = baseSpeed;
   const vx = Math.cos(angle) * speed;
   const vy = Math.sin(angle) * speed;
-  const size = isSpark ? 1 + Math.random() : 3 + Math.random() * 5;
-  const maxLife = isSpark
-    ? SPARK_LIFETIME_MIN + Math.random() * (SPARK_LIFETIME_MAX - SPARK_LIFETIME_MIN)
-    : MIN_LIFETIME + Math.random() * (MAX_LIFETIME - MIN_LIFETIME);
-  const color = GOLD_PALETTE[Math.floor(Math.random() * GOLD_PALETTE.length)];
+  const size = 2.5 + Math.random() * 4;
+  const palette = burstIndex === 2 ? BURST3_PALETTE : GOLD_PALETTE;
+  const color = palette[Math.floor(Math.random() * palette.length)];
+  const maxLife = 35 + Math.random() * 45;
   return {
     x: spawnX,
     y: spawnY,
@@ -56,7 +55,6 @@ function createParticle(spawnX: number, spawnY: number, isSpark: boolean): Parti
     opacity: 1,
     life: maxLife,
     maxLife,
-    isSpark,
   };
 }
 
@@ -74,6 +72,9 @@ export default function ParticleExplosion({
   const rafRef = useRef<number | null>(null);
   const startTimeRef = useRef<number>(0);
   const completedRef = useRef(false);
+  const burst1FiredRef = useRef(false);
+  const burst2FiredRef = useRef(false);
+  const burst3FiredRef = useRef(false);
 
   const complete = useCallback(() => {
     if (completedRef.current) return;
@@ -109,25 +110,34 @@ export default function ParticleExplosion({
     canvas.style.top = `${top}px`;
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-    const particleCount =
-      MIN_PARTICLES + Math.floor(Math.random() * (MAX_PARTICLES - MIN_PARTICLES + 1));
-    const sparkCount =
-      SPARK_COUNT_MIN +
-      Math.floor(Math.random() * (SPARK_COUNT_MAX - SPARK_COUNT_MIN + 1));
-    const normalCount = Math.max(0, particleCount - sparkCount);
-
-    for (let i = 0; i < sparkCount; i++) {
-      particlesRef.current.push(createParticle(spawnX, spawnY, true));
-    }
-    for (let i = 0; i < normalCount; i++) {
-      particlesRef.current.push(createParticle(spawnX, spawnY, false));
-    }
-
     startTimeRef.current = Date.now();
+    particlesRef.current = [];
+    burst1FiredRef.current = false;
+    burst2FiredRef.current = false;
+    burst3FiredRef.current = false;
 
     const animate = () => {
       const now = Date.now();
       const elapsed = now - startTimeRef.current;
+
+      if (elapsed >= BURST_1_AT_MS && !burst1FiredRef.current) {
+        burst1FiredRef.current = true;
+        for (let i = 0; i < PARTICLES_PER_BURST; i++) {
+          particlesRef.current.push(createParticle(spawnX, spawnY, 0));
+        }
+      }
+      if (elapsed >= BURST_2_AT_MS && !burst2FiredRef.current) {
+        burst2FiredRef.current = true;
+        for (let i = 0; i < PARTICLES_PER_BURST; i++) {
+          particlesRef.current.push(createParticle(spawnX, spawnY, 1));
+        }
+      }
+      if (elapsed >= BURST_3_AT_MS && !burst3FiredRef.current) {
+        burst3FiredRef.current = true;
+        for (let i = 0; i < PARTICLES_PER_BURST; i++) {
+          particlesRef.current.push(createParticle(spawnX, spawnY, 2));
+        }
+      }
 
       if (elapsed >= MAX_DURATION_MS) {
         complete();
@@ -176,21 +186,20 @@ export default function ParticleExplosion({
 
         ctx.globalAlpha = p.opacity;
         ctx.fillStyle = p.color;
-        if (p.isSpark) {
-          const s = Math.max(1, Math.min(2, p.size));
-          ctx.fillRect(localX - s / 2, localY - s / 2, s, s);
-        } else {
-          ctx.beginPath();
-          ctx.arc(localX, localY, p.size / 2, 0, Math.PI * 2);
-          ctx.fill();
-        }
+        ctx.beginPath();
+        ctx.arc(localX, localY, p.size / 2, 0, Math.PI * 2);
+        ctx.fill();
         ctx.globalAlpha = 1;
 
         alive.push(p);
       }
       particlesRef.current = alive;
 
-      if (particlesRef.current.length === 0 && elapsed > 500) {
+      if (
+        burst3FiredRef.current &&
+        particlesRef.current.length === 0 &&
+        elapsed > BURST_3_AT_MS + 400
+      ) {
         complete();
         return;
       }

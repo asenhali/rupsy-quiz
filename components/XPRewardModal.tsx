@@ -321,7 +321,7 @@ export default function XPRewardModal() {
             onComplete={() => {
               setParticlesActive(false);
               setParticleSpawn(null);
-              setState({ view: 3, phase: "out" });
+              setTimeout(() => setState({ view: 3, phase: "out" }), 300);
             }}
           />
         </>
