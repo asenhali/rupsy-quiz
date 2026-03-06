@@ -91,47 +91,32 @@ export default function VybavaPanel() {
 
   function ItemPreview({ item }: { item: CosmeticItem }) {
     if (item.type === "nameColor") {
-      const darkVal = getNameColorValue(item, "dark");
-      const lightVal = getNameColorValue(item, "light");
-      const darkGrad = darkVal.startsWith("linear-gradient");
-      const lightGrad = lightVal.startsWith("linear-gradient");
-      const animClass = item.animation ? `nc-anim-${item.animation}` : "";
       return (
         <div
           className="w-full aspect-square rounded-md mb-1 flex items-center justify-center min-h-[40px]"
           style={{ backgroundColor: "#808080" }}
         >
-          <span className="font-bold text-[28px] leading-none" style={{ display: "inline" }}>
-            <span
-              className={animClass}
-              style={
-                darkGrad
-                  ? {
-                      background: darkVal,
-                      WebkitBackgroundClip: "text",
-                      WebkitTextFillColor: "transparent",
-                      backgroundClip: "text",
-                    }
-                  : { color: darkVal }
-              }
+          <span className="font-bold text-[28px] leading-none inline-flex items-baseline">
+            <NameColorText
+              dark={getNameColorValue(item, "dark")}
+              light={getNameColorValue(item, "light")}
+              animated={item.animated ?? false}
+              animation={item.animation ?? ""}
+              variant="dark"
+              className="inline"
             >
               A
-            </span>
-            <span
-              className={animClass}
-              style={
-                lightGrad
-                  ? {
-                      background: lightVal,
-                      WebkitBackgroundClip: "text",
-                      WebkitTextFillColor: "transparent",
-                      backgroundClip: "text",
-                    }
-                  : { color: lightVal }
-              }
+            </NameColorText>
+            <NameColorText
+              dark={getNameColorValue(item, "dark")}
+              light={getNameColorValue(item, "light")}
+              animated={item.animated ?? false}
+              animation={item.animation ?? ""}
+              variant="light"
+              className="inline"
             >
               a
-            </span>
+            </NameColorText>
           </span>
         </div>
       );
