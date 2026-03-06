@@ -76,11 +76,9 @@ export default function PixiTextEffect({
       measureCtx.font = `bold ${fontSize}px Montserrat, sans-serif`;
       const measured = measureCtx.measureText(text);
       const textWidth = Math.ceil(measured.width);
-      // Flame space above text — about 40% of font size
-      const flameHeight = Math.ceil(fontSize * 0.4);
-      const canvasWidth = textWidth + 8;
-      // Total height: flame space + font size + small bottom padding
-      const canvasHeight = flameHeight + Math.ceil(fontSize * 1.15);
+      const flameHeight = Math.ceil(fontSize * 0.9);
+      const canvasWidth = textWidth + 2;
+      const canvasHeight = Math.ceil(fontSize * 1.4) + flameHeight;
 
       await app.init({
         width: canvasWidth,
@@ -100,10 +98,7 @@ export default function PixiTextEffect({
       app.canvas.style.display = "block";
 
       // --- Text layers ---
-      // Text top-left Y = after flame space
       const textY = flameHeight;
-      // Text vertical center for anchor-based positioning
-      const textCenterY = flameHeight + fontSize * 0.5;
 
       // Glow layer (blurred duplicate for bloom)
       const glowText = new PIXI.Text({
@@ -115,9 +110,8 @@ export default function PixiTextEffect({
           fill: 0xFF4500,
         },
       });
-      glowText.anchor.set(0, 0.5);
-      glowText.x = 4;
-      glowText.y = textCenterY;
+      glowText.x = 0;
+      glowText.y = textY;
       glowText.alpha = 0.45;
       glowText.filters = [new PIXI.BlurFilter({ strength: 6 })];
       app.stage.addChild(glowText);
@@ -132,9 +126,8 @@ export default function PixiTextEffect({
           fill: 0xFF4500,
         },
       });
-      mainText.anchor.set(0, 0.5);
-      mainText.x = 4;
-      mainText.y = textCenterY;
+      mainText.x = 0;
+      mainText.y = textY;
       app.stage.addChild(mainText);
 
       // --- Particle system ---
@@ -157,13 +150,10 @@ export default function PixiTextEffect({
       const particles: FireParticle[] = [];
       const sprites: InstanceType<typeof PIXI.Sprite>[] = [];
 
-      // Particles spawn from top edge of text
-      const particleSpawnY = textY;
-
       function spawnParticle(): FireParticle {
         return {
-          x: Math.random() * textWidth + 4,
-          y: particleSpawnY + (Math.random() * 2),
+          x: Math.random() * textWidth,
+          y: textY + (Math.random() * 3 - 1),
           vx: (Math.random() - 0.5) * 1.0,
           vy: -(Math.random() * 1.8 + 0.6),
           life: 0,
@@ -266,9 +256,9 @@ export default function PixiTextEffect({
       ref={containerRef}
       className={className}
       style={{
-        display: "inline-flex",
-        alignItems: "center",
-        verticalAlign: "baseline",
+        display: "inline-block",
+        verticalAlign: "middle",
+        lineHeight: 0,
         ...style,
       }}
     />
