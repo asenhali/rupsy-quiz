@@ -162,13 +162,14 @@ export default function LeaderboardModal({ isOpen, onClose }: Props) {
 
   useEffect(() => {
     if (!isOpen) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional reset on open
     setActiveTab("slovensko");
   }, [isOpen]);
 
   useEffect(() => {
     if (!isOpen) return;
     if (activeTab === "slovensko") {
-      setLoading(true);
+      setLoading(true); // eslint-disable-line react-hooks/set-state-in-effect -- loading before fetch
       setEntries([]);
       setUserRank(null);
       fetch("/api/quiz/leaderboard", { credentials: "include" })

@@ -131,6 +131,7 @@ export default function XPRewardModal() {
 
     const oldTotalXP = xpRewardData.newTotalXP - xpRewardData.xpBreakdown.totalXP;
     const hasCoins = !!xpRewardData?.coinBreakdown && xpRewardData.previousRCoins != null && xpRewardData.newRCoins != null;
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional reset on open
     setState(hasCoins ? { view: 0, phase: "in" } : { view: 1, phase: "in" });
     setXpBarFillPercent(0);
     setDisplayedXP(oldTotalXP);

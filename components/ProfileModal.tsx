@@ -37,6 +37,7 @@ export default function ProfileModal() {
 
   useEffect(() => {
     if (!isOpen) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional reset on open
     setBestRanking(null);
     fetch("/api/quiz/best-ranking", { credentials: "include" })
       .then((res) => res.json())

@@ -175,7 +175,7 @@ export default function HomePanel() {
 
   useEffect(() => {
     if (!completedQuiz) {
-      setRanking(null);
+      setRanking(null); // eslint-disable-line react-hooks/set-state-in-effect -- intentional reset
       setRankDirection({ cityRank: null, slovakiaRank: null, citiesRank: null });
       prevRankingRef.current = null;
       return;
