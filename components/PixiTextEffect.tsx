@@ -227,12 +227,11 @@ export default function PixiTextEffect({
       appRef.current = {
         destroy: () => {
           app.ticker.stop();
-          // Remove all children without destroying them individually
-          // to avoid texture pool "push" errors from double-free
           app.stage.removeChildren();
-          // Destroy app (canvas + renderer), don't recurse into children
-          app.destroy(true, { children: false });
-          circleTexture.destroy(true);
+          // Remove canvas from DOM manually instead of app.destroy()
+          // to avoid PixiJS v8 texture pool crash during renderer teardown
+          try { app.canvas.parentNode?.removeChild(app.canvas); } catch {}
+          try { app.destroy(true, { children: false }); } catch {}
         },
       };
     }
