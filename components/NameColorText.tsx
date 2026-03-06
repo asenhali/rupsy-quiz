@@ -1,5 +1,6 @@
 "use client";
 
+import { useRef, useEffect, useState } from "react";
 import { getCosmeticById, DEFAULT_ITEM_IDS, getNameColorValue, type CosmeticItem, type NameColorVariant } from "@/lib/cosmetics";
 
 type Props = {
@@ -15,12 +16,25 @@ export default function NameColorText({
   children,
   className = "",
 }: Props) {
+  const ref = useRef<HTMLSpanElement>(null);
+  const [isVisible, setIsVisible] = useState(true);
   const item = getCosmeticById(
     equippedNameColorId ?? DEFAULT_ITEM_IDS.nameColor
   );
   const colorValue = getNameColorValue(item, variant);
   const isGradient = colorValue.startsWith("linear-gradient");
   const anim = item?.animation;
+
+  useEffect(() => {
+    if (!anim || !ref.current) return;
+    const el = ref.current;
+    const observer = new IntersectionObserver(
+      ([entry]) => setIsVisible(entry?.isIntersecting ?? true),
+      { rootMargin: "50px", threshold: 0 }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [anim]);
 
   const baseStyle: React.CSSProperties = isGradient
     ? {
@@ -32,10 +46,12 @@ export default function NameColorText({
     : { color: colorValue };
 
   const animClass = anim ? `nc-anim-${anim}` : "";
+  const pauseClass = anim && !isVisible ? "nc-anim-paused" : "";
 
   return (
     <span
-      className={`${animClass} ${className}`.trim()}
+      ref={ref}
+      className={`${animClass} ${pauseClass} ${className}`.trim()}
       style={baseStyle}
     >
       {children}

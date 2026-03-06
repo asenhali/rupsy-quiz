@@ -60,14 +60,14 @@ body {
   animation: xp-bar-shimmer 1.5s ease-in-out infinite;
 }
 
-/* Name color animations */
+/* Name color animations - transform, opacity, background-position only for performance */
 @keyframes nc-pulse {
   0%, 100% { opacity: 1; }
-  50% { opacity: 0.7; }
+  50% { opacity: 0.6; }
 }
 @keyframes nc-shimmer {
-  0% { background-position: 200% center; }
-  100% { background-position: -200% center; }
+  0% { background-position: 100% center; }
+  100% { background-position: -100% center; }
 }
 @keyframes nc-flow {
   0% { background-position: 0% 50%; }
@@ -79,46 +79,84 @@ body {
   100% { filter: hue-rotate(360deg); }
 }
 @keyframes nc-sparkle {
-  0%, 100% { opacity: 1; }
-  25% { opacity: 0.85; }
-  50% { opacity: 1; }
-  75% { opacity: 0.9; }
+  0% { background-position: 100% center; }
+  100% { background-position: -100% center; }
+}
+@keyframes nc-sparkle-opacity {
+  0%, 40%, 100% { opacity: 1; }
+  45% { opacity: 0.75; }
+  55% { opacity: 1; }
+  70% { opacity: 0.75; }
+  80% { opacity: 1; }
 }
 @keyframes nc-glow {
-  0%, 100% { text-shadow: 0 0 4px currentColor; }
-  50% { text-shadow: 0 0 12px currentColor; }
+  0%, 100% { opacity: 0.8; }
+  50% { opacity: 1; }
 }
 @keyframes nc-flash {
   0%, 100% { filter: brightness(1); }
   50% { filter: brightness(1.4); }
 }
 @keyframes nc-glitch {
-  0%, 90%, 100% { transform: translate(0); }
-  92% { transform: translate(-2px, 1px); }
-  94% { transform: translate(2px, -1px); }
-  96% { transform: translate(-1px, 2px); }
-  98% { transform: translate(1px, -2px); }
+  0%, 100% { transform: translate(0); color: #00FF00; }
+  12% { transform: translate(2px, -1px); color: #00FFFF; }
+  25% { transform: translate(-1px, 2px); color: #FF00FF; }
+  37% { transform: translate(-2px, -2px); color: #00FF00; }
+  50% { transform: translate(1px, 1px); color: #00FFFF; }
+  62% { transform: translate(-1px, -1px); color: #FF00FF; }
+  75% { transform: translate(2px, 1px); color: #00FF00; }
+  87% { transform: translate(-1px, 2px); color: #00FFFF; }
 }
 @keyframes nc-void {
-  0%, 100% { text-shadow: 0 0 2px rgba(255,255,255,0.1); }
-  50% { text-shadow: 0 0 8px rgba(255,255,255,0.2); }
+  0%, 100% { opacity: 0.7; }
+  50% { opacity: 0.9; }
 }
 
-.nc-anim-pulse { animation: nc-pulse 2s ease-in-out infinite; }
+.nc-anim-pulse {
+  will-change: opacity;
+  animation: nc-pulse 2s ease-in-out infinite;
+}
 .nc-anim-shimmer {
-  background-size: 200% auto;
+  background-size: 200% 100%;
+  will-change: background-position;
   animation: nc-shimmer 3s linear infinite;
 }
 .nc-anim-flow {
-  background-size: 200% 100%;
+  background-size: 300% 100%;
+  will-change: background-position;
   animation: nc-flow 4s ease infinite;
 }
-.nc-anim-rainbow { animation: nc-rainbow 4s linear infinite; }
-.nc-anim-sparkle { animation: nc-sparkle 1.5s ease-in-out infinite; }
-.nc-anim-glow { animation: nc-glow 2s ease-in-out infinite; }
-.nc-anim-flash { animation: nc-flash 0.5s ease-in-out infinite; }
-.nc-anim-glitch { animation: nc-glitch 0.3s ease-in-out infinite; }
-.nc-anim-void { animation: nc-void 3s ease-in-out infinite; }
+.nc-anim-rainbow {
+  will-change: filter;
+  animation: nc-rainbow 4s linear infinite;
+}
+.nc-anim-sparkle {
+  background-size: 200% 100%;
+  will-change: background-position, opacity;
+  animation: nc-sparkle 3s linear infinite, nc-sparkle-opacity 2.5s ease-in-out infinite;
+}
+.nc-anim-glow {
+  text-shadow: 0 0 10px currentColor;
+  will-change: opacity;
+  animation: nc-glow 1.5s ease-in-out infinite;
+}
+.nc-anim-flash {
+  will-change: filter;
+  animation: nc-flash 0.5s ease-in-out infinite;
+}
+.nc-anim-glitch {
+  will-change: transform;
+  animation: nc-glitch 0.5s steps(1) infinite;
+}
+.nc-anim-void {
+  text-shadow: 0 0 6px #4a0e4a, 0 0 12px #2a0a2a;
+  will-change: opacity;
+  animation: nc-void 4s ease-in-out infinite;
+}
+
+.nc-anim-paused {
+  animation-play-state: paused;
+}
 
 /* Hide scrollbar in AppView panels while keeping scroll functional */
 .app-shell section::-webkit-scrollbar {

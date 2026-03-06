@@ -169,6 +169,7 @@ export const COSMETIC_ITEMS: CosmeticItem[] = [
     dark: "linear-gradient(90deg, #E65100, #AD1457, #6A1B9A)",
     light: "linear-gradient(90deg, #FF9800, #E91E63, #9C27B0)",
     animated: true,
+    animation: "flow",
   }),
   item("nc_pulzujuca_modra", "Pulzujúca modrá", "nameColor", "vzacne", 150, "#1565C0", {
     dark: "#1565C0",
@@ -177,8 +178,8 @@ export const COSMETIC_ITEMS: CosmeticItem[] = [
     animation: "pulse",
   }),
   item("nc_matova_vlna", "Mätová vlna", "nameColor", "vzacne", 160, "#00897B", {
-    dark: "linear-gradient(90deg, #00897B, #80CBC4, #00897B)",
-    light: "linear-gradient(90deg, #80CBC4, #00897B, #80CBC4)",
+    dark: "linear-gradient(90deg, #00897B 0%, #80CBC4 25%, #ffffff 45%, #ffffff 55%, #80CBC4 75%, #00897B 100%)",
+    light: "linear-gradient(90deg, #80CBC4 0%, #00897B 25%, #ffffff 45%, #ffffff 55%, #00897B 75%, #80CBC4 100%)",
     animated: true,
     animation: "shimmer",
   }),
@@ -231,8 +232,8 @@ export const COSMETIC_ITEMS: CosmeticItem[] = [
     animation: "flash",
   }),
   item("nc_zlata", "Zlatá", "nameColor", "legendarne", 400, "#B8860B", {
-    dark: "#B8860B",
-    light: "#FFD700",
+    dark: "linear-gradient(90deg, #B8860B 0%, #D4A017 25%, #FFF8E7 45%, #FFF8E7 55%, #D4A017 75%, #B8860B 100%)",
+    light: "linear-gradient(90deg, #FFD700 0%, #FFE55C 25%, #ffffff 45%, #ffffff 55%, #FFE55C 75%, #FFD700 100%)",
     animated: true,
     animation: "sparkle",
   }),
@@ -261,8 +262,8 @@ export const COSMETIC_ITEMS: CosmeticItem[] = [
     animation: "glitch",
   }),
   item("nc_diamantova", "Diamantová", "nameColor", "legendarne", 480, "gradient", {
-    dark: "linear-gradient(90deg, #E0E0E0, #1A237E, #F8BBD0)",
-    light: "linear-gradient(90deg, #FFFFFF, #42A5F5, #FF80AB)",
+    dark: "linear-gradient(90deg, #E0E0E0 0%, #1A237E 20%, #F8BBD0 40%, #ffffff 50%, #F8BBD0 60%, #1A237E 80%, #E0E0E0 100%)",
+    light: "linear-gradient(90deg, #FFFFFF 0%, #42A5F5 20%, #FF80AB 40%, #ffffff 50%, #FF80AB 60%, #42A5F5 80%, #FFFFFF 100%)",
     animated: true,
     animation: "sparkle",
   }),
