@@ -84,84 +84,108 @@ body {
   font-weight: inherit;
 }
 
-/* ─── PULSE ─── dramatic breathing */
+/* ─── PULSE ─── springy scaleY bounce */
 .nc-anim-pulse {
-  animation: nc-pulse 2s ease-in-out infinite;
+  animation: nc-pulse 2s cubic-bezier(0.68, -0.55, 0.27, 1.55) infinite;
 }
 @keyframes nc-pulse {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.3; transform: scale(0.95); }
+  0%, 100% { opacity: 1; transform: scaleY(1) scaleX(1); }
+  25% { opacity: 0.3; transform: scaleY(0.9) scaleX(1.02); }
+  50% { opacity: 0.8; transform: scaleY(1.05) scaleX(0.98); }
+  75% { opacity: 1; transform: scaleY(0.97) scaleX(1.01); }
 }
 
-/* ─── SHIMMER ─── fast bright light sweep */
+/* ─── SHIMMER ─── diagonal bright light sweep */
 .nc-anim-shimmer {
-  animation: nc-shimmer 1.8s ease-in-out infinite;
+  animation: nc-shimmer 1.8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
 }
 @keyframes nc-shimmer {
-  0% { background-position: 200% center; }
-  100% { background-position: -50% center; }
+  0% { background-position: 200% 200%; }
+  100% { background-position: -50% -50%; }
 }
 
-/* ─── FLOW ─── gradient slides through the text */
+/* ─── FLOW ─── slow gradient slide + subtle breathing */
 .nc-anim-flow {
-  animation: nc-flow 4s ease-in-out infinite alternate;
+  animation: nc-flow 6s ease-in-out infinite alternate, nc-flow-breathe 2s ease-in-out infinite;
 }
 @keyframes nc-flow {
   0% { background-position: 0% center; }
   100% { background-position: 100% center; }
 }
-
-/* ─── RAINBOW ─── fast full spectrum cycling */
-.nc-anim-rainbow {
-  animation: nc-rainbow 2s linear infinite;
-}
-@keyframes nc-rainbow {
-  0% { background-position: 0% center; }
-  100% { background-position: 400% center; }
-}
-
-/* ─── SPARKLE ─── fast sweep + rapid opacity flicker */
-.nc-anim-sparkle {
-  animation: nc-sparkle 1.5s ease-in-out infinite, nc-sparkle-flicker 0.3s ease-in-out infinite;
-}
-@keyframes nc-sparkle {
-  0% { background-position: 200% center; }
-  100% { background-position: -50% center; }
-}
-@keyframes nc-sparkle-flicker {
+@keyframes nc-flow-breathe {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.85; }
 }
 
-/* ─── FLASH ─── aggressive electrical sparks */
-.nc-anim-flash {
-  animation: nc-flash-bg 1.2s linear infinite, nc-flash-flicker 0.5s steps(1) infinite;
+/* ─── RAINBOW ─── hue-rotate on base gradient */
+.nc-anim-rainbow {
+  animation: nc-rainbow 3s linear infinite;
 }
-@keyframes nc-flash-bg {
-  0% { background-position: 0% center; }
-  100% { background-position: 200% center; }
+@keyframes nc-rainbow {
+  0% { filter: hue-rotate(0deg); }
+  100% { filter: hue-rotate(360deg); }
+}
+
+/* ─── SPARKLE ─── slow diagonal sweep + fast gem flicker */
+.nc-anim-sparkle {
+  animation: nc-sparkle 4s ease-in-out infinite, nc-sparkle-flicker 0.15s steps(1) infinite;
+}
+@keyframes nc-sparkle {
+  0% { background-position: 200% 200%; }
+  100% { background-position: -50% -50%; }
+}
+@keyframes nc-sparkle-flicker {
+  0% { opacity: 1; }
+  25% { opacity: 0.75; }
+  50% { opacity: 1; }
+  75% { opacity: 0.85; }
+}
+
+/* ─── FLASH ─── electrical discharge: flicker + jitter + surge */
+.nc-anim-flash {
+  animation: nc-flash-flicker 0.4s steps(1) infinite,
+             nc-flash-jitter 0.3s steps(1) infinite,
+             nc-flash-surge 1.5s ease-in-out infinite;
 }
 @keyframes nc-flash-flicker {
   0%, 100% { opacity: 1; }
-  5% { opacity: 0.15; }
-  6% { opacity: 1; }
-  10% { opacity: 0.4; }
-  11% { opacity: 1; }
-  30% { opacity: 0.2; }
-  31% { opacity: 1; }
-  33% { opacity: 0.5; }
-  34% { opacity: 1; }
-  60% { opacity: 0.1; }
-  61% { opacity: 0.8; }
-  62% { opacity: 0.2; }
-  63% { opacity: 1; }
-  80% { opacity: 0.3; }
-  81% { opacity: 1; }
+  4% { opacity: 0; }
+  5% { opacity: 1; }
+  12% { opacity: 0.3; }
+  13% { opacity: 1; }
+  28% { opacity: 0; }
+  29% { opacity: 0.7; }
+  30% { opacity: 1; }
+  55% { opacity: 0; }
+  56% { opacity: 1; }
+  70% { opacity: 0.2; }
+  71% { opacity: 1; }
+  85% { opacity: 0; }
+  86% { opacity: 0.6; }
+  87% { opacity: 1; }
+}
+@keyframes nc-flash-jitter {
+  0%, 100% { transform: translate(0); }
+  10% { transform: translate(1px, -1px); }
+  20% { transform: translate(-1px, 0); }
+  30% { transform: translate(0, 1px); }
+  50% { transform: translate(-1px, -1px); }
+  60% { transform: translate(1px, 0); }
+  80% { transform: translate(0, -1px); }
+  90% { transform: translate(-1px, 1px); }
+}
+@keyframes nc-flash-surge {
+  0%, 100% { background-position: 0% center; }
+  100% { background-position: 200% center; }
 }
 
-/* ─── GLOW ─── dramatic neon sign flicker */
+/* ─── GLOW ─── pulsing text-shadow spread + letter-spacing */
 .nc-anim-glow {
-  animation: nc-glow-flicker 3s steps(1) infinite;
+  animation: nc-glow-pulse 2s ease-in-out infinite, nc-glow-flicker 4s steps(1) infinite;
+}
+@keyframes nc-glow-pulse {
+  0%, 100% { letter-spacing: 0; }
+  50% { letter-spacing: 0.5px; }
 }
 @keyframes nc-glow-flicker {
   0%, 100% { opacity: 1; }
@@ -170,80 +194,91 @@ body {
   32% { opacity: 0.3; }
   33% { opacity: 0.8; }
   34% { opacity: 1; }
-  47% { opacity: 1; }
   48% { opacity: 0.4; }
   49% { opacity: 1; }
   49.5% { opacity: 0.3; }
   50% { opacity: 1; }
 }
 
-/* ─── GLITCH ─── fast digital distortion */
+/* ─── GLITCH ─── fast RGB channel separation */
 .nc-glitch-main {
-  animation: nc-glitch-main 2s steps(1) infinite;
+  animation: nc-glitch-main 1.5s steps(1) infinite;
 }
 .nc-glitch-layer1 {
-  animation: nc-glitch-1 2s steps(1) infinite;
+  animation: nc-glitch-1 1.5s steps(1) infinite;
 }
 .nc-glitch-layer2 {
-  animation: nc-glitch-2 2s steps(1) infinite;
+  animation: nc-glitch-2 1.5s steps(1) infinite;
 }
 @keyframes nc-glitch-main {
   0%, 100% { transform: translate(0); }
-  5% { transform: translate(-3px, 2px); }
-  5.5% { transform: translate(0); }
-  15% { transform: translate(4px, -1px); }
-  15.5% { transform: translate(0); }
-  30% { transform: translate(-2px, -3px); }
-  30.5% { transform: translate(0); }
-  45% { transform: translate(3px, 2px); }
-  45.5% { transform: translate(0); }
-  60% { transform: translate(-4px, 1px); }
-  60.5% { transform: translate(0); }
-  75% { transform: translate(2px, -3px); }
-  75.5% { transform: translate(0); }
-  90% { transform: translate(-3px, 2px); }
-  90.5% { transform: translate(0); }
+  3% { transform: translate(-4px, 2px); }
+  3.5% { transform: translate(0); }
+  11% { transform: translate(3px, -3px); }
+  11.5% { transform: translate(0); }
+  22% { transform: translate(-2px, -4px); }
+  22.5% { transform: translate(0); }
+  38% { transform: translate(4px, 1px); }
+  38.5% { transform: translate(0); }
+  52% { transform: translate(-3px, 3px); }
+  52.5% { transform: translate(0); }
+  63% { transform: translate(2px, -2px); }
+  63.5% { transform: translate(0); }
+  77% { transform: translate(-4px, -1px); }
+  77.5% { transform: translate(0); }
+  88% { transform: translate(3px, 4px); }
+  88.5% { transform: translate(0); }
+  94% { transform: translate(-2px, -3px); }
+  94.5% { transform: translate(0); }
 }
 @keyframes nc-glitch-1 {
   0%, 100% { transform: translate(0); clip-path: inset(0 0 65% 0); }
-  5% { transform: translate(4px, 0); clip-path: inset(10% 0 55% 0); }
-  5.5% { transform: translate(0); clip-path: inset(0 0 65% 0); }
-  15% { transform: translate(-4px, 0); clip-path: inset(20% 0 45% 0); }
-  15.5% { transform: translate(0); clip-path: inset(0 0 65% 0); }
-  30% { transform: translate(3px, 0); clip-path: inset(5% 0 70% 0); }
-  30.5% { transform: translate(0); clip-path: inset(0 0 65% 0); }
-  45% { transform: translate(-4px, 0); clip-path: inset(30% 0 40% 0); }
-  45.5% { transform: translate(0); clip-path: inset(0 0 65% 0); }
-  60% { transform: translate(3px, 0); clip-path: inset(15% 0 60% 0); }
-  60.5% { transform: translate(0); clip-path: inset(0 0 65% 0); }
-  75% { transform: translate(-3px, 0); clip-path: inset(25% 0 50% 0); }
-  75.5% { transform: translate(0); clip-path: inset(0 0 65% 0); }
-  90% { transform: translate(4px, 0); clip-path: inset(10% 0 65% 0); }
-  90.5% { transform: translate(0); clip-path: inset(0 0 65% 0); }
+  3% { transform: translate(5px, 0); clip-path: inset(10% 0 55% 0); }
+  3.5% { transform: translate(0); clip-path: inset(0 0 65% 0); }
+  11% { transform: translate(-4px, 0); clip-path: inset(25% 0 40% 0); }
+  11.5% { transform: translate(0); clip-path: inset(0 0 65% 0); }
+  22% { transform: translate(5px, 0); clip-path: inset(5% 0 70% 0); }
+  22.5% { transform: translate(0); clip-path: inset(0 0 65% 0); }
+  38% { transform: translate(-3px, 0); clip-path: inset(35% 0 30% 0); }
+  38.5% { transform: translate(0); clip-path: inset(0 0 65% 0); }
+  52% { transform: translate(4px, 0); clip-path: inset(15% 0 60% 0); }
+  52.5% { transform: translate(0); clip-path: inset(0 0 65% 0); }
+  63% { transform: translate(-5px, 0); clip-path: inset(20% 0 50% 0); }
+  63.5% { transform: translate(0); clip-path: inset(0 0 65% 0); }
+  77% { transform: translate(4px, 0); clip-path: inset(30% 0 35% 0); }
+  77.5% { transform: translate(0); clip-path: inset(0 0 65% 0); }
+  88% { transform: translate(-5px, 0); clip-path: inset(10% 0 65% 0); }
+  88.5% { transform: translate(0); clip-path: inset(0 0 65% 0); }
+  94% { transform: translate(3px, 0); clip-path: inset(40% 0 25% 0); }
+  94.5% { transform: translate(0); clip-path: inset(0 0 65% 0); }
 }
 @keyframes nc-glitch-2 {
   0%, 100% { transform: translate(0); clip-path: inset(65% 0 0 0); }
-  8% { transform: translate(-4px, 0); clip-path: inset(50% 0 10% 0); }
-  8.5% { transform: translate(0); clip-path: inset(65% 0 0 0); }
-  20% { transform: translate(4px, 0); clip-path: inset(40% 0 20% 0); }
-  20.5% { transform: translate(0); clip-path: inset(65% 0 0 0); }
-  35% { transform: translate(-3px, 0); clip-path: inset(55% 0 5% 0); }
-  35.5% { transform: translate(0); clip-path: inset(65% 0 0 0); }
-  50% { transform: translate(4px, 0); clip-path: inset(60% 0 15% 0); }
-  50.5% { transform: translate(0); clip-path: inset(65% 0 0 0); }
-  65% { transform: translate(-4px, 0); clip-path: inset(45% 0 25% 0); }
-  65.5% { transform: translate(0); clip-path: inset(65% 0 0 0); }
-  80% { transform: translate(3px, 0); clip-path: inset(50% 0 15% 0); }
+  5% { transform: translate(-5px, 0); clip-path: inset(50% 0 10% 0); }
+  5.5% { transform: translate(0); clip-path: inset(65% 0 0 0); }
+  15% { transform: translate(4px, 0); clip-path: inset(45% 0 20% 0); }
+  15.5% { transform: translate(0); clip-path: inset(65% 0 0 0); }
+  28% { transform: translate(-4px, 0); clip-path: inset(55% 0 5% 0); }
+  28.5% { transform: translate(0); clip-path: inset(65% 0 0 0); }
+  42% { transform: translate(5px, 0); clip-path: inset(60% 0 15% 0); }
+  42.5% { transform: translate(0); clip-path: inset(65% 0 0 0); }
+  56% { transform: translate(-4px, 0); clip-path: inset(45% 0 25% 0); }
+  56.5% { transform: translate(0); clip-path: inset(65% 0 0 0); }
+  68% { transform: translate(5px, 0); clip-path: inset(50% 0 15% 0); }
+  68.5% { transform: translate(0); clip-path: inset(65% 0 0 0); }
+  80% { transform: translate(-3px, 0); clip-path: inset(55% 0 10% 0); }
   80.5% { transform: translate(0); clip-path: inset(65% 0 0 0); }
-  95% { transform: translate(-4px, 0); clip-path: inset(55% 0 10% 0); }
-  95.5% { transform: translate(0); clip-path: inset(65% 0 0 0); }
+  92% { transform: translate(4px, 0); clip-path: inset(40% 0 20% 0); }
+  92.5% { transform: translate(0); clip-path: inset(65% 0 0 0); }
 }
 
-/* ─── VOID ─── slow dark mysterious breathing */
+/* ─── VOID ─── black hole breathing: letter-spacing + shadow spread + opacity */
 .nc-anim-void {
   animation: nc-void 6s ease-in-out infinite;
 }
 @keyframes nc-void {
-  0%, 100% { opacity: 0.4; transform: scale(0.98); }
-  50% { opacity: 0.95; transform: scale(1.02); }
+  0%, 100% { opacity: 0.5; letter-spacing: normal; }
+  25% { opacity: 0.65; letter-spacing: -0.5px; }
+  50% { opacity: 0.9; letter-spacing: 0.3px; }
+  75% { opacity: 0.7; letter-spacing: -0.2px; }
 }

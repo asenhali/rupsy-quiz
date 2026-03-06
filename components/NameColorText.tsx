@@ -54,33 +54,33 @@ export default function NameColorText({
   const shouldAnimate = animated && isVisible;
   const animClass = shouldAnimate ? `nc-anim-${animation}` : "";
 
-  // ── GLITCH: 3 layered spans ──
+  // ── GLITCH: 3 layered spans with RGB channel separation ──
   if (shouldAnimate && animation === "glitch") {
     return (
       <span ref={ref} className={className} style={{ position: "relative", display: "inline-block", fontWeight: "bold", ...style }}>
         <span className="nc-glitch-main" style={{ color: colorValue }}>{children}</span>
-        <span className="nc-glitch-layer1" aria-hidden="true" style={{ position: "absolute", top: 0, left: 0, color: "#00FFFF", opacity: 0.7, clipPath: "inset(0 0 65% 0)", pointerEvents: "none" }}>{children}</span>
-        <span className="nc-glitch-layer2" aria-hidden="true" style={{ position: "absolute", top: 0, left: 0, color: "#FF00FF", opacity: 0.7, clipPath: "inset(65% 0 0 0)", pointerEvents: "none" }}>{children}</span>
+        <span className="nc-glitch-layer1" aria-hidden="true" style={{ position: "absolute", top: 0, left: 0, color: "#FF0000", opacity: 0.7, clipPath: "inset(0 0 65% 0)", pointerEvents: "none" }}>{children}</span>
+        <span className="nc-glitch-layer2" aria-hidden="true" style={{ position: "absolute", top: 0, left: 0, color: "#0000FF", opacity: 0.7, clipPath: "inset(65% 0 0 0)", pointerEvents: "none" }}>{children}</span>
       </span>
     );
   }
 
-  // ── GLOW: solid color + neon text-shadow ──
+  // ── GLOW: animated text-shadow spread + letter-spacing ──
   if (shouldAnimate && animation === "glow") {
     return (
       <span ref={ref} className={className} style={{ overflow: "hidden", whiteSpace: "nowrap", textOverflow: "ellipsis", display: "inline-block", maxWidth: "100%", ...style }}>
-        <span className={`${animClass}`} style={{ fontWeight: "bold", color: colorValue, textShadow: `0 0 7px ${colorValue}, 0 0 14px ${colorValue}, 0 0 21px ${colorValue}`, display: "inline-block", overflow: "visible", padding: "4px 0" }}>
+        <span className={`${animClass}`} style={{ fontWeight: "bold", color: colorValue, textShadow: `0 0 3px ${colorValue}, 0 0 8px ${colorValue}`, display: "inline-block", overflow: "visible", padding: "4px 0" }}>
           {children}
         </span>
       </span>
     );
   }
 
-  // ── VOID: dark + red glow ──
+  // ── VOID: black hole breathing with animated shadow ──
   if (shouldAnimate && animation === "void") {
     return (
       <span ref={ref} className={className} style={{ overflow: "hidden", whiteSpace: "nowrap", textOverflow: "ellipsis", display: "inline-block", maxWidth: "100%", ...style }}>
-        <span className={`${animClass}`} style={{ fontWeight: "bold", color: "#1a1a2e", textShadow: "0 0 4px #8B0000, 0 0 8px #4a0033, 0 0 20px rgba(139,0,0,0.3)", display: "inline-block", overflow: "visible", padding: "4px 0" }}>
+        <span className={`${animClass}`} style={{ fontWeight: "bold", color: "#1a1a2e", textShadow: "0 0 4px #8B0000, 0 0 8px #4a0033, 0 0 15px rgba(139,0,0,0.3)", display: "inline-block", overflow: "visible", padding: "4px 0" }}>
           {children}
         </span>
       </span>
@@ -113,24 +113,24 @@ export default function NameColorText({
     switch (animation) {
       case "shimmer": {
         const base = variant === "dark" ? dark : light;
-        gradient = isGradient ? colorValue : `linear-gradient(90deg, ${base} 0%, ${base} 35%, rgba(255,255,255,0.95) 48%, rgba(255,255,255,0.95) 52%, ${base} 65%, ${base} 100%)`;
-        bgSize = "250% 100%";
+        gradient = isGradient ? colorValue : `linear-gradient(120deg, ${base} 0%, ${base} 40%, rgba(255,255,255,0.98) 49%, rgba(255,255,255,0.98) 51%, ${base} 60%, ${base} 100%)`;
+        bgSize = "250% 250%";
         break;
       }
       case "flow": {
         gradient = isGradient ? colorValue : `linear-gradient(90deg, ${dark}, ${light}, ${dark})`;
-        bgSize = "400% 100%";
+        bgSize = "500% 100%";
         break;
       }
       case "rainbow": {
         gradient = isGradient ? colorValue : "linear-gradient(90deg, #FF0000, #FF8800, #FFFF00, #00FF00, #0088FF, #8800FF, #FF0000)";
-        bgSize = "400% 100%";
+        bgSize = "100% 100%";
         break;
       }
       case "sparkle": {
         const base = variant === "dark" ? dark : light;
-        gradient = isGradient ? colorValue : `linear-gradient(90deg, ${base} 0%, ${base} 25%, #FFFFFF 37%, ${base} 50%, ${base} 75%, #FFFFFF 87%, ${base} 100%)`;
-        bgSize = "400% 100%";
+        gradient = isGradient ? colorValue : `linear-gradient(120deg, ${base} 0%, ${base} 25%, #FFFFFF 37%, ${base} 50%, ${base} 75%, #FFFFFF 87%, ${base} 100%)`;
+        bgSize = "400% 400%";
         break;
       }
       case "flash": {
@@ -147,13 +147,14 @@ export default function NameColorText({
     }
   }
 
-  // KEY FIX: Use CSS class "nc-gradient-text" which forces background-clip: text !important
-  // This prevents Tailwind from overriding it with background-clip: border-box
+  // Flash uses transform (jitter) so needs inline-block
+  const needsInlineBlock = shouldAnimate && (animation === "flash" || animation === "pulse");
+
   return (
     <span ref={ref} className={className} style={style}>
       <span
         className={`nc-gradient-text ${animClass}`}
-        style={{ backgroundImage: gradient, backgroundSize: bgSize }}
+        style={{ backgroundImage: gradient, backgroundSize: bgSize, ...(needsInlineBlock ? { display: "inline-block" } : {}) }}
       >
         {children}
       </span>
