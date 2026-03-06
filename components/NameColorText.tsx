@@ -57,10 +57,12 @@ export default function NameColorText({
   // ── GLITCH: 3 layered spans with RGB channel separation ──
   if (shouldAnimate && animation === "glitch") {
     return (
-      <span ref={ref} className={className} style={{ position: "relative", display: "inline-block", fontWeight: "bold", ...style }}>
-        <span className="nc-glitch-main" style={{ color: colorValue }}>{children}</span>
-        <span className="nc-glitch-layer1" aria-hidden="true" style={{ position: "absolute", top: 0, left: 0, color: "#FF0000", opacity: 0.7, clipPath: "inset(0 0 65% 0)", pointerEvents: "none" }}>{children}</span>
-        <span className="nc-glitch-layer2" aria-hidden="true" style={{ position: "absolute", top: 0, left: 0, color: "#0000FF", opacity: 0.7, clipPath: "inset(65% 0 0 0)", pointerEvents: "none" }}>{children}</span>
+      <span ref={ref} className={className} style={{ overflow: "hidden", whiteSpace: "nowrap", textOverflow: "ellipsis", display: "inline-block", maxWidth: "100%", ...style }}>
+        <span style={{ position: "relative", display: "inline-block", fontWeight: "bold", overflow: "visible", padding: "4px 6px" }}>
+          <span className="nc-glitch-main" style={{ color: "#FFFFFF" }}>{children}</span>
+          <span className="nc-glitch-layer1" aria-hidden="true" style={{ position: "absolute", top: 0, left: 0, color: "rgba(255,0,60,0.75)", clipPath: "inset(0 0 65% 0)", pointerEvents: "none", transform: "translate(-1.5px, 0)", padding: "4px 6px" }}>{children}</span>
+          <span className="nc-glitch-layer2" aria-hidden="true" style={{ position: "absolute", top: 0, left: 0, color: "rgba(0,60,255,0.75)", clipPath: "inset(65% 0 0 0)", pointerEvents: "none", transform: "translate(1.5px, 0)", padding: "4px 6px" }}>{children}</span>
+        </span>
       </span>
     );
   }

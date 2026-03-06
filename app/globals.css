@@ -232,44 +232,44 @@ body {
   94.5% { transform: translate(0); }
 }
 @keyframes nc-glitch-1 {
-  0%, 100% { transform: translate(0); clip-path: inset(0 0 65% 0); }
-  3% { transform: translate(5px, 0); clip-path: inset(10% 0 55% 0); }
-  3.5% { transform: translate(0); clip-path: inset(0 0 65% 0); }
-  11% { transform: translate(-4px, 0); clip-path: inset(25% 0 40% 0); }
-  11.5% { transform: translate(0); clip-path: inset(0 0 65% 0); }
-  22% { transform: translate(5px, 0); clip-path: inset(5% 0 70% 0); }
-  22.5% { transform: translate(0); clip-path: inset(0 0 65% 0); }
-  38% { transform: translate(-3px, 0); clip-path: inset(35% 0 30% 0); }
-  38.5% { transform: translate(0); clip-path: inset(0 0 65% 0); }
-  52% { transform: translate(4px, 0); clip-path: inset(15% 0 60% 0); }
-  52.5% { transform: translate(0); clip-path: inset(0 0 65% 0); }
-  63% { transform: translate(-5px, 0); clip-path: inset(20% 0 50% 0); }
-  63.5% { transform: translate(0); clip-path: inset(0 0 65% 0); }
-  77% { transform: translate(4px, 0); clip-path: inset(30% 0 35% 0); }
-  77.5% { transform: translate(0); clip-path: inset(0 0 65% 0); }
-  88% { transform: translate(-5px, 0); clip-path: inset(10% 0 65% 0); }
-  88.5% { transform: translate(0); clip-path: inset(0 0 65% 0); }
-  94% { transform: translate(3px, 0); clip-path: inset(40% 0 25% 0); }
-  94.5% { transform: translate(0); clip-path: inset(0 0 65% 0); }
+  0%, 100% { transform: translate(-1.5px, 0); clip-path: inset(0 0 65% 0); }
+  3% { transform: translate(-4px, 0); clip-path: inset(10% 0 55% 0); }
+  3.5% { transform: translate(-1.5px, 0); clip-path: inset(0 0 65% 0); }
+  11% { transform: translate(3px, 0); clip-path: inset(25% 0 40% 0); }
+  11.5% { transform: translate(-1.5px, 0); clip-path: inset(0 0 65% 0); }
+  22% { transform: translate(-4px, 0); clip-path: inset(5% 0 70% 0); }
+  22.5% { transform: translate(-1.5px, 0); clip-path: inset(0 0 65% 0); }
+  38% { transform: translate(3px, 0); clip-path: inset(35% 0 30% 0); }
+  38.5% { transform: translate(-1.5px, 0); clip-path: inset(0 0 65% 0); }
+  52% { transform: translate(-4px, 0); clip-path: inset(15% 0 60% 0); }
+  52.5% { transform: translate(-1.5px, 0); clip-path: inset(0 0 65% 0); }
+  63% { transform: translate(4px, 0); clip-path: inset(20% 0 50% 0); }
+  63.5% { transform: translate(-1.5px, 0); clip-path: inset(0 0 65% 0); }
+  77% { transform: translate(-3px, 0); clip-path: inset(30% 0 35% 0); }
+  77.5% { transform: translate(-1.5px, 0); clip-path: inset(0 0 65% 0); }
+  88% { transform: translate(4px, 0); clip-path: inset(10% 0 65% 0); }
+  88.5% { transform: translate(-1.5px, 0); clip-path: inset(0 0 65% 0); }
+  94% { transform: translate(-3px, 0); clip-path: inset(40% 0 25% 0); }
+  94.5% { transform: translate(-1.5px, 0); clip-path: inset(0 0 65% 0); }
 }
 @keyframes nc-glitch-2 {
-  0%, 100% { transform: translate(0); clip-path: inset(65% 0 0 0); }
-  5% { transform: translate(-5px, 0); clip-path: inset(50% 0 10% 0); }
-  5.5% { transform: translate(0); clip-path: inset(65% 0 0 0); }
-  15% { transform: translate(4px, 0); clip-path: inset(45% 0 20% 0); }
-  15.5% { transform: translate(0); clip-path: inset(65% 0 0 0); }
-  28% { transform: translate(-4px, 0); clip-path: inset(55% 0 5% 0); }
-  28.5% { transform: translate(0); clip-path: inset(65% 0 0 0); }
-  42% { transform: translate(5px, 0); clip-path: inset(60% 0 15% 0); }
-  42.5% { transform: translate(0); clip-path: inset(65% 0 0 0); }
-  56% { transform: translate(-4px, 0); clip-path: inset(45% 0 25% 0); }
-  56.5% { transform: translate(0); clip-path: inset(65% 0 0 0); }
-  68% { transform: translate(5px, 0); clip-path: inset(50% 0 15% 0); }
-  68.5% { transform: translate(0); clip-path: inset(65% 0 0 0); }
-  80% { transform: translate(-3px, 0); clip-path: inset(55% 0 10% 0); }
-  80.5% { transform: translate(0); clip-path: inset(65% 0 0 0); }
-  92% { transform: translate(4px, 0); clip-path: inset(40% 0 20% 0); }
-  92.5% { transform: translate(0); clip-path: inset(65% 0 0 0); }
+  0%, 100% { transform: translate(1.5px, 0); clip-path: inset(65% 0 0 0); }
+  5% { transform: translate(4px, 0); clip-path: inset(50% 0 10% 0); }
+  5.5% { transform: translate(1.5px, 0); clip-path: inset(65% 0 0 0); }
+  15% { transform: translate(-3px, 0); clip-path: inset(45% 0 20% 0); }
+  15.5% { transform: translate(1.5px, 0); clip-path: inset(65% 0 0 0); }
+  28% { transform: translate(4px, 0); clip-path: inset(55% 0 5% 0); }
+  28.5% { transform: translate(1.5px, 0); clip-path: inset(65% 0 0 0); }
+  42% { transform: translate(-4px, 0); clip-path: inset(60% 0 15% 0); }
+  42.5% { transform: translate(1.5px, 0); clip-path: inset(65% 0 0 0); }
+  56% { transform: translate(4px, 0); clip-path: inset(45% 0 25% 0); }
+  56.5% { transform: translate(1.5px, 0); clip-path: inset(65% 0 0 0); }
+  68% { transform: translate(-4px, 0); clip-path: inset(50% 0 15% 0); }
+  68.5% { transform: translate(1.5px, 0); clip-path: inset(65% 0 0 0); }
+  80% { transform: translate(3px, 0); clip-path: inset(55% 0 10% 0); }
+  80.5% { transform: translate(1.5px, 0); clip-path: inset(65% 0 0 0); }
+  92% { transform: translate(-3px, 0); clip-path: inset(40% 0 20% 0); }
+  92.5% { transform: translate(1.5px, 0); clip-path: inset(65% 0 0 0); }
 }
 
 /* ─── VOID ─── black hole breathing: letter-spacing + shadow spread + opacity */
