@@ -68,8 +68,10 @@ export default function NameColorText({
   // ── GLOW: solid color + neon text-shadow ──
   if (shouldAnimate && animation === "glow") {
     return (
-      <span ref={ref} className={`${className} ${animClass}`} style={{ fontWeight: "bold", color: colorValue, textShadow: `0 0 7px ${colorValue}, 0 0 14px ${colorValue}, 0 0 21px ${colorValue}`, display: "inline-block", ...style }}>
-        {children}
+      <span ref={ref} className={className} style={{ overflow: "hidden", whiteSpace: "nowrap", textOverflow: "ellipsis", display: "inline-block", maxWidth: "100%", ...style }}>
+        <span className={`${animClass}`} style={{ fontWeight: "bold", color: colorValue, textShadow: `0 0 7px ${colorValue}, 0 0 14px ${colorValue}, 0 0 21px ${colorValue}`, display: "inline-block", overflow: "visible", padding: "4px 0" }}>
+          {children}
+        </span>
       </span>
     );
   }
@@ -77,8 +79,10 @@ export default function NameColorText({
   // ── VOID: dark + red glow ──
   if (shouldAnimate && animation === "void") {
     return (
-      <span ref={ref} className={`${className} ${animClass}`} style={{ fontWeight: "bold", color: "#1a1a2e", textShadow: "0 0 4px #8B0000, 0 0 8px #4a0033, 0 0 20px rgba(139,0,0,0.3)", display: "inline-block", ...style }}>
-        {children}
+      <span ref={ref} className={className} style={{ overflow: "hidden", whiteSpace: "nowrap", textOverflow: "ellipsis", display: "inline-block", maxWidth: "100%", ...style }}>
+        <span className={`${animClass}`} style={{ fontWeight: "bold", color: "#1a1a2e", textShadow: "0 0 4px #8B0000, 0 0 8px #4a0033, 0 0 20px rgba(139,0,0,0.3)", display: "inline-block", overflow: "visible", padding: "4px 0" }}>
+          {children}
+        </span>
       </span>
     );
   }
@@ -115,12 +119,12 @@ export default function NameColorText({
       }
       case "flow": {
         gradient = isGradient ? colorValue : `linear-gradient(90deg, ${dark}, ${light}, ${dark})`;
-        bgSize = "300% 100%";
+        bgSize = "400% 100%";
         break;
       }
       case "rainbow": {
         gradient = isGradient ? colorValue : "linear-gradient(90deg, #FF0000, #FF8800, #FFFF00, #00FF00, #0088FF, #8800FF, #FF0000)";
-        bgSize = "300% 100%";
+        bgSize = "400% 100%";
         break;
       }
       case "sparkle": {
