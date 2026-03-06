@@ -54,35 +54,41 @@ export default function NameColorText({
   const colorValue = variant === "dark" ? dark : light;
   const isGradient = colorValue.includes("gradient");
 
-  // Base styles for all text
+  // Base styles — do NOT include display here; gradient needs display:inline on inner span
   const baseStyle: React.CSSProperties = {
     fontWeight: "bold",
-    display: "inline-block",
     willChange: animated ? "transform, opacity" : "auto",
     ...style,
   };
+
+  // Inner span styles for gradient — display:inline so background-clip:text works on text only
+  const gradientInnerStyle = (extra: React.CSSProperties = {}): React.CSSProperties => ({
+    display: "inline",
+    fontWeight: "bold",
+    willChange: animated ? "transform, opacity" : "auto",
+    backgroundClip: "text",
+    WebkitBackgroundClip: "text",
+    WebkitTextFillColor: "transparent",
+    ...extra,
+  });
 
   // NON-ANIMATED: solid color or gradient (static)
   if (!animated || !isVisible) {
     if (isGradient) {
       return (
-        <span
-          ref={ref}
-          className={className}
-          style={{
-            ...baseStyle,
-            background: colorValue,
-            backgroundClip: "text",
-            WebkitBackgroundClip: "text",
-            WebkitTextFillColor: "transparent",
-          }}
-        >
-          {children}
+        <span ref={ref} className={className}>
+          <span
+            style={gradientInnerStyle({
+              background: colorValue,
+            })}
+          >
+            {children}
+          </span>
         </span>
       );
     }
     return (
-      <span ref={ref} className={className} style={{ ...baseStyle, color: colorValue }}>
+      <span ref={ref} className={className} style={{ ...baseStyle, display: "inline-block", color: colorValue }}>
         {children}
       </span>
     );
@@ -96,22 +102,15 @@ export default function NameColorText({
     // PULSE — breathing opacity effect
     // ═══════════════════════════════════════════════
     case "pulse":
+      if (isGradient) {
+        return (
+          <span ref={ref} className={`${className} ${animClass}`}>
+            <span style={gradientInnerStyle({ background: colorValue })}>{children}</span>
+          </span>
+        );
+      }
       return (
-        <span
-          ref={ref}
-          className={`${className} ${animClass}`}
-          style={{
-            ...baseStyle,
-            ...(isGradient
-              ? {
-                  background: colorValue,
-                  backgroundClip: "text",
-                  WebkitBackgroundClip: "text",
-                  WebkitTextFillColor: "transparent",
-                }
-              : { color: colorValue }),
-          }}
-        >
+        <span ref={ref} className={`${className} ${animClass}`} style={{ ...baseStyle, display: "inline-block", color: colorValue }}>
           {children}
         </span>
       );
@@ -125,19 +124,8 @@ export default function NameColorText({
         ? colorValue.replace(/\)\s*$/, ", rgba(255,255,255,0.8) 45%, rgba(255,255,255,0.8) 55%)")
         : `linear-gradient(90deg, ${baseColor} 0%, ${baseColor} 35%, rgba(255,255,255,0.95) 48%, rgba(255,255,255,0.95) 52%, ${baseColor} 65%, ${baseColor} 100%)`;
       return (
-        <span
-          ref={ref}
-          className={`${className} ${animClass}`}
-          style={{
-            ...baseStyle,
-            background: shimmerGradient,
-            backgroundSize: "250% 100%",
-            backgroundClip: "text",
-            WebkitBackgroundClip: "text",
-            WebkitTextFillColor: "transparent",
-          }}
-        >
-          {children}
+        <span ref={ref} className={`${className} ${animClass}`}>
+          <span style={gradientInnerStyle({ background: shimmerGradient, backgroundSize: "250% 100%" })}>{children}</span>
         </span>
       );
     }
@@ -148,19 +136,8 @@ export default function NameColorText({
     case "flow": {
       const flowGradient = isGradient ? colorValue : `linear-gradient(90deg, ${dark}, ${light}, ${dark})`;
       return (
-        <span
-          ref={ref}
-          className={`${className} ${animClass}`}
-          style={{
-            ...baseStyle,
-            background: flowGradient,
-            backgroundSize: "300% 100%",
-            backgroundClip: "text",
-            WebkitBackgroundClip: "text",
-            WebkitTextFillColor: "transparent",
-          }}
-        >
-          {children}
+        <span ref={ref} className={`${className} ${animClass}`}>
+          <span style={gradientInnerStyle({ background: flowGradient, backgroundSize: "300% 100%" })}>{children}</span>
         </span>
       );
     }
@@ -169,22 +146,12 @@ export default function NameColorText({
     // RAINBOW — hue rotation (full spectrum cycling)
     // ═══════════════════════════════════════════════
     case "rainbow": {
+      const rainbowGradient = colorValue.includes("gradient")
+        ? colorValue
+        : "linear-gradient(90deg, #FF0000, #FF8800, #FFFF00, #00FF00, #0088FF, #8800FF, #FF0000)";
       return (
-        <span
-          ref={ref}
-          className={`${className} ${animClass}`}
-          style={{
-            ...baseStyle,
-            background: colorValue.includes("gradient")
-              ? colorValue
-              : "linear-gradient(90deg, #FF0000, #FF8800, #FFFF00, #00FF00, #0088FF, #8800FF, #FF0000)",
-            backgroundSize: "300% 100%",
-            backgroundClip: "text",
-            WebkitBackgroundClip: "text",
-            WebkitTextFillColor: "transparent",
-          }}
-        >
-          {children}
+        <span ref={ref} className={`${className} ${animClass}`}>
+          <span style={gradientInnerStyle({ background: rainbowGradient, backgroundSize: "300% 100%" })}>{children}</span>
         </span>
       );
     }
@@ -198,21 +165,9 @@ export default function NameColorText({
       const sparkleGradient = isGradient
         ? colorValue
         : `linear-gradient(90deg, ${sparkleBase} 0%, ${sparkleBase} 25%, ${highlightColor} 37%, ${sparkleBase} 50%, ${sparkleBase} 75%, ${highlightColor} 87%, ${sparkleBase} 100%)`;
-      /* For gradient items (e.g. Diamantová), use as-is; for solid (e.g. Zlatá), use built gradient */
       return (
-        <span
-          ref={ref}
-          className={`${className} ${animClass}`}
-          style={{
-            ...baseStyle,
-            background: sparkleGradient,
-            backgroundSize: "400% 100%",
-            backgroundClip: "text",
-            WebkitBackgroundClip: "text",
-            WebkitTextFillColor: "transparent",
-          }}
-        >
-          {children}
+        <span ref={ref} className={`${className} ${animClass}`}>
+          <span style={gradientInnerStyle({ background: sparkleGradient, backgroundSize: "400% 100%" })}>{children}</span>
         </span>
       );
     }
@@ -223,19 +178,8 @@ export default function NameColorText({
     case "flash": {
       const flashGradient = isGradient ? colorValue : `linear-gradient(90deg, ${dark}, ${light})`;
       return (
-        <span
-          ref={ref}
-          className={`${className} ${animClass}`}
-          style={{
-            ...baseStyle,
-            background: flashGradient,
-            backgroundSize: "200% 100%",
-            backgroundClip: "text",
-            WebkitBackgroundClip: "text",
-            WebkitTextFillColor: "transparent",
-          }}
-        >
-          {children}
+        <span ref={ref} className={`${className} ${animClass}`}>
+          <span style={gradientInnerStyle({ background: flashGradient, backgroundSize: "200% 100%" })}>{children}</span>
         </span>
       );
     }
@@ -331,23 +275,13 @@ export default function NameColorText({
     default:
       if (isGradient) {
         return (
-          <span
-            ref={ref}
-            className={className}
-            style={{
-              ...baseStyle,
-              background: colorValue,
-              backgroundClip: "text",
-              WebkitBackgroundClip: "text",
-              WebkitTextFillColor: "transparent",
-            }}
-          >
-            {children}
+          <span ref={ref} className={className}>
+            <span style={gradientInnerStyle({ background: colorValue })}>{children}</span>
           </span>
         );
       }
       return (
-        <span ref={ref} className={className} style={{ ...baseStyle, color: colorValue }}>
+        <span ref={ref} className={className} style={{ ...baseStyle, display: "inline-block", color: colorValue }}>
           {children}
         </span>
       );

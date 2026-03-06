@@ -89,7 +89,7 @@ export default function ProfileModal() {
           <NameColorText
             equippedNameColorId={user?.equippedNameColor ?? null}
             variant="dark"
-            className="text-2xl font-bold tracking-tight block"
+            className="text-2xl font-bold tracking-tight"
           >
             {user?.nickname ?? ""}
           </NameColorText>

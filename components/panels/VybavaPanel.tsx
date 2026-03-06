@@ -203,7 +203,7 @@ export default function VybavaPanel() {
                 <NameColorText
                   equippedNameColorId={equippedNameColor}
                   variant="dark"
-                  className="text-[19px] font-bold leading-tight block"
+                  className="text-[19px] font-bold leading-tight"
                 >
                   {user?.nickname ?? "Prezývka"}
                 </NameColorText>

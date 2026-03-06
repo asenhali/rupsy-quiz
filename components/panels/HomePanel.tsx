@@ -365,7 +365,7 @@ export default function HomePanel() {
               <NameColorText
                   equippedNameColorId={user?.equippedNameColor ?? null}
                   variant="dark"
-                  className="text-base font-semibold tracking-tight truncate block"
+                  className="text-base font-semibold tracking-tight truncate"
                 >
                   {user?.nickname ?? ""}
                 </NameColorText>
