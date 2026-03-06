@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { getCosmeticById, DEFAULT_ITEM_IDS } from "@/lib/cosmetics";
+import PixiTextEffect from "./PixiTextEffect";
 
 interface NameColorTextProps {
   children: React.ReactNode;
@@ -53,6 +54,17 @@ export default function NameColorText({
   const isGradient = colorValue.includes("gradient");
   const shouldAnimate = animated && isVisible;
   const animClass = shouldAnimate ? `nc-anim-${animation}` : "";
+
+  // ── FIRE: PixiJS canvas particle effect ──
+  if (shouldAnimate && animation === "fire") {
+    const textContent = typeof children === "string" ? children : String(children ?? "");
+    const size = style?.fontSize ? parseInt(String(style.fontSize), 10) : undefined;
+    return (
+      <span ref={ref} className={className} style={style}>
+        <PixiTextEffect text={textContent} effect="fire" fontSize={size || 14} />
+      </span>
+    );
+  }
 
   // ── GLITCH: 3 layered spans with RGB channel separation ──
   if (shouldAnimate && animation === "glitch") {
