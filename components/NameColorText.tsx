@@ -1,8 +1,28 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type RefObject } from "react";
 import { getCosmeticById, DEFAULT_ITEM_IDS } from "@/lib/cosmetics";
 import PixiTextEffect from "./PixiTextEffect";
+
+function PixiFireWrapper({ text, parentRef, styleFontSize }: { text: string; parentRef: RefObject<HTMLSpanElement | null>; styleFontSize?: string | number }) {
+  const [size, setSize] = useState<number>(() => {
+    if (styleFontSize) return parseInt(String(styleFontSize), 10);
+    return 14;
+  });
+
+  useEffect(() => {
+    if (styleFontSize) {
+      setSize(parseInt(String(styleFontSize), 10)); // eslint-disable-line react-hooks/set-state-in-effect
+      return;
+    }
+    const el = parentRef.current;
+    if (!el) return;
+    const computed = parseFloat(getComputedStyle(el).fontSize);
+    if (computed > 0) setSize(Math.round(computed)); // eslint-disable-line react-hooks/set-state-in-effect
+  }, [parentRef, styleFontSize]);
+
+  return <PixiTextEffect text={text} effect="fire" fontSize={size} />;
+}
 
 interface NameColorTextProps {
   children: React.ReactNode;
@@ -58,10 +78,9 @@ export default function NameColorText({
   // ── FIRE: PixiJS canvas particle effect ──
   if (shouldAnimate && animation === "fire") {
     const textContent = typeof children === "string" ? children : String(children ?? "");
-    const size = style?.fontSize ? parseInt(String(style.fontSize), 10) : undefined;
     return (
       <span ref={ref} className={className} style={style}>
-        <PixiTextEffect text={textContent} effect="fire" fontSize={size || 14} />
+        <PixiFireWrapper text={textContent} parentRef={ref} styleFontSize={style?.fontSize} />
       </span>
     );
   }
