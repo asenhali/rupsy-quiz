@@ -4,7 +4,14 @@ import jwt from "jsonwebtoken";
 import { db } from "@/lib/firebaseAdmin";
 import { calculateLevel } from "@/lib/xp";
 
-// TODO: Remove — testing only: grant all characters for Výbava preview
+// TODO: Remove — testing only: grant all items for Výbava preview
+const TEST_NAME_COLOR_IDS = [
+  "nc_default", "nc_snezna", "nc_rubinova", "nc_oceanova", "nc_siva", "nc_hneda", "nc_bezova",
+  "nc_smaragdova", "nc_fialkova", "nc_tyrkysova", "nc_medena", "nc_koralova", "nc_olivova", "nc_ocelova",
+  "nc_jantarova", "nc_ruzova", "nc_krvava", "nc_sunset", "nc_pulzujuca_modra", "nc_matova_vlna", "nc_ruzovy_sen",
+  "nc_duhova", "nc_ohniva", "nc_ladova", "nc_toxicka", "nc_lavova", "nc_mysticka", "nc_elektricka",
+  "nc_zlata", "nc_neonova", "nc_plazmova", "nc_kralovska", "nc_glitch", "nc_diamantova", "nc_cierna_diera",
+];
 const TEST_CHARACTER_IDS = [
   "ch_rupsik",
   "ch_medved",
@@ -106,6 +113,9 @@ export async function GET(request: Request) {
         equippedAvatarBackground: data?.equippedAvatarBackground ?? null,
         ownedItems: [
           ...(data?.ownedItems ?? []),
+          ...TEST_NAME_COLOR_IDS.filter(
+            (id) => !(data?.ownedItems ?? []).includes(id)
+          ),
           ...TEST_CHARACTER_IDS.filter(
             (id) => !(data?.ownedItems ?? []).includes(id)
           ),

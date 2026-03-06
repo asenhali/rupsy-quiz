@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import PlayerAvatar from "@/components/PlayerAvatar";
+import NameColorText from "@/components/NameColorText";
 import { getCharacterSrc } from "@/lib/characters";
 import { resolveAvatarCosmetics } from "@/lib/cosmetics";
 
@@ -13,6 +14,7 @@ type FriendItem = {
   avatarId: string;
   avatarBackgroundId?: string | null;
   avatarFrameId?: string | null;
+  equippedNameColor?: string | null;
   city: string;
   level: number;
 };
@@ -25,6 +27,7 @@ type RequestUser = {
   avatarId?: string;
   avatarBackgroundId?: string | null;
   avatarFrameId?: string | null;
+  equippedNameColor?: string | null;
 };
 
 type RequestItem = {
@@ -266,7 +269,13 @@ export default function FriendsPanel() {
                     />
                     <div className="flex-1 min-w-0">
                       <p className="font-medium truncate">
-                        {r.user?.nickname ?? r.user?.rupsyId ?? "—"}
+                        <NameColorText
+                          equippedNameColorId={r.user?.equippedNameColor ?? null}
+                          variant="dark"
+                          className="inline"
+                        >
+                          {r.user?.nickname ?? r.user?.rupsyId ?? "—"}
+                        </NameColorText>
                       </p>
                       <p className="text-sm opacity-50">{r.user?.rupsyId ?? ""}</p>
                     </div>
@@ -316,7 +325,13 @@ export default function FriendsPanel() {
                     />
                     <div className="flex-1 min-w-0">
                       <p className="font-medium truncate">
-                        {r.user?.nickname ?? r.user?.rupsyId ?? "—"}
+                        <NameColorText
+                          equippedNameColorId={r.user?.equippedNameColor ?? null}
+                          variant="dark"
+                          className="inline"
+                        >
+                          {r.user?.nickname ?? r.user?.rupsyId ?? "—"}
+                        </NameColorText>
                       </p>
                       <p className="text-sm opacity-50">{r.user?.rupsyId ?? ""}</p>
                       <p className="text-sm opacity-50">Čaká na schválenie</p>
@@ -375,7 +390,15 @@ export default function FriendsPanel() {
                       alt=""
                     />
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold truncate">{friend.nickname ?? friend.rupsyId ?? "—"}</p>
+                      <p className="text-sm font-semibold truncate">
+                        <NameColorText
+                          equippedNameColorId={friend.equippedNameColor ?? null}
+                          variant="dark"
+                          className="inline"
+                        >
+                          {friend.nickname ?? friend.rupsyId ?? "—"}
+                        </NameColorText>
+                      </p>
                       <p className="text-xs opacity-40">{friend.rupsyId ?? ""}</p>
                     </div>
                     <div className="flex flex-col items-center shrink-0">

@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useSwipeContext } from "@/context/SwipeContext";
 import PlayerAvatar from "@/components/PlayerAvatar";
+import NameColorText from "@/components/NameColorText";
 import { getCharacterSrc } from "@/lib/characters";
 import { resolveAvatarCosmetics } from "@/lib/cosmetics";
 
@@ -108,6 +109,7 @@ type LeaderboardEntry = {
   equippedAvatar?: string;
   equippedAvatarBackground?: string | null;
   equippedAvatarFrame?: string | null;
+  equippedNameColor?: string | null;
 };
 
 type CitiesEntry = {
@@ -404,7 +406,13 @@ export default function LeaderboardModal({ isOpen, onClose }: Props) {
                   />
                   <div className="flex-1 min-w-0">
                     <p className="font-semibold flex items-center gap-2">
-                      <span className="truncate">{entry.nickname}</span>
+                      <NameColorText
+                        equippedNameColorId={entry.equippedNameColor ?? null}
+                        variant={entry.isCurrentUser ? "light" : "dark"}
+                        className="truncate inline"
+                      >
+                        {entry.nickname}
+                      </NameColorText>
                       {entry.isCurrentUser && (
                         <span className="flex-shrink-0 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-[#f3e6c0]/30 text-[#f3e6c0]">
                           TY

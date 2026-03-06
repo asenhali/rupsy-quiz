@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useProfileModal } from "@/context/ProfileModalContext";
 import { useSwipeContext } from "@/context/SwipeContext";
 import PlayerAvatar from "@/components/PlayerAvatar";
+import NameColorText from "@/components/NameColorText";
 import { getCharacterSrc } from "@/lib/characters";
 import { resolveAvatarCosmetics } from "@/lib/cosmetics";
 
@@ -85,7 +86,13 @@ export default function ProfileModal() {
         </div>
 
         <div className="py-4 flex flex-col items-center text-center">
-          <p className="text-2xl font-bold tracking-tight">{user?.nickname ?? ""}</p>
+          <NameColorText
+            equippedNameColorId={user?.equippedNameColor ?? null}
+            variant="dark"
+            className="text-2xl font-bold tracking-tight block"
+          >
+            {user?.nickname ?? ""}
+          </NameColorText>
           <p className="text-sm opacity-40 font-medium mt-1">{user?.rupsyId ?? ""}</p>
           <p className="text-sm opacity-40 mt-0.5">{user?.city ?? ""}</p>
         </div>

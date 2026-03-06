@@ -8,6 +8,7 @@ import { useOnboarding } from "@/context/OnboardingContext";
 import { useProfileModal } from "@/context/ProfileModalContext";
 import { hasBeenWelcomed } from "@/components/WelcomeModal";
 import PlayerAvatar from "@/components/PlayerAvatar";
+import NameColorText from "@/components/NameColorText";
 import { getCharacterSrc } from "@/lib/characters";
 import { resolveAvatarCosmetics } from "@/lib/cosmetics";
 
@@ -361,7 +362,13 @@ export default function HomePanel() {
               />
             </button>
             <div className="flex-1 min-w-0 flex flex-col justify-center">
-              <p className="text-base font-semibold tracking-tight truncate">{user?.nickname ?? ""}</p>
+              <NameColorText
+                  equippedNameColorId={user?.equippedNameColor ?? null}
+                  variant="dark"
+                  className="text-base font-semibold tracking-tight truncate block"
+                >
+                  {user?.nickname ?? ""}
+                </NameColorText>
               <p className="text-[10px] font-medium uppercase tracking-widest opacity-35">
                 {user?.xpForNextLevel == null && (user?.level ?? 1) >= 25 ? "MAX LEVEL" : `Level ${user?.level ?? 1}`}
               </p>

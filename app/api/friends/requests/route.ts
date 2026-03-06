@@ -92,6 +92,7 @@ export async function GET() {
         avatarId?: string;
         avatarBackgroundId?: string | null;
         avatarFrameId?: string | null;
+        equippedNameColor?: string | null;
       }
     >();
     userIdsToFetch.forEach((id, i) => {
@@ -105,6 +106,7 @@ export async function GET() {
         avatarId: data?.equippedAvatar ?? data?.avatarId ?? "rupsik",
         avatarBackgroundId: data?.equippedAvatarBackground ?? null,
         avatarFrameId: data?.equippedAvatarFrame ?? null,
+        equippedNameColor: data?.equippedNameColor ?? null,
       });
     });
 

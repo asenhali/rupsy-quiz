@@ -60,6 +60,66 @@ body {
   animation: xp-bar-shimmer 1.5s ease-in-out infinite;
 }
 
+/* Name color animations */
+@keyframes nc-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+@keyframes nc-shimmer {
+  0% { background-position: 200% center; }
+  100% { background-position: -200% center; }
+}
+@keyframes nc-flow {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+@keyframes nc-rainbow {
+  0% { filter: hue-rotate(0deg); }
+  100% { filter: hue-rotate(360deg); }
+}
+@keyframes nc-sparkle {
+  0%, 100% { opacity: 1; }
+  25% { opacity: 0.85; }
+  50% { opacity: 1; }
+  75% { opacity: 0.9; }
+}
+@keyframes nc-glow {
+  0%, 100% { text-shadow: 0 0 4px currentColor; }
+  50% { text-shadow: 0 0 12px currentColor; }
+}
+@keyframes nc-flash {
+  0%, 100% { filter: brightness(1); }
+  50% { filter: brightness(1.4); }
+}
+@keyframes nc-glitch {
+  0%, 90%, 100% { transform: translate(0); }
+  92% { transform: translate(-2px, 1px); }
+  94% { transform: translate(2px, -1px); }
+  96% { transform: translate(-1px, 2px); }
+  98% { transform: translate(1px, -2px); }
+}
+@keyframes nc-void {
+  0%, 100% { text-shadow: 0 0 2px rgba(255,255,255,0.1); }
+  50% { text-shadow: 0 0 8px rgba(255,255,255,0.2); }
+}
+
+.nc-anim-pulse { animation: nc-pulse 2s ease-in-out infinite; }
+.nc-anim-shimmer {
+  background-size: 200% auto;
+  animation: nc-shimmer 3s linear infinite;
+}
+.nc-anim-flow {
+  background-size: 200% 100%;
+  animation: nc-flow 4s ease infinite;
+}
+.nc-anim-rainbow { animation: nc-rainbow 4s linear infinite; }
+.nc-anim-sparkle { animation: nc-sparkle 1.5s ease-in-out infinite; }
+.nc-anim-glow { animation: nc-glow 2s ease-in-out infinite; }
+.nc-anim-flash { animation: nc-flash 0.5s ease-in-out infinite; }
+.nc-anim-glitch { animation: nc-glitch 0.3s ease-in-out infinite; }
+.nc-anim-void { animation: nc-void 3s ease-in-out infinite; }
+
 /* Hide scrollbar in AppView panels while keeping scroll functional */
 .app-shell section::-webkit-scrollbar {
   display: none;

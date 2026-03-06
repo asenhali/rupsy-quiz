@@ -10,11 +10,13 @@ import {
   DEFAULT_ITEM_IDS,
   TIER_BORDER_COLORS,
   resolveAvatarCosmetics,
+  getNameColorValue,
   type CosmeticItem,
   type CosmeticType,
 } from "@/lib/cosmetics";
 import { getCharacterSrc } from "@/lib/characters";
 import PlayerAvatar from "@/components/PlayerAvatar";
+import NameColorText from "@/components/NameColorText";
 
 const TAB_LABELS: Record<CosmeticType, string> = {
   nameColor: "FARBA MENA",
@@ -89,25 +91,47 @@ export default function VybavaPanel() {
 
   function ItemPreview({ item }: { item: CosmeticItem }) {
     if (item.type === "nameColor") {
+      const darkVal = getNameColorValue(item, "dark");
+      const lightVal = getNameColorValue(item, "light");
+      const darkGrad = darkVal.startsWith("linear-gradient");
+      const lightGrad = lightVal.startsWith("linear-gradient");
+      const animClass = item.animation ? `nc-anim-${item.animation}` : "";
       return (
         <div
-          className="w-full aspect-square rounded-md mb-1 flex items-center justify-center bg-white min-h-[40px]"
+          className="w-full aspect-square rounded-md mb-1 flex items-center justify-center min-h-[40px]"
+          style={{ backgroundColor: "#808080" }}
         >
-          <span
-            className="font-bold"
-            style={
-              item.value.startsWith("linear-gradient")
-                ? {
-                    fontSize: "38px",
-                    background: item.value,
-                    WebkitBackgroundClip: "text",
-                    WebkitTextFillColor: "transparent",
-                    backgroundClip: "text",
-                  }
-                : { fontSize: "38px", color: item.value }
-            }
-          >
-            Aa
+          <span className="font-bold text-[28px] leading-none" style={{ display: "inline" }}>
+            <span
+              className={animClass}
+              style={
+                darkGrad
+                  ? {
+                      background: darkVal,
+                      WebkitBackgroundClip: "text",
+                      WebkitTextFillColor: "transparent",
+                      backgroundClip: "text",
+                    }
+                  : { color: darkVal }
+              }
+            >
+              A
+            </span>
+            <span
+              className={animClass}
+              style={
+                lightGrad
+                  ? {
+                      background: lightVal,
+                      WebkitBackgroundClip: "text",
+                      WebkitTextFillColor: "transparent",
+                      backgroundClip: "text",
+                    }
+                  : { color: lightVal }
+              }
+            >
+              a
+            </span>
           </span>
         </div>
       );
@@ -159,7 +183,6 @@ export default function VybavaPanel() {
   const nameColorItem = getCosmeticById(
     equippedNameColor ?? DEFAULT_ITEM_IDS.nameColor
   );
-  const nameColorStyle = nameColorItem?.value ?? "#1b2833";
   const displayAvatarId = equippedAvatar;
 
   if (loading) {
@@ -192,21 +215,13 @@ export default function VybavaPanel() {
                 className="rounded-full px-5 py-2"
                 style={{ backgroundColor: "rgba(255,255,255,0.9)" }}
               >
-                <p
-                  className="text-[19px] font-bold leading-tight"
-                  style={
-                    nameColorStyle.startsWith("linear-gradient")
-                      ? {
-                          background: nameColorStyle,
-                          WebkitBackgroundClip: "text",
-                          WebkitTextFillColor: "transparent",
-                          backgroundClip: "text",
-                        }
-                      : { color: nameColorStyle }
-                  }
+                <NameColorText
+                  equippedNameColorId={equippedNameColor}
+                  variant="dark"
+                  className="text-[19px] font-bold leading-tight block"
                 >
                   {user?.nickname ?? "Prezývka"}
-                </p>
+                </NameColorText>
               </div>
             </div>
           </section>

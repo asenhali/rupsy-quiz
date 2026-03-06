@@ -93,6 +93,7 @@ export async function GET() {
           avatarId: data.equippedAvatar ?? data.avatarId ?? "rupsik",
           avatarBackgroundId: data.equippedAvatarBackground ?? null,
           avatarFrameId: data.equippedAvatarFrame ?? null,
+          equippedNameColor: data.equippedNameColor ?? null,
           city: data.city,
           level: data.level,
         };

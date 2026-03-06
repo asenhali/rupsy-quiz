@@ -100,6 +100,7 @@ export async function GET(request: Request) {
         equippedAvatar?: string;
         equippedAvatarBackground?: string | null;
         equippedAvatarFrame?: string | null;
+        equippedNameColor?: string | null;
       }>();
       userIds.forEach((id, i) => {
         const data = userDocs[i]?.data();
@@ -109,6 +110,7 @@ export async function GET(request: Request) {
           equippedAvatar: data?.equippedAvatar ?? data?.avatarId ?? "rupsik",
           equippedAvatarBackground: data?.equippedAvatarBackground ?? null,
           equippedAvatarFrame: data?.equippedAvatarFrame ?? null,
+          equippedNameColor: data?.equippedNameColor ?? null,
         });
       });
 
@@ -151,6 +153,7 @@ export async function GET(request: Request) {
           equippedAvatar: u.equippedAvatar ?? "rupsik",
           equippedAvatarBackground: u.equippedAvatarBackground ?? null,
           equippedAvatarFrame: u.equippedAvatarFrame ?? null,
+          equippedNameColor: u.equippedNameColor ?? null,
         };
       });
 
