@@ -29,7 +29,8 @@ const FIRE_COLORS = [
 ];
 
 function getFireColor(t: number): { r: number; g: number; b: number } {
-  const idx = t * (FIRE_COLORS.length - 1);
+  const clamped = Math.max(0, Math.min(1, t || 0));
+  const idx = clamped * (FIRE_COLORS.length - 1);
   const i = Math.min(Math.floor(idx), FIRE_COLORS.length - 2);
   const f = idx - i;
   const a = FIRE_COLORS[i], b = FIRE_COLORS[i + 1];
