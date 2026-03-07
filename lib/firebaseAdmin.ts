@@ -9,9 +9,6 @@ if (!admin.apps.length) {
     admin.initializeApp({
       credential: admin.credential.cert(parsedServiceAccount),
     });
-  } else {
-    // Initialize with no credentials during build — routes won't work but build won't crash
-    admin.initializeApp();
   }
 }
 
