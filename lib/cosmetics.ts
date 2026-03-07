@@ -39,7 +39,8 @@ export type NameColorAnimation =
   | "flash"
   | "glitch"
   | "void"
-  | "fire";
+  | "fire"
+  | "lightning";
 
 export type CosmeticItem = {
   id: string;
@@ -230,7 +231,7 @@ export const COSMETIC_ITEMS: CosmeticItem[] = [
     dark: "linear-gradient(90deg, #F57F17, #FFFFFF, #F57F17)",
     light: "linear-gradient(90deg, #FFD600, #FFFFFF, #FFD600)",
     animated: true,
-    animation: "flash",
+    animation: "lightning",
   }),
   item("nc_zlata", "Zlatá", "nameColor", "legendarne", 400, "#B8860B", {
     dark: "linear-gradient(90deg, #B8860B 0%, #D4A017 25%, #FFF8E7 45%, #FFF8E7 55%, #D4A017 75%, #B8860B 100%)",

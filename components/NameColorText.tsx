@@ -4,7 +4,7 @@ import { useEffect, useRef, useState, type RefObject } from "react";
 import { getCosmeticById, DEFAULT_ITEM_IDS } from "@/lib/cosmetics";
 import PixiTextEffect from "./PixiTextEffect";
 
-function PixiFireWrapper({ text, parentRef, styleFontSize }: { text: string; parentRef: RefObject<HTMLSpanElement | null>; styleFontSize?: string | number }) {
+function PixiFireWrapper({ text, parentRef, styleFontSize, effect = "fire" }: { text: string; parentRef: RefObject<HTMLSpanElement | null>; styleFontSize?: string | number; effect?: string }) {
   const [size, setSize] = useState<number | null>(() => {
     if (styleFontSize) return parseInt(String(styleFontSize), 10);
     return null;
@@ -24,7 +24,7 @@ function PixiFireWrapper({ text, parentRef, styleFontSize }: { text: string; par
   // Don't render until we have the real font size
   if (size === null) return null;
 
-  return <PixiTextEffect text={text} effect="fire" fontSize={size} />;
+  return <PixiTextEffect text={text} effect={effect} fontSize={size} />;
 }
 
 interface NameColorTextProps {
@@ -78,12 +78,12 @@ export default function NameColorText({
   const shouldAnimate = animated && isVisible;
   const animClass = shouldAnimate ? `nc-anim-${animation}` : "";
 
-  // ── FIRE: PixiJS canvas particle effect ──
-  if (shouldAnimate && animation === "fire") {
+  // ── PIXI EFFECTS: fire, lightning ──
+  if (shouldAnimate && (animation === "fire" || animation === "lightning")) {
     const textContent = typeof children === "string" ? children : String(children ?? "");
     return (
       <span ref={ref} className={className} style={style}>
-        <PixiFireWrapper text={textContent} parentRef={ref} styleFontSize={style?.fontSize} />
+        <PixiFireWrapper text={textContent} parentRef={ref} styleFontSize={style?.fontSize} effect={animation} />
       </span>
     );
   }
