@@ -5,9 +5,9 @@ import { getCosmeticById, DEFAULT_ITEM_IDS } from "@/lib/cosmetics";
 import PixiTextEffect from "./PixiTextEffect";
 
 function PixiFireWrapper({ text, parentRef, styleFontSize }: { text: string; parentRef: RefObject<HTMLSpanElement | null>; styleFontSize?: string | number }) {
-  const [size, setSize] = useState<number>(() => {
+  const [size, setSize] = useState<number | null>(() => {
     if (styleFontSize) return parseInt(String(styleFontSize), 10);
-    return 14;
+    return null;
   });
 
   useEffect(() => {
@@ -20,6 +20,9 @@ function PixiFireWrapper({ text, parentRef, styleFontSize }: { text: string; par
     const computed = parseFloat(getComputedStyle(el).fontSize);
     if (computed > 0) setSize(Math.round(computed)); // eslint-disable-line react-hooks/set-state-in-effect
   }, [parentRef, styleFontSize]);
+
+  // Don't render until we have the real font size
+  if (size === null) return null;
 
   return <PixiTextEffect text={text} effect="fire" fontSize={size} />;
 }
